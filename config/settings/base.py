@@ -32,9 +32,10 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_yasg",
     "django_filters",
+    'import_export',
 
     #apps
-
+    "apps.auth_app"
 ]
 
 MIDDLEWARE = [
@@ -134,4 +135,20 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
     'SLIDING_TOKEN_LIFETIME_CLAIM': 'exp',
     'SLIDING_TOKEN_REFRESH_LIFETIME_CLAIM': 'refresh_exp',
+}
+
+AUTH_USER_MODEL = "auth_app.CustomUser"
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "JWT [Bearer {JWT}]": {
+            "name": "Mal dex backend",
+            "type": "apiKey",
+            "in": "header",
+        }
+    },
+    "TITLE": "Mal dex backend",
+    "DESCRIPTION": "Mal dex backend",
+    "VERSION": "0.1.0",
+    "USE_SESSION_AUTH": False,
 }
