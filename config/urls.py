@@ -30,7 +30,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # auth url
-    path('auth/', include('apps.auth_app.urls'))
+    path('auth/', include('apps.auth_app.urls')),
+    path('product/', include('apps.product.urls')),
 ]
 
 

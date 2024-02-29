@@ -33,9 +33,11 @@ INSTALLED_APPS = [
     "drf_yasg",
     "django_filters",
     'import_export',
+    'ckeditor',
 
     #apps
-    "apps.auth_app"
+    "apps.auth_app",
+    "apps.product",
 ]
 
 MIDDLEWARE = [
@@ -142,13 +144,30 @@ AUTH_USER_MODEL = "auth_app.CustomUser"
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "JWT [Bearer {JWT}]": {
-            "name": "Mal dex backend",
+            "name": "Authorization",
             "type": "apiKey",
             "in": "header",
         }
     },
-    "TITLE": "Mal dex backend",
-    "DESCRIPTION": "Mal dex backend",
+    "TITLE": "Maldex backend",
+    "DESCRIPTION": "Maldex backend",
     "VERSION": "0.1.0",
     "USE_SESSION_AUTH": False,
+}
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+CKEDITOR_FILENAME_GENERATOR = 'utils.ckeditor.get_filename'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter',
+             'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source']
+        ]
+    }
 }
