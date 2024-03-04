@@ -68,7 +68,7 @@ class LoginView(APIView):
 
 
 class ProfileViews(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny, IsAuthenticated]
     render_classes = [UserRenderers]
 
     @swagger_auto_schema(operation_description="Retrieve a user",

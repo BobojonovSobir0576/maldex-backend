@@ -15,10 +15,12 @@ from utils.responses import (
 
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
+from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
 
-class ProductsListView(APIView):
+class ProductsListView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
     """ Products Get View """
 
     @swagger_auto_schema(operation_description="Retrieve a list of products",
@@ -26,8 +28,7 @@ class ProductsListView(APIView):
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request):
         queryset = Products.objects.all().order_by('-id')
-        serializers = ProductDetailSerializers(queryset, many=True,
-                                              context={'request': request})
+        serializers = super().page(queryset, ProductDetailSerializers, request)
         return success_response(serializers.data)
 
     """ Products Post View """

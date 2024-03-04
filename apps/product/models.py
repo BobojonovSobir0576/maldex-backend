@@ -7,7 +7,7 @@ from ckeditor.fields import RichTextField
 class ProductCategories(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_('Name of category'), max_length=150, null=True, blank=True)
-    subcategory = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, verbose_name="CategoryID")
+    deactivt = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, verbose_name="CategoryID")
     icon = models.FileField(upload_to='icon_category', null=True, blank=True, verbose_name='Icon Category')
 
     def __str__(self):
