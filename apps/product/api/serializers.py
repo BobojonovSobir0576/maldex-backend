@@ -1,19 +1,19 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from rest_framework import serializers
-
 from apps.product.models import *
+from apps.product.proxy import *
 
 
 class CategoryListSerializers(serializers.ModelSerializer):
     """ Category create update and details """
     icon = serializers.ImageField(required=False)
     name = serializers.CharField(required=True)
-    subcategory = serializers.IntegerField(allow_null=True, required=False)
 
     class Meta:
         model = ProductCategories
         fields = [
-            'id', 'name', 'subcategory', 'icon',
+            'id', 'name', 'icon',
         ]
 
     def create(self, validated_data):
@@ -21,6 +21,31 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class TertiaryCategorySerializer(serializers.ModelSerializer):
+    """ Tertiary Category details """
+    class Meta:
+        model = ProductCategories
+        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo']
+
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    """ Sub Category details """
+    children = TertiaryCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductCategories
+        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+
+
+class MainCategorySerializer(serializers.ModelSerializer):
+    """ Main Category details """
+    children = SubCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductCategories
+        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
 
 
 class ProductListSerializers(serializers.ModelSerializer):
@@ -53,3 +78,5 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'content', 'image', 'price', 'price_type', 'categoryId', 'created_at'
         ]
+
+

@@ -1,4 +1,5 @@
-from apps.product.models import Products
+
+from apps.product.models import Products, ProductCategories
 
 
 def filter_by_sub_category(queryset, request):
@@ -29,3 +30,36 @@ def filter_by_category(queryset, request):
         return queryset.none()
 
     return Products.objects.select_related('categoryId').filter(categoryId=category_id)
+
+
+def get_subcategories(queryset, request):
+    cate_id = request.query_params.get("sub_category")
+    if not cate_id:
+        return queryset
+
+    try:
+        cate_id = int(cate_id)
+    except ValueError:
+        return queryset.none()
+
+    return queryset.filter(subcategory=cate_id)
+
+
+def get_tertiary_category(queryset, request):
+    tertiary_category = request.query_params.get('tertiary_category')
+    if not tertiary_category:
+        return queryset
+
+    try:
+        tertiary_category = int(tertiary_category)
+    except ValueError:
+        return queryset.none()
+
+    return queryset.filter(tertiary_category=tertiary_category)
+
+
+def get_popular_categories(queryset, request):
+    is_popular = request.query_params.get('popular_category', False)
+    if not is_popular:
+        return queryset
+    return queryset.filter(is_popular=True)[0:15]

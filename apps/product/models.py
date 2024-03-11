@@ -6,17 +6,21 @@ from ckeditor.fields import RichTextField
 
 class ProductCategories(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(_('Name of category'), max_length=150, null=True, blank=True)
-    deactivt = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, verbose_name="CategoryID")
-    icon = models.FileField(upload_to='icon_category', null=True, blank=True, verbose_name='Icon Category')
+    name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Name of category")
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
+    is_popular = models.BooleanField(default=False, verbose_name="Is Popular?")
+    is_hit = models.BooleanField(default=False, verbose_name="Is Hit?")
+    is_new = models.BooleanField(default=False, verbose_name="Is New?")
+    icon = models.FileField(upload_to='media/category/icon/', null=True, blank=True, verbose_name='Icon Category')
+    logo = models.FileField(upload_to='media/category/logo/', null=True, blank=True, verbose_name='Logo Category')
 
     def __str__(self):
         return self.name
 
     class Meta:
         db_table = "product_category"
-        verbose_name = "Product Category"
-        verbose_name_plural = "Product Categories"
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
 
 class Products(models.Model):

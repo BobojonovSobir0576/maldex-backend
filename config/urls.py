@@ -32,6 +32,8 @@ urlpatterns = [
     # auth url
     path('auth/', include('apps.auth_app.urls')),
     path('product/', include('apps.product.urls')),
+    path('banner/', include('apps.banner.urls')),
+
 ]
 
 

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     #apps
     "apps.auth_app",
     "apps.product",
+    "apps.banner",
 ]
 
 MIDDLEWARE = [

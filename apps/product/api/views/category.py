@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.product.models import *
 from apps.product.api.serializers import (
-    CategoryListSerializers, ProductDetailSerializers
+    CategoryListSerializers, ProductDetailSerializers, MainCategorySerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import (
@@ -17,31 +17,40 @@ from utils.responses import (
 )
 from utils.pagination import PaginationMethod
 from utils.expected_fields import check_required_key
-from apps.product.utils import filter_by_category, filter_by_sub_category
 from drf_yasg.utils import swagger_auto_schema
+from apps.product.utils import get_popular_categories
 
 
 class CategoryListView(APIView):
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ["is_popular",]
     """ Category Get View """
 
+    is_popular = openapi.Parameter('is_popular', openapi.IN_QUERY,
+                                           description="Filter by Popular categories",
+                                           type=openapi.TYPE_BOOLEAN)
+
     @swagger_auto_schema(operation_description="Retrieve a list of categories",
+                         manual_parameters=[is_popular],
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
-        queryset = ProductCategories.objects.all().order_by('-id')
-        serializers = CategoryListSerializers(queryset, many=True,
+        queryset = ProductCategories.objects.all().order_by('-id').filter(parent__isnull=False)
+        queryset = get_popular_categories(queryset, request)
+        serializers = MainCategorySerializer(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
 
     """ Category Post View """
+
 
     @swagger_auto_schema(request_body=CategoryListSerializers,
                          operation_description="Category create",
                          tags=['Categories'],
                          responses={201: CategoryListSerializers(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'subcategory', 'icon'}
+        valid_fields = {'name', 'icon'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -56,29 +65,13 @@ class CategoryListView(APIView):
 class CategoryDetailView(APIView, PaginationMethod):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        "subcategory",
-        "category",
-    ]
     """ Category Get View """
-    sub_category_param = openapi.Parameter('sub_category', openapi.IN_QUERY, description="Filter by sub category, get product",
-                                           type=openapi.TYPE_STRING)
-    category_param = openapi.Parameter('category', openapi.IN_QUERY, description="Filter by category, get product",
-                                           type=openapi.TYPE_STRING)
-
-    @swagger_auto_schema(manual_parameters=[sub_category_param, category_param],
-                         operation_description="Retrieve category or sub categories",
+    @swagger_auto_schema(operation_description="Retrieve category or sub categories",
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(ProductCategories, pk=pk)
-        filter_sub_category = filter_by_sub_category(queryset, request)
-        filter_category = filter_by_category(queryset, request)
-        if filter_category or filter_sub_category:
-            serializers = super().page(queryset, ProductDetailSerializers, request)
-            return success_response(serializers.data)
-        serializers = CategoryListSerializers(queryset, context={'request': request})
+        serializers = MainCategorySerializer(queryset, context={'request': request, })
         return success_response(serializers.data)
 
     """ Category Put View """
@@ -88,7 +81,7 @@ class CategoryDetailView(APIView, PaginationMethod):
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'subcategory', 'icon'}
+        valid_fields = {'name', 'icon'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -110,5 +103,8 @@ class CategoryDetailView(APIView, PaginationMethod):
         queryset = get_object_or_404(ProductCategories, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")
+
+
+
 
 
