@@ -4,12 +4,12 @@ from apps.product.models import ProductCategories
 class SubCategory(ProductCategories):
     class Meta:
         proxy = True
-        verbose_name = "Sub Category"
-        verbose_name_plural = "Sub Categories"
+        verbose_name = "Подкатегория"
+        verbose_name_plural = "Подкатегории"
 
 
 class TertiaryCategory(ProductCategories):
     class Meta:
         proxy = True
-        verbose_name = "Tertiary Category"
-        verbose_name_plural = "Tertiary Categories"
+        verbose_name = "Третичная категория"
+        verbose_name_plural = "Третичные категории"

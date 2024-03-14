@@ -1,17 +1,27 @@
 from django.contrib import admin
+from django import forms
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-
+from import_export.admin import ImportExportModelAdmin
 from apps.product.filters import SubCategoryListFilter, MainCategoryListFilter
 from apps.product.forms import ProductAdminForm
 from apps.product.models import (
     ProductCategories,
-    Products
+    Products,
+    Colors,
+    ProductImage
 )
 from apps.product.proxy import SubCategory, TertiaryCategory
+from django.urls import path
+from django.http import JsonResponse
+
+admin.site.site_header = "Maldex Administration"
+admin.site.site_title = "Maldex Admin Portal"
+admin.site.index_title = "Welcome to Maldex Admin Portal"
 
 
 @admin.register(ProductCategories)
-class ProductCategoryAdmin(admin.ModelAdmin):
+class ProductCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name']
     search_fields = ['name']
 
@@ -26,7 +36,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(SubCategory)
-class SubCategoryAdmin(admin.ModelAdmin):
+class SubCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name', 'parent']
     search_fields = ['name']
     list_filter = [MainCategoryListFilter,]
@@ -46,7 +56,7 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(TertiaryCategory)
-class TertiaryCategoryAdmin(admin.ModelAdmin):
+class TertiaryCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name', 'parent']
     search_fields = ['name']
     list_filter = [SubCategoryListFilter]
@@ -65,10 +75,38 @@ class TertiaryCategoryAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class ProductsAdmin(admin.ModelAdmin):
-    form = ProductAdminForm
-    list_display = ['id', 'name', 'price', 'price_type']
+class ColorInline(admin.TabularInline):
+    model = Colors
+
+
+class ColorAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    model = Colors
+    list_display = ['id', 'name']
     search_fields = ['name']
+
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    inlines = [ColorInline]
+
+
+class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    form = ProductAdminForm
+    list_display = ['id', 'name', 'price', 'price_type', 'category_hierarchy']
+    search_fields = ['name', 'categoryId__name']
+    autocomplete_fields = ['categoryId']
+    inlines = [ProductImageInline]
+
+    def category_hierarchy(self, obj):
+        names = []
+        category = obj.categoryId
+        while category is not None:
+            names.append(category.name)
+            category = category.parent
+        return " > ".join(names)
+    category_hierarchy.short_description = 'Category Hierarchy'
+
 
     def product_image(self, obj):
         if obj and obj.productID and obj.productID.image:
@@ -78,5 +116,5 @@ class ProductsAdmin(admin.ModelAdmin):
     product_image.short_description = 'Product Image'
 
 
-# admin.site.register(ProductCategories, ProductCategoryAdmin)
 admin.site.register(Products, ProductsAdmin)
+admin.site.register(Colors, ColorAdmin)

@@ -18,26 +18,32 @@ from utils.responses import (
 from utils.pagination import PaginationMethod
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
-from apps.product.utils import get_popular_categories
+from apps.product.filters import ProductCategoryFilter
 
 
 class CategoryListView(APIView):
     permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend]
-    filter_fields = ["is_popular",]
     """ Category Get View """
 
-    is_popular = openapi.Parameter('is_popular', openapi.IN_QUERY,
-                                           description="Filter by Popular categories",
-                                           type=openapi.TYPE_BOOLEAN)
+    is_popular = openapi.Parameter('popular_category', openapi.IN_QUERY,
+                                   description="Filter by Popular categories",
+                                   type=openapi.TYPE_BOOLEAN)
+    is_new = openapi.Parameter('new_category', openapi.IN_QUERY,
+                                   description="Filter by New categories",
+                                   type=openapi.TYPE_BOOLEAN)
+    is_hits = openapi.Parameter('hits_category', openapi.IN_QUERY,
+                                   description="Filter by Hits categories",
+                                   type=openapi.TYPE_BOOLEAN)
 
     @swagger_auto_schema(operation_description="Retrieve a list of categories",
-                         manual_parameters=[is_popular],
+                         manual_parameters=[is_popular, is_new, is_hits],
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
-        queryset = ProductCategories.objects.all().order_by('-id').filter(parent__isnull=False)
-        queryset = get_popular_categories(queryset, request)
+        queryset = ProductCategories.objects.all().order_by('-id').filter(parent__isnull=True,  parent__parent__isnull=True)
+        filterset = ProductCategoryFilter(request.GET, queryset=queryset)
+        if filterset .is_valid():
+            queryset = filterset .qs
         serializers = MainCategorySerializer(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
@@ -66,6 +72,11 @@ class CategoryDetailView(APIView, PaginationMethod):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
     """ Category Get View """
+
+    is_hits = openapi.Parameter('hits_category', openapi.IN_QUERY,
+                                description="Filter by Hits categories",
+                                type=openapi.TYPE_BOOLEAN)
+
     @swagger_auto_schema(operation_description="Retrieve category or sub categories",
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})

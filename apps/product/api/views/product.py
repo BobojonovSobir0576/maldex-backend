@@ -1,7 +1,10 @@
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from drf_yasg import openapi
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
+from apps.product.filters import ProductFilter
 from apps.product.models import *
 from apps.product.api.serializers import (
     ProductListSerializers, ProductDetailSerializers
@@ -16,6 +19,16 @@ from utils.responses import (
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
+from drf_yasg.utils import swagger_auto_schema
+
+
+def get_subcategories(request, category_id):
+    subcategories = list(ProductCategories.objects.filter(parent_id=category_id).values('id', 'name'))
+    return JsonResponse(subcategories, safe=False)
+
+def get_tertiary_categories(request, subcategory_id):
+    tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
+    return JsonResponse(tertiary_categories, safe=False)
 
 
 class ProductsListView(APIView, PaginationMethod):
@@ -23,11 +36,19 @@ class ProductsListView(APIView, PaginationMethod):
     pagination_class = StandardResultsSetPagination
     """ Products Get View """
 
+    category = openapi.Parameter('category', openapi.IN_QUERY,
+                                 description="Filter by category ID",
+                                 type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID)
+
     @swagger_auto_schema(operation_description="Retrieve a list of products",
+                         manual_parameters=[category],
                          tags=['Products'],
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request):
-        queryset = Products.objects.all().order_by('-id')
+        queryset = Products.objects.all()
+        filterset = ProductFilter(request.GET, queryset=queryset)
+        if filterset.is_valid():
+            queryset = filterset.qs
         serializers = super().page(queryset, ProductDetailSerializers, request)
         return success_response(serializers.data)
 

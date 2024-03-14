@@ -7,17 +7,11 @@ from apps.product.api.serializers import ProductDetailSerializers
 
 
 class BannerProductListSerializer(serializers.ModelSerializer):
-    bannerID = serializers.SerializerMethodField()
     productID = ProductDetailSerializers(read_only=True)
 
     class Meta:
         model = BannerProduct
-        fields = ['id', 'bannerID', 'productID']
-
-    def get_bannerID(self, obj):
-        if obj.bannerID:
-            return {"id": obj.bannerID.id, "name": obj.bannerID.name}
-        return None
+        fields = ['id', 'productID']
 
 
 class BannerListSerializer(serializers.ModelSerializer):
@@ -34,17 +28,12 @@ class BannerListSerializer(serializers.ModelSerializer):
 
 
 class BannerCarouselProductListSerializer(serializers.ModelSerializer):
-    bannerCarouselID = serializers.SerializerMethodField()
     productCarouselID = ProductDetailSerializers(read_only=True)
 
     class Meta:
         model = BannerCarouselProduct
         fields = ['id', 'bannerCarouselID', 'productCarouselID', 'bannerCarouselVideo']
 
-    def get_bannerCarouselID(self, obj):
-        if obj.bannerCarouselID:
-            return {"id": obj.bannerCarouselID.id, "name": obj.bannerCarouselID.name}
-        return None
 
 
 class BannerCarouselListSerializer(serializers.ModelSerializer):

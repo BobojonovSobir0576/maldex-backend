@@ -1,13 +1,13 @@
 from django.contrib import admin
 from apps.banner.models import Banner, BannerProduct, BannerCarousel, BannerCarouselProduct
 from django.utils.html import format_html
+from import_export.admin import ImportExportModelAdmin
 
 
 class BannerProductInline(admin.TabularInline):
     model = BannerProduct
     extra = 1
     autocomplete_fields = ['productID']
-
     readonly_fields = ['product_image',]
 
     def product_image(self, obj):
@@ -16,7 +16,7 @@ class BannerProductInline(admin.TabularInline):
         return "No image"
 
 
-class BannerAdmin(admin.ModelAdmin):
+class BannerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     inlines = [
         BannerProductInline,
     ]
@@ -34,7 +34,6 @@ class BannerCarouselProductInline(admin.TabularInline):
     model = BannerCarouselProduct
     extra = 1
     autocomplete_fields = ['productCarouselID']
-
     readonly_fields = ['product_image', 'banner_carousel_video']
 
     def product_image(self, obj):
@@ -55,7 +54,7 @@ class BannerCarouselProductInline(admin.TabularInline):
     banner_carousel_video.short_description = 'Banner Carousel Video'
 
 
-class BannerCarouselAdmin(admin.ModelAdmin):
+class BannerCarouselAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     inlines = [
         BannerCarouselProductInline,
     ]

@@ -60,7 +60,9 @@ class ProductListSerializers(serializers.ModelSerializer):
     class Meta:
         model = Products
         fields = [
-            'id', 'name', 'content', 'image', 'price', 'price_type', 'categoryId', 'created_at'
+            'id', 'vendor_code', 'name', 'content', 'price', 'price_type', 'image',
+            'brand', 'material', 'gross_weight', 'dimensions', 'package_dimensions', 'package_quantity',
+            'package_wight', 'categoryId', 'is_popular', 'is_hit', 'is_new', 'created_at',
         ]
 
     def create(self, validated_data):
@@ -74,9 +76,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     """ Product details """
 
     class Meta:
-        model = Products
+        model = Products  # Make sure to specify your model here
         fields = [
-            'id', 'name', 'content', 'image', 'price', 'price_type', 'categoryId', 'created_at'
+            'id', 'vendor_code', 'name', 'content', 'price', 'price_type', 'image',
+            'brand', 'material', 'gross_weight', 'dimensions', 'package_dimensions', 'package_quantity',
+            'package_wight', 'categoryId', 'is_popular', 'is_hit', 'is_new', 'created_at',
         ]
 
 
