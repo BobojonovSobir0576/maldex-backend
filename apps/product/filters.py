@@ -59,17 +59,17 @@ class ProductCategoryFilter(filters.FilterSet):
         model = ProductCategories
         fields = ['is_popular', 'is_new', 'is_hit']
 
-    def filter_popular_categories(self, queryset, value):
+    def filter_popular_categories(self, queryset, name, value):
         if value:
             return queryset.filter(is_popular=True)[:15]
         return queryset
 
-    def filter_new_categories(self, queryset, value):
+    def filter_new_categories(self, queryset, name, value):
         if value:
             return queryset.filter(is_new=True)[:15]
         return queryset
 
-    def filter_hits_categories(self, queryset, value):
+    def filter_hits_categories(self, queryset, name, value):
         if value:
             return queryset.filter(is_hit=True)[:15]
         return queryset

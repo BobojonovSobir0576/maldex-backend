@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 
 
+
 class BannerProductInline(admin.TabularInline):
     model = BannerProduct
     extra = 1
