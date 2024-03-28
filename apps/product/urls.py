@@ -11,4 +11,6 @@ urlpatterns = [
     path('categories/', category.CategoryListView.as_view()),
     path('category/<uuid:pk>/', category.CategoryDetailView.as_view()),
 
+    path('import_products/', product.ProductFileUploadView.as_view(), name='import_products'),
+
 ]

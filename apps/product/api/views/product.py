@@ -1,13 +1,18 @@
+import json
+
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from drf_yasg import openapi
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.product.filters import ProductFilter
 from apps.product.models import *
 from apps.product.api.serializers import (
-    ProductListSerializers, ProductDetailSerializers
+    ProductListSerializers, ProductDetailSerializers, ProductSerializer
 )
 from utils.responses import (
     bad_request_response,
@@ -114,3 +119,21 @@ class ProductsDetailView(APIView):
         return success_deleted_response("Successfully deleted")
 
 
+class ProductFileUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({"error": "File is required."}, status=400)
+
+        try:
+            data = json.load(file)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+        # If the JSON is an array of objects, set many=True
+        serializer = ProductSerializer(data=data, many=isinstance(data, list))
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, safe=False, status=201)
+        else:
+            return JsonResponse(serializer.errors, status=400)

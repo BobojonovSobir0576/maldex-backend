@@ -4,7 +4,6 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
 from apps.product.filters import SubCategoryListFilter, MainCategoryListFilter
-from apps.product.forms import ProductAdminForm
 from apps.product.models import (
     ProductCategories,
     Products,
@@ -25,55 +24,6 @@ class ProductCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name']
     search_fields = ['name']
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.filter(parent__isnull=True)
-
-    def get_form(self, request, obj=None, **kwargs):
-        self.exclude = ("parent",)
-        form = super(ProductCategoryAdmin, self).get_form(request, obj, **kwargs)
-        return form
-
-
-@admin.register(SubCategory)
-class SubCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'name', 'parent']
-    search_fields = ['name']
-    list_filter = [MainCategoryListFilter,]
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(parent__isnull=False, parent__parent__isnull=True)
-
-    def get_form(self, request, obj=None, **kwargs):
-        self.exclude = ("is_popular", 'is_hit', 'is_new')
-        form = super(SubCategoryAdmin, self).get_form(request, obj, **kwargs)
-        return form
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "parent":
-            kwargs["queryset"] = ProductCategories.objects.filter(parent__isnull=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-
-@admin.register(TertiaryCategory)
-class TertiaryCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'name', 'parent']
-    search_fields = ['name']
-    list_filter = [SubCategoryListFilter]
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(parent__parent__isnull=False)
-
-    def get_form(self, request, obj=None, **kwargs):
-        self.exclude = ("is_popular", 'is_hit', 'is_new')
-        form = super(TertiaryCategoryAdmin, self).get_form(request, obj, **kwargs)
-        return form
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "parent":
-            kwargs["queryset"] = ProductCategories.objects.filter(parent__isnull=False, parent__parent__isnull=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 
 class ColorInline(admin.TabularInline):
     model = Colors
@@ -92,7 +42,6 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    form = ProductAdminForm
     list_display = ['id', 'name', 'price', 'price_type', 'category_hierarchy']
     search_fields = ['name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
@@ -118,3 +67,4 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 admin.site.register(Products, ProductsAdmin)
 admin.site.register(Colors, ColorAdmin)
+admin.site.register(ProductImage)
