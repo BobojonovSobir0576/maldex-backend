@@ -9,8 +9,8 @@ urlpatterns = [
          name='get_tertiary_categories'),
 
     path('categories/', category.CategoryListView.as_view()),
-    path('category/<uuid:pk>/', category.CategoryDetailView.as_view()),
+    path('category/<int:pk>/', category.CategoryDetailView.as_view()),
 
-    path('import_products/', product.ProductFileUploadView.as_view(), name='import_products'),
+    path('import_products/', product.ProductUploadView.as_view(), name='import_products'),
 
 ]

@@ -119,21 +119,33 @@ class ProductsDetailView(APIView):
         return success_deleted_response("Successfully deleted")
 
 
-class ProductFileUploadView(APIView):
+class ProductUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
     def post(self, request, *args, **kwargs):
-        file = request.FILES.get('file')
-        if not file:
-            return JsonResponse({"error": "File is required."}, status=400)
+        file_obj = request.data.get('file')
+        if not file_obj:
+            return Response({'error': 'File is required.'}, status=400)
 
+        # Attempt to parse the JSON file
         try:
-            data = json.load(file)
+            data = json.loads(file_obj.read().decode('utf-8'))
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON."}, status=400)
+            return Response({'error': 'Invalid JSON.'}, status=400)
 
-        # If the JSON is an array of objects, set many=True
-        serializer = ProductSerializer(data=data, many=isinstance(data, list))
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, safe=False, status=201)
-        else:
-            return JsonResponse(serializer.errors, status=400)
+        # Ensure the data is a list for iteration
+        if not isinstance(data, list):
+            data = [data]
+
+        errors = []
+        for product_data in data:
+            serializer = ProductSerializer(data=product_data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                errors.append(serializer.errors)
+
+        if errors:
+            return Response({'errors': errors}, status=400)
+
+        return Response({'message': 'Products uploaded successfully'}, status=201)

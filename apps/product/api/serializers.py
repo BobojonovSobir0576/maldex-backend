@@ -97,13 +97,6 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         images = obj.productID.all()  # Use the related_name 'images' to access related ProductImage instances
         return ProductImageSerializer(images, many=True).data
 
-# to add json file
-from django.core.files.base import ContentFile
-import requests
-
-
-
-
 
 class ProductSerializer(serializers.ModelSerializer):
     images = serializers.ListField(write_only=True, child=serializers.DictField(), required=False)

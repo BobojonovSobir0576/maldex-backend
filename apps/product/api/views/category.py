@@ -44,7 +44,7 @@ class CategoryListView(APIView):
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset .is_valid():
             queryset = filterset .qs
-        serializers = MainCategorySerializer(queryset, many=True,
+        serializers = CategoryListSerializers(queryset, many=True,
                                               context={'request': request})
         return success_response(serializers.data)
 
@@ -81,6 +81,7 @@ class CategoryDetailView(APIView, PaginationMethod):
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request, pk):
+        print(pk)
         queryset = get_object_or_404(ProductCategories, pk=pk)
         serializers = MainCategorySerializer(queryset, context={'request': request, })
         return success_response(serializers.data)
