@@ -1,6 +1,3 @@
-from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from rest_framework import serializers
 from apps.banner.models import *
 from apps.product.api.serializers import ProductDetailSerializers
@@ -35,7 +32,6 @@ class BannerCarouselProductListSerializer(serializers.ModelSerializer):
         fields = ['id', 'bannerCarouselID', 'productCarouselID', 'bannerCarouselVideo']
 
 
-
 class BannerCarouselListSerializer(serializers.ModelSerializer):
     product_set = serializers.SerializerMethodField()
 
@@ -44,6 +40,5 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'product_set']
 
     def get_product_set(self, obj):
-        banner_products = BannerCarouselProduct.objects.filter(
-            bannerCarouselID=obj)
+        banner_products = BannerCarouselProduct.objects.filter(bannerCarouselID=obj)
         return BannerCarouselProductListSerializer(banner_products, many=True, read_only=True).data

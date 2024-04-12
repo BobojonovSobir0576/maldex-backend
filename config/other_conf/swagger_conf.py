@@ -1,4 +1,3 @@
-
 SPECTACULAR_SETTINGS = {
     "TITLE": "Mal dex backend",
     "DESCRIPTION": "Mal dex backend",

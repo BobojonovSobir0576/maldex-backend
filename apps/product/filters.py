@@ -81,3 +81,32 @@ class ProductFilter(filters.FilterSet):
     class Meta:
         model = Products
         fields = ['categoryId']
+
+
+class CategoryLevelFilter(SimpleListFilter):
+    title = 'Level'
+
+    parameter_name = 'level'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each tuple is the coded value for the option that will
+        appear in the URL query. The second element is the human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return [(i, f'{i} level') for i in range(1, 5)]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value provided in the query string and retrievable via
+        `self.value()`.
+        """
+        match self.value():
+            case '1':
+                return queryset.filter(parent=None)
+            case '2':
+                return queryset.filter(parent__isnull=False, parent__parent=None)
+            case '3':
+                return queryset.filter(parent__parent__isnull=False, parent__parent__parent=None)
+            case '4':
+                return queryset.filter(parent__parent__parent__isnull=False, parent__parent__parent__parent=None)

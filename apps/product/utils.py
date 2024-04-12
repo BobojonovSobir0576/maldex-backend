@@ -1,5 +1,5 @@
 
-from apps.product.models import Products, ProductCategories
+from apps.product.models import Products
 
 
 def filter_by_sub_category(queryset, request):

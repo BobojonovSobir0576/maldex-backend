@@ -1,12 +1,6 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from config.other_conf import (
-    drf_conf,
-    swagger_conf,
-    cors_conf,
-    gmail_or_mail_conf
-)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -35,10 +29,10 @@ INSTALLED_APPS = [
     'import_export',
     'ckeditor',
 
-    #apps
     "apps.auth_app",
     "apps.product",
     "apps.banner",
+    'apps.blog'
 ]
 
 MIDDLEWARE = [
@@ -184,4 +178,3 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
 ]
-

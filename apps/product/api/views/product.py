@@ -1,19 +1,12 @@
-import json
-
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
-from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.product.filters import ProductFilter
 from apps.product.models import *
-from apps.product.api.serializers import (
-    ProductListSerializers, ProductDetailSerializers, ProductSerializer
-)
+from apps.product.api.serializers import ProductListSerializers, ProductDetailSerializers
 from utils.responses import (
     bad_request_response,
     success_response,
@@ -22,14 +15,14 @@ from utils.responses import (
 )
 
 from utils.expected_fields import check_required_key
-from drf_yasg.utils import swagger_auto_schema
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 from drf_yasg.utils import swagger_auto_schema
 
 
 def get_subcategories(request, category_id):
-    subcategories = list(ProductCategories.objects.filter(parent_id=category_id).values('id', 'name'))
+    subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
     return JsonResponse(subcategories, safe=False)
+
 
 def get_tertiary_categories(request, subcategory_id):
     tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
@@ -102,7 +95,7 @@ class ProductsDetailView(APIView):
 
         queryset = get_object_or_404(Products, pk=pk)
         serializers = ProductListSerializers(instance=queryset, data=request.data,
-                                              context={'request': request})
+                                             context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return success_response(serializers.data)
@@ -117,35 +110,3 @@ class ProductsDetailView(APIView):
         queryset = get_object_or_404(Products, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")
-
-
-class ProductUploadView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, *args, **kwargs):
-        file_obj = request.data.get('file')
-        if not file_obj:
-            return Response({'error': 'File is required.'}, status=400)
-
-        # Attempt to parse the JSON file
-        try:
-            data = json.loads(file_obj.read().decode('utf-8'))
-        except json.JSONDecodeError:
-            return Response({'error': 'Invalid JSON.'}, status=400)
-
-        # Ensure the data is a list for iteration
-        if not isinstance(data, list):
-            data = [data]
-
-        errors = []
-        for product_data in data:
-            serializer = ProductSerializer(data=product_data)
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                errors.append(serializer.errors)
-
-        if errors:
-            return Response({'errors': errors}, status=400)
-
-        return Response({'message': 'Products uploaded successfully'}, status=201)

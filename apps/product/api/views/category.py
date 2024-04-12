@@ -1,12 +1,11 @@
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from apps.product.models import *
 from apps.product.api.serializers import (
-    CategoryListSerializers, ProductDetailSerializers, MainCategorySerializer
+    CategoryListSerializers, MainCategorySerializer, CategoryOrderSerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import (
@@ -29,27 +28,40 @@ class CategoryListView(APIView):
                                    description="Filter by Popular categories",
                                    type=openapi.TYPE_BOOLEAN)
     is_new = openapi.Parameter('new_category', openapi.IN_QUERY,
+                               description="Filter by New categories",
+                               type=openapi.TYPE_BOOLEAN)
+    is_hits = openapi.Parameter('hits_category', openapi.IN_QUERY,
+                                description="Filter by Hits categories",
+                                type=openapi.TYPE_BOOLEAN)
+
+    change_popular = openapi.Parameter('change_popular_category', openapi.IN_QUERY,
+                                       description="Filter by Popular categories",
+                                       type=openapi.TYPE_BOOLEAN)
+    change_new = openapi.Parameter('change_new_category', openapi.IN_QUERY,
                                    description="Filter by New categories",
                                    type=openapi.TYPE_BOOLEAN)
-    is_hits = openapi.Parameter('hits_category', openapi.IN_QUERY,
-                                   description="Filter by Hits categories",
-                                   type=openapi.TYPE_BOOLEAN)
+    change_hits = openapi.Parameter('change_hits_category', openapi.IN_QUERY,
+                                    description="Filter by Hits categories",
+                                    type=openapi.TYPE_BOOLEAN)
 
     @swagger_auto_schema(operation_description="Retrieve a list of categories",
                          manual_parameters=[is_popular, is_new, is_hits],
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
-        queryset = ProductCategories.objects.all().order_by('-id').filter(parent__isnull=True,  parent__parent__isnull=True)
+        queryset = ProductCategories.objects.all().order_by('order').filter(
+            parent__isnull=True,
+            parent__parent__isnull=True,
+            is_available=True
+        )
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
-        if filterset .is_valid():
-            queryset = filterset .qs
+        if filterset.is_valid():
+            queryset = filterset.qs
         serializers = MainCategorySerializer(queryset, many=True,
-                                              context={'request': request})
+                                             context={'request': request})
         return success_response(serializers.data)
 
     """ Category Post View """
-
 
     @swagger_auto_schema(request_body=CategoryListSerializers,
                          operation_description="Category create",
@@ -116,6 +128,24 @@ class CategoryDetailView(APIView, PaginationMethod):
         return success_deleted_response("Successfully deleted")
 
 
+class CategoryChangeOrderView(APIView):
+    permission_classes = [AllowAny]
 
+    @swagger_auto_schema(request_body=CategoryListSerializers,
+                         operation_description="Category update",
+                         tags=['Categories'],
+                         responses={200: CategoryOrderSerializer(many=False)})
+    def patch(self, request, pk):
+        valid_fields = {'order'}
+        unexpected_fields = check_required_key(request, valid_fields)
 
+        if unexpected_fields:
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
+        queryset = get_object_or_404(ProductCategories, pk=pk)
+        serializers = CategoryOrderSerializer(instance=queryset, data=request.data,
+                                              context={'request': request})
+        if serializers.is_valid(raise_exception=True):
+            serializers.save()
+            return success_response(serializers.data)
+        return bad_request_response(serializers.errors)

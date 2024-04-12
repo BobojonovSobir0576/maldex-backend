@@ -164,3 +164,7 @@ cython_debug/
 
 _migrations/*
 !_migrations/__init__.py
+
+staticfiles/
+tests/
+.idea/
