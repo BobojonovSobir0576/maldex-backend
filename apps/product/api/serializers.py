@@ -107,7 +107,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         """
         # Assuming the related_name on ProductImage for the Products ForeignKey is 'images'
         images = obj.productID.all()  # Use the related_name 'images' to access related ProductImage instances
-        return ProductImageSerializer(images, many=True).data
+        return ProductImageSerializer(images, many=True, context=self.context).data
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):

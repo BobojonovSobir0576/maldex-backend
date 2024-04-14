@@ -1,12 +1,13 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView
+from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from taggit.models import TaggedItem
+from django.contrib.contenttypes.models import ContentType
 
-from apps.blog.models import Article, ArticleTag, Project, ProjectTag
-from apps.blog.serializers import ArticleSerializer, ArticleTagSerializer, ProjectSerializer, ProjectTagSerializer
+from apps.blog.models import Article, Project
+from apps.blog.serializers import ArticleSerializer, ProjectSerializer, TagSerializer
 
 
 class ArticleListView(APIView):
@@ -16,7 +17,7 @@ class ArticleListView(APIView):
                          responses={200: ArticleSerializer(many=True)})
     def get(self, request, **kwargs):
         articles = Article.objects.all()
-        serializer = ArticleSerializer(articles, many=True)
+        serializer = ArticleSerializer(articles, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ArticleSerializer,
@@ -61,28 +62,6 @@ class ArticleDetailView(APIView):
         article = get_object_or_404(Article, pk=pk)
         article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ArticleTagListView(APIView):
-
-    @swagger_auto_schema(operation_description='List all articles tags',
-                         tags=['Article Tag'],
-                         responses={200: ArticleTagSerializer(many=True)})
-    def get(self, request, **kwargs):
-        article_categories = ArticleTagSerializer.objects.all()
-        serializer = ArticleTagSerializer(article_categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(request_body=ArticleTagSerializer,
-                         operation_description='Add a new article tag',
-                         tags=['Article Tag'],
-                         responses={201: ArticleTagSerializer(many=False)})
-    def post(self, request):
-        serializer = ArticleTagSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProjectListView(APIView):
@@ -138,24 +117,10 @@ class ProjectDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ProjectTagListView(APIView):
+class TagListView(APIView):
 
-    @swagger_auto_schema(operation_description='List all projects tags',
-                         tags=['Project Tag'],
-                         responses={200: ProjectTagSerializer(many=True)})
-    def get(self, request, **kwargs):
-        project_tags = ProjectTag.objects.all()
-        serializer = ProjectTagSerializer(project_tags, many=True)
+    def get(self, reqeust):
+        queryset = TaggedItem.objects.all()
+        print(queryset.first().object_id, ContentType.objects.get_for_model(Article))
+        serializer = TagSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(request_body=ProjectTagSerializer,
-                         operation_description='Add a new project tag',
-                         tags=['Project Tag'],
-                         responses={201: ProjectTagSerializer(many=False)})
-    def post(self, request):
-        serializer = ProjectTagSerializer(data=request.data)
-
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
