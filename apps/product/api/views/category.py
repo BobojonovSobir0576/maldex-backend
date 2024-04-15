@@ -104,10 +104,10 @@ class CategoryDetailView(APIView, PaginationMethod):
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'icon'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        # valid_fields = {'name', 'icon'}
+        # unexpected_fields = check_required_key(request, valid_fields)
+        # if unexpected_fields:
+        #     return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(ProductCategories, pk=pk)
         serializers = CategoryListSerializers(instance=queryset, data=request.data,

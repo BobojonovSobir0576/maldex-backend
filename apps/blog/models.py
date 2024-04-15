@@ -1,9 +1,17 @@
 from django.db import models
+from taggit.managers import TaggableManager
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
+
 
 
 class Article(models.Model):
     title = models.CharField(max_length=200)
     body = models.TextField()
+    tags = TaggableManager()
+
     pub_date = models.DateTimeField('date published')
     image = models.ImageField(upload_to='articles/')
 
@@ -11,23 +19,11 @@ class Article(models.Model):
         return self.title
 
 
-class ArticleTag(models.Model):
-    title = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.title
-
 
 class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-
-    def __str__(self):
-        return self.title
-
-
-class ProjectTag(models.Model):
-    title = models.CharField(max_length=200)
+    tags = TaggableManager()
 
     def __str__(self):
         return self.title

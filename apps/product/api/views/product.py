@@ -31,6 +31,7 @@ def get_tertiary_categories(request, subcategory_id):
 
 class ProductsListView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
+    serializer_class = ProductDetailSerializers
     pagination_class = StandardResultsSetPagination
     """ Products Get View """
 
@@ -57,10 +58,10 @@ class ProductsListView(APIView, PaginationMethod):
                          tags=['Products'],
                          responses={201: ProductListSerializers(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'content', 'image', 'price', 'price_type', 'categoryId'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        # valid_fields = {'name', 'content', 'image', 'price', 'price_type', 'categoryId'}
+        # unexpected_fields = check_required_key(request, valid_fields)
+        # if unexpected_fields:
+        #     return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         serializers = ProductListSerializers(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
@@ -71,6 +72,7 @@ class ProductsListView(APIView, PaginationMethod):
 
 class ProductsDetailView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = ProductDetailSerializers
     """ Products Get View """
 
     @swagger_auto_schema(operation_description="Retrieve a Products",
@@ -78,23 +80,23 @@ class ProductsDetailView(APIView):
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(Products, pk=pk)
-        serializers = ProductDetailSerializers(queryset, context={'request': request})
+        serializers = ProductDetailSerializers(instance=queryset, context={'request': request}, many=False)
         return success_response(serializers.data)
 
     """ Products Put View """
 
-    @swagger_auto_schema(request_body=ProductListSerializers,
+    @swagger_auto_schema(request_body=ProductDetailSerializers,
                          operation_description="Products update",
                          tags=['Products'],
-                         responses={200: ProductListSerializers(many=False)})
+                         responses={200: ProductDetailSerializers(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'content', 'image', 'price', 'price_type', 'categoryId'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        # valid_fields = {'name', 'content', 'image', 'price', 'price_type', 'categoryId'}
+        # unexpected_fields = check_required_key(request, valid_fields)
+        # if unexpected_fields:
+        #     return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(Products, pk=pk)
-        serializers = ProductListSerializers(instance=queryset, data=request.data,
+        serializers = ProductDetailSerializers(instance=queryset, data=request.data,
                                              context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
