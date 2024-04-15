@@ -66,6 +66,19 @@ class ProductsListView(APIView, PaginationMethod):
         serializers = ProductListSerializers(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
+
+            product = Products.objects.get(id=request.data['id'])
+            images = request.data.pop('images')
+            serializers.data['image_set'] = []
+            for image in images:
+                img = image['image']
+                color = image['color']
+                color_model = Colors.objects.filter(name=color).first()
+                if not color_model:
+                    color_model = Colors.objects.create(name=color)
+                image_model = ProductImage.objects.create(product=product, image=img, color=color_model)
+                serializers.data['image_set'].append(image_model)
+
             return success_created_response(serializers.data)
         return bad_request_response(serializers.errors)
 

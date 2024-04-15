@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
+from apps.blog.models import FAQ
 from apps.product.models import *
 from apps.product.proxy import *
 
@@ -79,6 +81,7 @@ class ProductListSerializers(serializers.ModelSerializer):
     price = serializers.FloatField(required=True)
     price_type = serializers.CharField(max_length=25, required=True)
     categoryId = serializers.IntegerField(allow_null=True, required=False)
+    # images = serializers.ListSerializer(child=serializers.ImageField, required=False)
 
     class Meta:
         model = Products

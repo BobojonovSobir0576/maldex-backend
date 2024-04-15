@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import TaggedItem
 
-from apps.blog.models import Article, Project
+from apps.blog.models import Article, Project, FAQ, PrintCategory
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -26,4 +26,18 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaggedItem
+        fields = '__all__'
+
+
+class FAQSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FAQ
+        fields = '__all__'
+
+
+class PrintCategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PrintCategory
         fields = '__all__'
