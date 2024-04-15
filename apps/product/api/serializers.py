@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -6,10 +7,26 @@ from apps.product.models import *
 from apps.product.proxy import *
 
 
+class ColorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Colors
+        fields = ['name', 'image']
+
+
 class ProductImageSerializer(serializers.ModelSerializer):
+    colorID = ColorSerializer(required=False)
+
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'image_url']
+        fields = '__all__'
+
+    def create(self, validated_data):
+        print(validated_data, self.context)
+        color_name = self.context.pop('color', None)
+        color_instance, created = Colors.objects.get_or_create(name=color_name)
+        validated_data['colorID'] = color_instance
+        return super().create(validated_data)
 
 
 class CategoryListSerializers(serializers.ModelSerializer):
@@ -96,21 +113,38 @@ class ProductListSerializers(serializers.ModelSerializer):
 
 class ProductDetailSerializers(serializers.ModelSerializer):
     """ Product details """
-    images_set = serializers.SerializerMethodField()
+    images_set = serializers.SerializerMethodField(read_only=True)
+    images = serializers.ListField(write_only=True, required=False)
 
     class Meta:
         model = Products  # Make sure to specify your model here
         fields = '__all__'
 
+    def create(self, validated_data):
+        images = validated_data.pop('images')
+        product_instance = Products.objects.create(**validated_data)
+
+        for image_data in images:
+            print(image_data['image'], image_data['color'])
+            image_data['productID'] = product_instance.id
+            image_data['colorID'] = {
+                'name': image_data['color']
+            }
+            image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'], 'request': self.context['request']})      
+            if image_serializer.is_valid():
+                image_serializer.save() 
+            else:
+                raise ValueError(image_serializer.errors)
+
+        return product_instance
+    
     def get_images_set(self, obj):
-        """
-        Fetches and serializes the set of images associated with the product.
-        :param obj: The current product instance.
-        :return: A list of serialized data for associated images.
-        """
-        # Assuming the related_name on ProductImage for the Products ForeignKey is 'images'
-        images = obj.productID.all()  # Use the related_name 'images' to access related ProductImage instances
-        return ProductImageSerializer(images, many=True, context=self.context).data
+        images = obj.images_set.all()
+        return [{
+            'image': self.context['request'].build_absolute_uri(image.image.url),
+            'image_url': image.image_url,
+            'color': image.colorID.name
+            } for image in images]
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):

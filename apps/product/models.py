@@ -110,7 +110,7 @@ class Colors(models.Model):
 
 class ProductImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    productID = models.ForeignKey('Products', on_delete=models.CASCADE, null=True, blank=True, related_name='productID',
+    productID = models.ForeignKey('Products', on_delete=models.CASCADE, null=True, blank=True, related_name='images_set',
                                   verbose_name='Код товара')
     image = models.ImageField(upload_to='media/product/', verbose_name="изображения", null=True, blank=True)
     image_url = models.URLField(max_length=1024, null=True, blank=True, verbose_name='URL изображения')
