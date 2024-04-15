@@ -77,10 +77,10 @@ class CategoryOrderSerializer(serializers.ModelSerializer):
 
 class ProductListSerializers(serializers.ModelSerializer):
     """ Product create update """
-    name = serializers.CharField(required=True)
-    price = serializers.FloatField(required=True)
-    price_type = serializers.CharField(max_length=25, required=True)
-    categoryId = serializers.IntegerField(allow_null=True, required=False)
+    # name = serializers.CharField(required=True)
+    # price = serializers.FloatField(required=True)
+    # price_type = serializers.CharField(max_length=25, required=True)
+    # categoryId = serializers.IntegerField(allow_null=True, required=False)
     # images = serializers.ListSerializer(child=serializers.ImageField, required=False)
 
     class Meta:
