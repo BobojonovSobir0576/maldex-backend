@@ -23,6 +23,8 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data, self.context)
+        if not('image' not in validated_data or validated_data['image']):
+            raise ValidationError({"image": "not found"})
         color_name = self.context.pop('color', None)
         color_instance, created = Colors.objects.get_or_create(name=color_name)
         validated_data['colorID'] = color_instance
@@ -125,7 +127,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         product_instance = Products.objects.create(**validated_data)
 
         for image_data in images:
-            print(image_data['image'], image_data['color'])
+            print(image_data)
             image_data['productID'] = product_instance.id
             image_data['colorID'] = {
                 'name': image_data['color']
@@ -141,10 +143,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def get_images_set(self, obj):
         images = obj.images_set.all()
         return [{
-            'image': self.context['request'].build_absolute_uri(image.image.url),
+            'id': image.id,
+            'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
             'image_url': image.image_url,
             'color': image.colorID.name
-            } for image in images]
+        } for image in images]
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
@@ -180,3 +183,11 @@ class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
             )
 
         return product
+'''
+'images': [
+    {
+        'image': ...,
+        'color': ...
+    }
+]
+'''

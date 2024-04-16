@@ -17,7 +17,7 @@ class RegisterViews(APIView):
 
     @swagger_auto_schema(request_body=RegisterSerializer,
                          operation_description="User create",
-                         tags=['Sign Up'],
+                         tags=['Auth'],
                          responses={201: RegisterSerializer(many=False)})
     def post(self, request):
         valid_fields = {"email", "first_name", "last_name", "username", "phone", "groups",
@@ -40,7 +40,7 @@ class LoginView(APIView):
 
     @swagger_auto_schema(request_body=LoginSerializer,
                          operation_description="User login",
-                         tags=['Sign In'],
+                         tags=['Auth'],
                          responses={201: LoginSerializer(many=False)})
     def post(self, request, *args, **kwargs):
         expected_fields = {"username", "password"}

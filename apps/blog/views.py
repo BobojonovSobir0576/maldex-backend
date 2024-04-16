@@ -196,6 +196,14 @@ class FAQDetailView(APIView):
     def delete(self, request, faq_id, *args, **kwargs):
         faq = get_object_or_404(FAQ, id=faq_id)
         faq.delete()
+
+        # reorder faqs
+        faqs = FAQ.objects.filter(type=faq.type)
+        for i in range(faqs.count()):
+            faq_model = faqs[i]
+            faq_model.order = i + 1
+            faq_model.save()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

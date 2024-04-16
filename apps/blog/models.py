@@ -28,7 +28,7 @@ class FAQ(models.Model):
     title = models.CharField(max_length=200)
     body = models.TextField()
     type = models.CharField(max_length=10, choices=(('home', 'home'), ('other', 'other')))
-    order = models.PositiveSmallIntegerField(blank=True, unique=True)
+    order = models.PositiveSmallIntegerField(blank=True)
 
     def save(self, *args, **kwargs):
         if not self.order:
