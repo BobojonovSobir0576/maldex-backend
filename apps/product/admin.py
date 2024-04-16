@@ -8,6 +8,7 @@ from apps.product.models import (
     Colors,
     ProductImage, ExternalCategory
 )
+from apps.product.proxy import SubCategory, TertiaryCategory
 
 
 admin.site.site_header = "Maldex Administration"
@@ -16,8 +17,9 @@ admin.site.index_title = "Welcome to Maldex Admin Portal"
 
 
 @admin.register(ProductCategories)
-class ProductCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'name', 'parent', 'get_externals']
+class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name', 'id', 'get_externals']
+    fields = ['name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo']
     search_fields = ['name']
     list_filter = [CategoryLevelFilter]
 
@@ -32,6 +34,31 @@ class ProductCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     get_externals.short_description = 'external ID s'
 
+@admin.register(SubCategory)
+class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
+    list_display = ['name', 'id', 'parent', 'get_externals']
+    fields = ['name', 'parent']
+    search_fields = ['name']
+    list_filter = ['parent']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'parent':
+            kwargs['queryset'] = ProductCategories.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(TertiaryCategory)
+class TertiaryCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
+    list_display = ['name', 'id', 'parent', 'get_externals']
+    fields = ['name', 'parent']
+    search_fields = ['name']
+    list_filter = ['parent']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'parent':
+            kwargs['queryset'] = SubCategory.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class ExternalCategoriesAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ['external_id', 'category']
@@ -43,7 +70,7 @@ class ColorInline(admin.TabularInline):
 
 class ColorAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     model = Colors
-    list_display = ['id', 'name']
+    list_display = ['name', 'id']
     search_fields = ['name']
 
 
@@ -57,6 +84,11 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name', 'price', 'price_type', 'category_hierarchy']
     search_fields = ['id', 'name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
+    fields = [
+        'name', 'categoryId', 'code', 'article', 'product_size', 'material', 'description',
+        'brand', 'price', 'price_type', 'discount_price', 'weight', 'barcode', 'ondemand',
+        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 
+    ]
     inlines = [ProductImageInline]
 
     def category_hierarchy(self, obj):

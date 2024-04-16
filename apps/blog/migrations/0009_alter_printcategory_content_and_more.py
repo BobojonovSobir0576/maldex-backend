@@ -13,6 +13,26 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='Article',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=200)),
+                ('body', models.TextField()),
+                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='date published')),
+                ('image', models.ImageField(upload_to='articles/')),
+                ('tags', taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Project',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=200)),
+                ('description', models.TextField()),
+                ('tags', taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags')),
+            ],
+        ),
         migrations.AlterField(
             model_name='printcategory',
             name='content',

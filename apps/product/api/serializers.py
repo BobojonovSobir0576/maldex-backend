@@ -52,26 +52,36 @@ class CategoryListSerializers(serializers.ModelSerializer):
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
     class Meta:
-        model = ProductCategories
-        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo']
+        model = TertiaryCategory
+        fields = ['id', 'name']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
     """ Sub Category details """
-    children = TertiaryCategorySerializer(many=True, read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
-        model = ProductCategories
-        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+        model = SubCategory
+        fields = ['id', 'name', 'children']
+
+    def get_children(self, object):
+        children = TertiaryCategory.objects.filter(parent=object)
+        return TertiaryCategorySerializer(children, many=True).data
 
 
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
-    children = SubCategorySerializer(many=True, read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProductCategories
         fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+
+    def get_children(self, object):
+        children = SubCategory.objects.filter(parent=object)
+        return SubCategorySerializer(children, many=True).data
+
 
 
 class CategoryOrderSerializer(serializers.ModelSerializer):

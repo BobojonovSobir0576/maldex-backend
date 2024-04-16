@@ -8,7 +8,7 @@ class Article(models.Model):
     body = models.TextField()
     tags = TaggableManager()
 
-    pub_date = models.DateTimeField('date published')
+    pub_date = models.DateTimeField('date published', auto_now_add=True)
     image = models.ImageField(upload_to='articles/')
 
     def __str__(self):
