@@ -23,6 +23,12 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ['name']
     list_filter = [CategoryLevelFilter]
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['icon'].required = True
+        form.base_fields['logo'].required = True
+        return form
+
     def get_externals(self, obj):
         externals = obj.external_categories.all()
         IDs = []
@@ -41,6 +47,11 @@ class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
     search_fields = ['name']
     list_filter = ['parent']
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['parent'].required = True  # Make parent field required
+        return form
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'parent':
             kwargs['queryset'] = ProductCategories.objects.all()
@@ -53,6 +64,11 @@ class TertiaryCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
     fields = ['name', 'parent']
     search_fields = ['name']
     list_filter = ['parent']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['parent'].required = True  # Make parent field required
+        return form
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'parent':

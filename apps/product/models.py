@@ -97,7 +97,7 @@ class Products(models.Model):
 
 class Colors(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название цвета'), max_length=50, null=True, blank=True)
+    name = models.CharField(_('Название цвета'), max_length=50)
     image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
 
     def __str__(self):
