@@ -67,15 +67,15 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
-    # children = SubCategorySerializer(many=True, read_only=True)
+    children = SubCategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'order', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
 
 
 class CategoryOrderSerializer(serializers.ModelSerializer):
-    order = serializers.IntegerField(write_only=True)
+    order = serializers.IntegerField(write_only=True)                     
 
     class Meta:
         model = ProductCategories
@@ -183,11 +183,3 @@ class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
             )
 
         return product
-'''
-'images': [
-    {
-        'image': ...,
-        'color': ...
-    }
-]
-'''

@@ -41,5 +41,6 @@ class FAQ(models.Model):
 class PrintCategory(models.Model):
     title = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='print-categories/')
-    content = RichTextField()
+    image = models.ImageField(upload_to='print-categories/', null=True, blank=True)
+    content = RichTextField(null=True, blank=True)
+    requirement = RichTextField(null=True, blank=True)

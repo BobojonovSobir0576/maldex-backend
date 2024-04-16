@@ -50,8 +50,7 @@ class CategoryListView(APIView):
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
         queryset = ProductCategories.objects.all().order_by('order').filter(
-            parent__isnull=True,
-            parent__parent__isnull=True,
+            parent=None,
             is_available=True
         )
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
@@ -63,17 +62,17 @@ class CategoryListView(APIView):
 
     """ Category Post View """
 
-    @swagger_auto_schema(request_body=CategoryListSerializers,
+    @swagger_auto_schema(request_body=MainCategorySerializer,
                          operation_description="Category create",
                          tags=['Categories'],
-                         responses={201: CategoryListSerializers(many=False)})
+                         responses={201: MainCategorySerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'icon'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+        # valid_fields = {'name', 'icon', 'logo'}
+        # unexpected_fields = check_required_key(request, valid_fields)
+        # if unexpected_fields:
+        #     return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        serializers = CategoryListSerializers(data=request.data, context={'request': request})
+        serializers = MainCategorySerializer(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return success_created_response(serializers.data)
