@@ -50,6 +50,20 @@ class GiftBasketCategoryListView(APIView):
         return bad_request_response(serializers.errors)
 
 
+class GiftBasketSubCategoryListView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(operation_description="Retrieve a list of sub categories",
+                         tags=['Gifts Baskets Sub Categories'],
+                         responses={200: GiftBasketCategoryDetailSerializers(many=True)})
+    def get(self, request):
+        queryset = GiftsBasketCategory.objects.filter(
+            parent__isnull=False,
+        )
+        serializer = GiftBasketCategoryDetailSerializers(queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class GiftBasketCategoryDetailView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
     """ Category Get View """
