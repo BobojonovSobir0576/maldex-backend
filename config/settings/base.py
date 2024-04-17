@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     "apps.auth_app",
     "apps.product",
     "apps.banner",
-    'apps.blog'
+    'apps.blog',
+    'apps.gifts_baskets'
 ]
 
 MIDDLEWARE = [
@@ -183,8 +184,6 @@ CORS_ALLOWED_ORIGINS = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
