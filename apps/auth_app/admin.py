@@ -63,4 +63,3 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(UserLastLogin, UserLastLoginAdmin)
 admin.site.register(SocialThrough)
-

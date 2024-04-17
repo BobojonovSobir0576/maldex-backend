@@ -1,11 +1,8 @@
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from utils.pagination import StandardResultsSetPagination
 
 from utils.responses import (
     bad_request_response,
@@ -40,11 +37,11 @@ class GiftBasketListView(APIView):
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        serializers = GiftBasketListSerializers(data=request.data, context={'request': request})
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_created_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        serializer = GiftBasketListSerializers(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_created_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
 
 class GiftBasketDetailView(APIView, PaginationMethod):
@@ -55,8 +52,8 @@ class GiftBasketDetailView(APIView, PaginationMethod):
                          responses={200: GiftBasketListSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(GiftsBaskets, pk=pk)
-        serializers = GiftBasketDetailSerializers(queryset, context={'request': request, })
-        return success_response(serializers.data)
+        serializer = GiftBasketDetailSerializers(queryset, context={'request': request, })
+        return success_response(serializer.data)
 
     """ Category Put View """
 
@@ -71,12 +68,12 @@ class GiftBasketDetailView(APIView, PaginationMethod):
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(GiftsBaskets, pk=pk)
-        serializers = GiftBasketListSerializers(instance=queryset, data=request.data,
-                                                context={'request': request})
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        serializer = GiftBasketListSerializers(instance=queryset, data=request.data,
+                                               context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
     """ Category Delete View """
 
@@ -103,12 +100,12 @@ class GiftsBasketProductDetailView(APIView):
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(GiftsBasketProduct, pk=pk)
-        serializers = GiftsBasketProductDetailsSerializers(instance=queryset, data=request.data,
-                                                           context={'request': request})
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        serializer = GiftsBasketProductDetailsSerializers(instance=queryset, data=request.data,
+                                                          context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
     @swagger_auto_schema(operation_description="Delete a gift basket product",
                          tags=['Gifts Baskets Product'],
@@ -133,14 +130,14 @@ class GiftsBasketImageDetailSerializers(APIView):
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(GiftsBasketImages, pk=pk)
-        serializers = GiftsBasketImagesSerializers(instance=queryset, data=request.data,
-                                                   context={'request': request,
-                                                            'image': request.FILES.get('image', None)})
+        serializer = GiftsBasketImagesSerializers(instance=queryset, data=request.data,
+                                                  context={'request': request,
+                                                           'image': request.FILES.get('image', None)})
 
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
     @swagger_auto_schema(operation_description="Delete a gift basket image",
                          tags=['Gifts Baskets Image'],

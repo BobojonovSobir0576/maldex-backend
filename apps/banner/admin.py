@@ -46,7 +46,9 @@ class BannerCarouselProductInline(admin.TabularInline):
     def banner_carousel_video(self, obj):
         if obj and obj.bannerCarouselVideo:
             return format_html(
-                '<video width="320" height="240" controls> <source src="{}">Your browser does not support the video tag.</video>',
+                '<video width="320" height="240" controls> <source src="{}">'
+                'Your browser does not support the video tag.'
+                '</video>',
                 obj.bannerCarouselVideo.url
             )
         return "No video"

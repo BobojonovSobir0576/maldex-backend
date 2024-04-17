@@ -1,11 +1,9 @@
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from utils.pagination import StandardResultsSetPagination
 
 from utils.responses import (
     bad_request_response,
@@ -22,14 +20,22 @@ from apps.gifts_baskets.api.serializers import *
 class GiftBasketCategoryListView(APIView):
     permission_classes = [AllowAny]
 
+    is_available_param = openapi.Parameter('is_available', openapi.IN_QUERY,
+                                           description="Is avaiable?",
+                                           type=openapi.TYPE_BOOLEAN)
+
     @swagger_auto_schema(operation_description="Retrieve a list of categories",
+                         manual_parameters=[is_available_param],
                          tags=['Gifts Baskets Categories'],
                          responses={200: GiftBasketCategoryDetailSerializers(many=True)})
     def get(self, request):
+        is_available = request.query_params.get('is_available', None)
         queryset = GiftsBasketCategory.objects.filter(
             parent__isnull=True,
-            is_available=True
+            # is_available=True
         )
+        if is_available:
+            queryset = queryset.filter(is_available=bool(is_available))
         serializer = GiftBasketCategoryDetailSerializers(queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -43,11 +49,11 @@ class GiftBasketCategoryListView(APIView):
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        serializers = GiftBasketCategoryListSerializer(data=request.data, context={'request': request})
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_created_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        serializer = GiftBasketCategoryListSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_created_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
 
 class GiftBasketSubCategoryListView(APIView):
@@ -73,8 +79,8 @@ class GiftBasketCategoryDetailView(APIView, PaginationMethod):
                          responses={200: GiftBasketCategoryDetailSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(GiftsBasketCategory, pk=pk)
-        serializers = GiftBasketCategoryDetailSerializers(queryset, context={'request': request, })
-        return success_response(serializers.data)
+        serializer = GiftBasketCategoryDetailSerializers(queryset, context={'request': request, })
+        return success_response(serializer.data)
 
     """ Category Put View """
 
@@ -89,12 +95,12 @@ class GiftBasketCategoryDetailView(APIView, PaginationMethod):
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(GiftsBasketCategory, pk=pk)
-        serializers = GiftBasketCategoryListSerializer(instance=queryset, data=request.data,
-                                              context={'request': request})
-        if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            return success_response(serializers.data)
-        return bad_request_response(serializers.errors)
+        serializer = GiftBasketCategoryListSerializer(instance=queryset, data=request.data,
+                                                      context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
     """ Category Delete View """
 

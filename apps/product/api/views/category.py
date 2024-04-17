@@ -101,7 +101,7 @@ class CategoryDetailView(APIView, PaginationMethod):
     @swagger_auto_schema(request_body=CategoryListSerializers,
                          operation_description="Category update",
                          tags=['Categories'],
-                         responses={200: CategoryListSerializers(many=False)})
+                         responses={200: MainCategorySerializer(many=False)})
     def put(self, request, pk):
         # valid_fields = {'name', 'icon'}
         # unexpected_fields = check_required_key(request, valid_fields)
@@ -109,8 +109,15 @@ class CategoryDetailView(APIView, PaginationMethod):
         #     return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(ProductCategories, pk=pk)
-        serializers = CategoryListSerializers(instance=queryset, data=request.data,
-                                              context={'request': request})
+        request.data._mutable = True
+        request.data.pop('logo', None)
+        request.data.pop('icon', None)
+        request.data._mutable = False
+        serializers = CategoryListSerializers(instance=queryset, data=request.data, context={
+            'request': request,
+            'logo': request.FILES.get('logo', None),
+            'icon': request.FILES.get('icon', None)
+        })
         if serializers.is_valid(raise_exception=True):
             serializers.save()
             return success_response(serializers.data)

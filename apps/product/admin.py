@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from import_export.admin import ImportExportModelAdmin
-from apps.product.filters import CategoryLevelFilter
 from apps.product.models import (
     ProductCategories,
     Products,
@@ -21,18 +20,22 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['name', 'id', 'get_externals']
     fields = ['name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo']
     search_fields = ['name']
-    list_filter = [CategoryLevelFilter]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).filter(parent=None)
+        return qs
 
     def get_externals(self, obj):
         externals = obj.external_categories.all()
-        IDs = []
+        ids = []
 
         for ex in externals:
-            IDs.append(ex.external_id)
+            ids.append(ex.external_id)
 
-        return ', '.join(IDs)
+        return ', '.join(ids)
 
     get_externals.short_description = 'external ID s'
+
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
@@ -40,6 +43,10 @@ class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
     fields = ['name', 'parent']
     search_fields = ['name']
     list_filter = ['parent']
+
+    def get_queryset(self, request):
+        qs = SubCategory.objects.all()
+        return qs
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -53,16 +60,11 @@ class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
 
 
 @admin.register(TertiaryCategory)
-class TertiaryCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
-    list_display = ['name', 'id', 'parent', 'get_externals']
-    fields = ['name', 'parent']
-    search_fields = ['name']
-    list_filter = ['parent']
+class TertiaryCategoryAdmin(SubCategoryAdmin, ImportExportModelAdmin):
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.base_fields['parent'].required = True  # Make parent field required
-        return form
+    def get_queryset(self, request):
+        qs = TertiaryCategory.objects.all()
+        return qs
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'parent':
@@ -91,7 +93,7 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'name', 'price', 'price_type', 'category_hierarchy']
+    list_display = ['name', 'id', 'price', 'price_type', 'category_hierarchy']
     search_fields = ['id', 'name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
     fields = [
@@ -107,7 +109,7 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         while category is not None:
             names.append(category.name)
             category = category.parent
-        return " > ".join(names)
+        return " > ".join(names[::-1])
 
     category_hierarchy.short_description = 'Category Hierarchy'
 

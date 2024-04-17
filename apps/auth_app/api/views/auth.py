@@ -21,7 +21,7 @@ class RegisterViews(APIView):
                          responses={201: RegisterSerializer(many=False)})
     def post(self, request):
         valid_fields = {"email", "first_name", "last_name", "username", "phone", "groups",
-                        'about', 'photo', 'password', 'date_of_birth', 'city', 'gender', 'confirm_password'                        }
+                        'about', 'photo', 'password', 'date_of_birth', 'city', 'gender', 'confirm_password'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

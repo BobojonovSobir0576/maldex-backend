@@ -37,9 +37,12 @@ class BaseUserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=30, required=True, validators=[UniqueValidator(queryset=CustomUser.objects.all())])
-    email = serializers.CharField(max_length=30, required=True, validators=[UniqueValidator(queryset=CustomUser.objects.all())])
-    phone = serializers.CharField(max_length=30, required=True, validators=[UniqueValidator(queryset=CustomUser.objects.all())])
+    username = serializers.CharField(max_length=30, required=True,
+                                     validators=[UniqueValidator(queryset=CustomUser.objects.all())])
+    email = serializers.CharField(max_length=30, required=True,
+                                  validators=[UniqueValidator(queryset=CustomUser.objects.all())])
+    phone = serializers.CharField(max_length=30, required=True,
+                                  validators=[UniqueValidator(queryset=CustomUser.objects.all())])
     photo = serializers.ImageField(required=False)
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password]

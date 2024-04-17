@@ -2,11 +2,11 @@ from django.db import models
 import uuid
 from django.utils.translation import gettext_lazy as _
 
-from apps.product.managers import AllCategoryManager, CategoryManager
+from apps.product.managers import AllCategoryManager
 
 
 class ProductCategories(models.Model):
-    id = models.IntegerField(primary_key=True, unique=True, verbose_name='Уникальный идентификатор')
+    id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=150, verbose_name="Название категории")
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
@@ -17,7 +17,7 @@ class ProductCategories(models.Model):
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
 
-    objects = CategoryManager()
+    objects = AllCategoryManager()
     all_levels = AllCategoryManager()
 
     def __str__(self):
@@ -111,8 +111,8 @@ class Colors(models.Model):
 
 class ProductImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    productID = models.ForeignKey('Products', on_delete=models.CASCADE, null=True, blank=True, related_name='images_set',
-                                  verbose_name='Код товара')
+    productID = models.ForeignKey('Products', on_delete=models.CASCADE, null=True, blank=True,
+                                  related_name='images_set', verbose_name='Код товара')
     image = models.ImageField(upload_to='media/product/', verbose_name="изображения", null=True, blank=True)
     image_url = models.URLField(max_length=1024, null=True, blank=True, verbose_name='URL изображения')
     colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета')

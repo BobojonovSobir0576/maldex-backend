@@ -2,13 +2,11 @@ from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from apps.blog.models import FAQ
 from apps.product.models import *
 from apps.product.proxy import *
 
 
 class ColorSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Colors
         fields = ['name', 'image']
@@ -23,7 +21,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data, self.context)
-        if not('image' not in validated_data or validated_data['image']):
+        if not ('image' not in validated_data or validated_data['image']):
             raise ValidationError({"image": "not found"})
         color_name = self.context.pop('color', None)
         color_instance, created = Colors.objects.get_or_create(name=color_name)
@@ -33,24 +31,29 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class CategoryListSerializers(serializers.ModelSerializer):
     """ Category create update and details """
-    icon = serializers.ImageField(required=False)
-    name = serializers.CharField(required=False)
 
     class Meta:
         model = ProductCategories
         fields = [
-            'id', 'name', 'icon',
+            'id', 'name', 'icon', 'logo',
         ]
 
     def create(self, validated_data):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        super().update(instance, validated_data)
+        logo = self.context.get('logo')
+        icon = self.context.get('icon')
+        instance.logo = logo or instance.logo
+        instance.icon = icon or instance.icon
+        instance.save()
+        return instance
 
 
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
+
     class Meta:
         model = TertiaryCategory
         fields = ['id', 'name']
@@ -60,13 +63,12 @@ class SubCategorySerializer(serializers.ModelSerializer):
     """ Sub Category details """
     children = serializers.SerializerMethodField(read_only=True)
 
-
     class Meta:
         model = SubCategory
         fields = ['id', 'name', 'children']
 
-    def get_children(self, object):
-        children = TertiaryCategory.objects.filter(parent=object)
+    def get_children(self, subcategory):
+        children = TertiaryCategory.objects.filter(parent=subcategory)
         return TertiaryCategorySerializer(children, many=True).data
 
 
@@ -78,14 +80,13 @@ class MainCategorySerializer(serializers.ModelSerializer):
         model = ProductCategories
         fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
 
-    def get_children(self, object):
-        children = SubCategory.objects.filter(parent=object)
+    def get_children(self, category):
+        children = SubCategory.objects.filter(parent=category)
         return SubCategorySerializer(children, many=True).data
 
 
-
 class CategoryOrderSerializer(serializers.ModelSerializer):
-    order = serializers.IntegerField(write_only=True)                     
+    order = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = ProductCategories
@@ -105,12 +106,6 @@ class CategoryOrderSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializers(serializers.ModelSerializer):
-    """ Product create update """
-    # name = serializers.CharField(required=True)
-    # price = serializers.FloatField(required=True)
-    # price_type = serializers.CharField(max_length=25, required=True)
-    # categoryId = serializers.IntegerField(allow_null=True, required=False)
-    # images = serializers.ListSerializer(child=serializers.ImageField, required=False)
 
     class Meta:
         model = Products
@@ -127,6 +122,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     """ Product details """
     images_set = serializers.SerializerMethodField(read_only=True)
     images = serializers.ListField(write_only=True, required=False)
+    deleted_images = serializers.ListField(write_only=True, required=False)
 
     class Meta:
         model = Products  # Make sure to specify your model here
@@ -142,14 +138,27 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             image_data['colorID'] = {
                 'name': image_data['color']
             }
-            image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'], 'request': self.context['request']})      
+            image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
+                                                                                'request': self.context['request']})
             if image_serializer.is_valid():
-                image_serializer.save() 
+                image_serializer.save()
             else:
                 raise ValueError(image_serializer.errors)
 
         return product_instance
-    
+
+    def update(self, instance, validated_data):
+        images_data = validated_data.pop('images', [])
+        for image_data in images_data:
+            image_model = get_object_or_404(ProductImage, id=image_data['id'])
+            image_model.image = image_data['image']
+            image_model.save()
+
+        deleted_images = validated_data.pop('deleted_images', [])
+        if deleted_images:
+            ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
+        return super().update(instance, validated_data)
+
     def get_images_set(self, obj):
         images = obj.images_set.all()
         return [{

@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,27 +11,46 @@ from rest_framework.parsers import FileUploadParser, MultiPartParser, FormParser
 
 from apps.product.filters import ProductFilter
 from apps.product.models import *
-from apps.product.api.serializers import ProductImageSerializer, ProductDetailSerializers
+from apps.product.api.serializers import ProductDetailSerializers, SubCategorySerializer, \
+    TertiaryCategorySerializer
+from apps.product.proxy import TertiaryCategory, SubCategory
 from utils.responses import (
     bad_request_response,
     success_response,
-    success_created_response,
     success_deleted_response,
 )
 
-
-from utils.expected_fields import check_required_key
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 from drf_yasg.utils import swagger_auto_schema
 
+category_id_param = openapi.Parameter('category_id', openapi.IN_QUERY,
+                                      description="Main Category ID",
+                                      type=openapi.TYPE_STRING)
 
+subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
+                                         description="Sub Category ID",
+                                         type=openapi.TYPE_STRING)
+
+
+@swagger_auto_schema(manual_parameters=[category_id_param],
+                     tags=['Categories'],
+                     methods=['GET'],
+                     responses={200: SubCategorySerializer(many=True)},
+                     operation_description='Get all sub categories')
+@api_view(['GET'])
 def get_subcategories(request, category_id):
-    subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
+    subcategories = list(SubCategory.objects.filter(parent__id=category_id).values('id', 'name'))
     return JsonResponse(subcategories, safe=False)
 
 
+@swagger_auto_schema(manual_parameters=[subcategory_id_param],
+                     tags=['Categories'],
+                     methods=['GET'],
+                     responses={200: TertiaryCategorySerializer(many=True)},
+                     operation_description='Get all tertiary categories')
+@api_view(['GET'])
 def get_tertiary_categories(request, subcategory_id):
-    tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
+    tertiary_categories = list(TertiaryCategory.objects.filter(parent_id=subcategory_id).values('id', 'name'))
     return JsonResponse(tertiary_categories, safe=False)
 
 
@@ -71,7 +91,7 @@ class ProductsListView(APIView, PaginationMethod):
 
         product_serializer = ProductDetailSerializers(data=request.data, context={'request': request})
         if product_serializer.is_valid(raise_exception=True):
-            product_instance = product_serializer.save()           
+            product_serializer.save()
             return Response(product_serializer.data, status=status.HTTP_201_CREATED)
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -97,33 +117,11 @@ class ProductsDetailView(APIView):
                          responses={200: ProductDetailSerializers(many=False)})
     def put(self, request, pk):
         product_instance = get_object_or_404(Products, pk=pk)
-        serializer = ProductDetailSerializers(instance=product_instance, data=request.data, context={'request': request})
+        serializer = ProductDetailSerializers(instance=product_instance, data=request.data,
+                                              context={'request': request})
 
         if serializer.is_valid(raise_exception=True):
-            # Update product fields
             serializer.save()
-
-            # Handle adding or changing images
-            images_data = request.data.get('images', [])
-            for image_data in images_data:
-                # Assuming image_data contains image information along with color.,
-                color_name = image_data.get('color')
-                color_instance, _ = Colors.objects.get_or_create(name=color_name)
-                ProductImage.objects.update_or_create(
-                    productID=product_instance,
-                    colorID=color_instance,
-                    defaults={
-                        'image': image_data.get('image'),  # Assuming 'image' field represents the image URL
-                        # Add other fields as needed
-                    }
-                )
-
-            # Handle deleting images
-            deleted_image_ids = request.data.get('deleted_image_ids', [])
-            if deleted_image_ids:
-                ProductImage.objects.filter(productID=product_instance, id__in=deleted_image_ids).delete()
-
-            # Return updated product data
             return success_response(serializer.data)
 
         return bad_request_response(serializer.errors)
