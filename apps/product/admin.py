@@ -23,12 +23,6 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ['name']
     list_filter = [CategoryLevelFilter]
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.base_fields['icon'].required = True
-        form.base_fields['logo'].required = True
-        return form
-
     def get_externals(self, obj):
         externals = obj.external_categories.all()
         IDs = []
