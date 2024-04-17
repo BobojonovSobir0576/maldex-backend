@@ -106,7 +106,7 @@ class ProductsDetailView(APIView):
             # Handle adding or changing images
             images_data = request.data.get('images', [])
             for image_data in images_data:
-                # Assuming image_data contains image information along with color
+                # Assuming image_data contains image information along with color.,
                 color_name = image_data.get('color')
                 color_instance, _ = Colors.objects.get_or_create(name=color_name)
                 ProductImage.objects.update_or_create(

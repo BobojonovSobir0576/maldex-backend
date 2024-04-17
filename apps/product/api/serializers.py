@@ -23,6 +23,8 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data, self.context)
+        if not('image' not in validated_data or validated_data['image']):
+            raise ValidationError({"image": "not found"})
         color_name = self.context.pop('color', None)
         color_instance, created = Colors.objects.get_or_create(name=color_name)
         validated_data['colorID'] = color_instance
@@ -50,30 +52,40 @@ class CategoryListSerializers(serializers.ModelSerializer):
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
     class Meta:
-        model = ProductCategories
-        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo']
+        model = TertiaryCategory
+        fields = ['id', 'name']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
     """ Sub Category details """
-    children = TertiaryCategorySerializer(many=True, read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
-        model = ProductCategories
-        fields = ['id', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+        model = SubCategory
+        fields = ['id', 'name', 'children']
+
+    def get_children(self, object):
+        children = TertiaryCategory.objects.filter(parent=object)
+        return TertiaryCategorySerializer(children, many=True).data
 
 
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
-    # children = SubCategorySerializer(many=True, read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'order', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+
+    def get_children(self, object):
+        children = SubCategory.objects.filter(parent=object)
+        return SubCategorySerializer(children, many=True).data
+
 
 
 class CategoryOrderSerializer(serializers.ModelSerializer):
-    order = serializers.IntegerField(write_only=True)
+    order = serializers.IntegerField(write_only=True)                     
 
     class Meta:
         model = ProductCategories
@@ -125,7 +137,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         product_instance = Products.objects.create(**validated_data)
 
         for image_data in images:
-            print(image_data['image'], image_data['color'])
+            print(image_data)
             image_data['productID'] = product_instance.id
             image_data['colorID'] = {
                 'name': image_data['color']
@@ -141,10 +153,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def get_images_set(self, obj):
         images = obj.images_set.all()
         return [{
+            'id': image.id,
             'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
             'image_url': image.image_url,
             'color': image.colorID.name
-            } for image in images]
+        } for image in images]
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):

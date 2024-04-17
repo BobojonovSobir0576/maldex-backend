@@ -2,7 +2,6 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'django-insecure-9%470x_op=s5@9yiwf$)b%xj2x9a#!140t=vk6-@d6d4nut%n='
@@ -159,6 +158,7 @@ CKEDITOR_FILENAME_GENERATOR = 'utils.ckeditor.get_filename'
 
 CKEDITOR_CONFIGS = {
     'default': {
+        "versionCheck": False,
         'toolbar': 'Custom',
         'toolbar_Custom': [
             ['Bold', 'Italic', 'Underline'],
@@ -199,4 +199,3 @@ REST_FRAMEWORK = {
     ),
     'DATETIME_FORMAT': "%s",
 }
-

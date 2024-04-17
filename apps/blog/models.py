@@ -8,7 +8,7 @@ class Article(models.Model):
     body = models.TextField()
     tags = TaggableManager()
 
-    pub_date = models.DateTimeField('date published')
+    pub_date = models.DateTimeField('date published', auto_now_add=True)
     image = models.ImageField(upload_to='articles/')
 
     def __str__(self):
@@ -28,7 +28,7 @@ class FAQ(models.Model):
     title = models.CharField(max_length=200)
     body = models.TextField()
     type = models.CharField(max_length=10, choices=(('home', 'home'), ('other', 'other')))
-    order = models.PositiveSmallIntegerField(blank=True, unique=True)
+    order = models.PositiveSmallIntegerField(blank=True)
 
     def save(self, *args, **kwargs):
         if not self.order:
@@ -41,5 +41,6 @@ class FAQ(models.Model):
 class PrintCategory(models.Model):
     title = models.CharField(max_length=200)
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='print-categories/')
-    content = RichTextField()
+    image = models.ImageField(upload_to='print-categories/', null=True, blank=True)
+    content = RichTextField(null=True, blank=True)
+    requirement = RichTextField(null=True, blank=True)

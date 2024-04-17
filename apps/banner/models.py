@@ -6,7 +6,7 @@ from apps.product.models import Products
 
 class Banner(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название баннера'), max_length=155, null=True, blank=True)
+    name = models.CharField(_('Название баннера'), max_length=155)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):

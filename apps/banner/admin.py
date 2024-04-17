@@ -26,7 +26,7 @@ class BannerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     readonly_fields = ['created_at']
 
     fieldsets = [
-        (None, {'fields': ['name', 'created_at']}),
+        (None, {'fields': ['name']}),
     ]
 
 

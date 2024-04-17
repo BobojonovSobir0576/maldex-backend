@@ -2,25 +2,30 @@ from django.db import models
 import uuid
 from django.utils.translation import gettext_lazy as _
 
+from apps.product.managers import AllCategoryManager, CategoryManager
+
 
 class ProductCategories(models.Model):
-    id = models.IntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
-    order = models.PositiveSmallIntegerField(null=True, blank=True, unique=True)
-    name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Название категории")
+    id = models.IntegerField(primary_key=True, unique=True, verbose_name='Уникальный идентификатор')
+    order = models.PositiveSmallIntegerField(null=True, blank=True)
+    name = models.CharField(max_length=150, verbose_name="Название категории")
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
     is_hit = models.BooleanField(default=False, verbose_name="Хит?")
     is_new = models.BooleanField(default=False, verbose_name="Новый?")
-    is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
+    is_available = models.BooleanField(default=True, verbose_name="Доступен на сайте?")
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
+
+    objects = CategoryManager()
+    all_levels = AllCategoryManager()
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
         if not self.id:
-            last_instance = ProductCategories.objects.all().order_by('id').last()
+            last_instance = ProductCategories.all_levels.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
             self.id = f"{next_id:010d}"
 
@@ -48,34 +53,30 @@ class ExternalCategory(models.Model):
 
 
 class Products(models.Model):
-    class PriceType(models.TextChoices):
-        RUB = "RUB"
-        USD = "USD"
-
     id = models.IntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название продукта'), max_length=150, null=True, blank=True)
-    code = models.IntegerField(default=0, null=True, blank=True)
-    article = models.CharField(_('Артикул'), max_length=155, null=True, blank=True)
-    product_size = models.CharField(_('Размер товара'), max_length=155, null=True, blank=True, default="S-XXL")
-    material = models.CharField(_('Материал'), max_length=155, null=True, blank=True, default="S-XXL")
-    description = models.TextField(null=True, blank=True, verbose_name='Описания')
+    name = models.CharField(_('Название продукта'), max_length=150)
+    code = models.IntegerField(default=0)
+    article = models.CharField(_('Артикул'), max_length=155)
+    product_size = models.CharField(_('Размер товара'), max_length=155, default="S-XXL")
+    material = models.CharField(_('Материал'), max_length=155, default="S-XXL")
+    description = models.TextField(verbose_name='Описания')
     brand = models.CharField(_('Бренд'), max_length=155, null=True, blank=True)
-    price = models.FloatField(_('Цена'), default=0, null=True, blank=True)
-    price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True,
-                                  choices=PriceType.choices, default=PriceType.RUB)
-    discount_price = models.FloatField(default=0, null=True, blank=True, verbose_name='Цена со скидкой')
+    price = models.FloatField(_('Цена'), default=0)
+    price_type = models.CharField(_('Цена валюта'), max_length=10,
+                                  choices=[('RUB', 'RUB'), ('USD', 'USD')], default='RUB')
+    discount_price = models.FloatField(default=None, null=True, blank=True, verbose_name='Цена со скидкой')
     categoryId = models.ForeignKey(ProductCategories, on_delete=models.CASCADE, null=True, blank=True,
                                    related_name='ProductSubCategoryID', verbose_name='Категория продукта')
     weight = models.CharField(_('Масса'), max_length=155, null=True, blank=True)
     barcode = models.CharField(_('Штрих-код продукта'), max_length=155, null=True, blank=True)
-    ondemand = models.BooleanField(default=True, null=True, blank=True)
+    ondemand = models.BooleanField(default=True)
     moq = models.CharField(default='0', max_length=256, null=True, blank=True)
     days = models.IntegerField(default=0, null=True, blank=True)
     pack = models.JSONField(null=True, blank=True)
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
     is_hit = models.BooleanField(default=False, verbose_name="Хит?")
     is_new = models.BooleanField(default=False, verbose_name="Новый?")
-    created_at = models.DateField(auto_now_add=True, blank=True, null=True, verbose_name='Данные опубликованы')
+    created_at = models.DateField(auto_now_add=True, verbose_name='Данные опубликованы')
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -96,7 +97,7 @@ class Products(models.Model):
 
 class Colors(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название цвета'), max_length=50, null=True, blank=True)
+    name = models.CharField(_('Название цвета'), max_length=50)
     image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
 
     def __str__(self):

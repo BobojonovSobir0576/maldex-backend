@@ -49,6 +49,9 @@ class FAQDetailView(APIView):
                          responses={200: FAQSerializer})
     def put(self, request, faq_id, *args, **kwargs):
         faq = get_object_or_404(FAQ, id=faq_id)
+        print(faq)
+        request.data['type'] = faq.type
+        print(request.data)
         serializer = FAQSerializer(faq, data=request.data, context={request: request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
