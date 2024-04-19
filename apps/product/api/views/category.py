@@ -51,8 +51,15 @@ class CategoryListView(APIView):
     def get(self, request):
         queryset = ProductCategories.objects.all().order_by('order').filter(
             parent=None,
-            is_available=True
+            # is_available=True
         )
+
+
+
+
+
+
+
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
@@ -113,7 +120,7 @@ class CategoryDetailView(APIView, PaginationMethod):
         request.data.pop('logo', None)
         request.data.pop('icon', None)
         request.data._mutable = False
-        serializers = CategoryListSerializers(instance=queryset, data=request.data, context={
+        serializers = MainCategorySerializer(instance=queryset, data=request.data, context={
             'request': request,
             'logo': request.FILES.get('logo', None),
             'icon': request.FILES.get('icon', None)

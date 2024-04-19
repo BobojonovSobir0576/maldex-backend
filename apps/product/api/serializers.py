@@ -75,10 +75,11 @@ class SubCategorySerializer(serializers.ModelSerializer):
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
     children = serializers.SerializerMethodField(read_only=True)
+    name = serializers.CharField(required=False)
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'icon', 'logo', 'children']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo', 'children']
 
     def get_children(self, category):
         children = SubCategory.objects.filter(parent=category)
@@ -123,10 +124,19 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     images_set = serializers.SerializerMethodField(read_only=True)
     images = serializers.ListField(write_only=True, required=False)
     deleted_images = serializers.ListField(write_only=True, required=False)
+    article = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    # categoryId = serializers.IntegerField(required=False, write_only=False)
 
     class Meta:
         model = Products  # Make sure to specify your model here
         fields = '__all__'
+
+    def validate_categoryId(self, attrs):
+        # print(attrs['categoryId'])
+        print(attrs)
+        return []
 
     def create(self, validated_data):
         images = validated_data.pop('images')
@@ -148,13 +158,24 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         return product_instance
 
     def update(self, instance, validated_data):
+        print('ishladi')
         images_data = validated_data.pop('images', [])
+        print(images_data)
         for image_data in images_data:
-            image_model = get_object_or_404(ProductImage, id=image_data['id'])
-            image_model.image = image_data['image']
-            image_model.save()
-
+            if image_data['image']:
+                image_data['productID'] = instance.id
+                image_data['colorID'] = {
+                    'name': image_data['color']
+                }
+                image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
+                                                                                    'request': self.context['request']})
+                if image_serializer.is_valid():
+                    image_serializer.save()
+                else:
+                    raise ValueError(image_serializer.errors)
+        print(validated_data)
         deleted_images = validated_data.pop('deleted_images', [])
+        deleted_images = [] if deleted_images == [''] else deleted_images
         if deleted_images:
             ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
         return super().update(instance, validated_data)

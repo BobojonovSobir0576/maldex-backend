@@ -1,6 +1,7 @@
 from django.urls import path
 from apps.product.api.views import product, category
 from apps.product.api.views import oasis_json
+from apps.product.api.views.image import ProductImageView
 
 urlpatterns = [
     path('', product.ProductsListView.as_view()),
@@ -13,4 +14,6 @@ urlpatterns = [
     path('categories/', category.CategoryListView.as_view()),
     path('category/<int:pk>/', category.CategoryDetailView.as_view()),
     path('category/<int:pk>/change-order/', category.CategoryChangeOrderView.as_view()),
+
+    path('image/<image_id>/', ProductImageView.as_view(), name='image'),
 ]

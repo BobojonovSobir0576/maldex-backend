@@ -99,6 +99,7 @@ class ProductsListView(APIView, PaginationMethod):
 class ProductsDetailView(APIView):
     permission_classes = [AllowAny]
     serializer_class = ProductDetailSerializers
+
     """ Products Get View """
 
     @swagger_auto_schema(operation_description="Retrieve a Products",
@@ -117,8 +118,14 @@ class ProductsDetailView(APIView):
                          responses={200: ProductDetailSerializers(many=False)})
     def put(self, request, pk):
         product_instance = get_object_or_404(Products, pk=pk)
+        print(request.data)
         serializer = ProductDetailSerializers(instance=product_instance, data=request.data,
                                               context={'request': request})
+        request.data._mutable = True
+        category_id = request.data.get('categoryId', 'null')
+        if category_id == 'null':
+            request.data.pop('categoryId')
+        request.data._mutable = False
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
