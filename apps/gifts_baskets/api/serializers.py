@@ -26,11 +26,11 @@ class GiftBasketCategoryDetailSerializers(serializers.ModelSerializer):
         fields = ['id', 'name', 'is_available', 'children', 'product_set']
 
     def get_children(self, obj):
-        children_serializer = GiftBasketCategoryDetailSerializers(obj.children.all(), many=True)
+        children_serializer = GiftBasketCategoryDetailSerializers(obj.children.all(), many=True, context=self.context)
         return children_serializer.data
 
     def get_product_set(self, obj):
-        data = GiftBasketDetailSerializers(obj.cateGiftBasket.all(), many=True)
+        data = GiftBasketDetailSerializers(obj.cateGiftBasket.all(), many=True, context=self.context)
         return data.data
 
 
@@ -156,7 +156,7 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
                   'other_sets', 'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at']
 
     def get_gift_basket_images(self, obj):
-        children_serializer = GiftsBasketImagesSerializers(obj.basket_images.all(), many=True)
+        children_serializer = GiftsBasketImagesSerializers(obj.basket_images.all(), many=True, context=self.context)
         return children_serializer.data
 
     def get_gift_basket_product(self, obj):
@@ -165,5 +165,6 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
         return children_serializer.data
 
     def get_gift_basket_category(self, obj):
-        children_serializer = GiftBasketCategoryListSerializer(obj.gift_basket_category.all(), many=True)
+        children_serializer = GiftBasketCategoryListSerializer(obj.gift_basket_category.all(), many=True,
+                                                               context=self.context.get('request'))
         return children_serializer.data
