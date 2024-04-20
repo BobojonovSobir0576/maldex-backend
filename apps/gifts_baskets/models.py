@@ -66,3 +66,4 @@ class GiftsBasketProduct(models.Model):
         verbose_name = "Подарочные наборы товара"
         verbose_name_plural = "Подарочные наборы товара"
 
+

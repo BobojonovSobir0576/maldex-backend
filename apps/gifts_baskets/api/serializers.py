@@ -90,7 +90,7 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
 
         for image_data in images:
             GiftsBasketImages.objects.create(gift_basket=basket, images=image_data)
-
+        price_set = 0
         for product_info in products:
             product = Products.objects.get(id=product_info['product_sets'])
             price_set = product.price
