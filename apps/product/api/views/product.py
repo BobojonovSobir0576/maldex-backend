@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from drf_yasg import openapi
 
 from rest_framework import status
@@ -54,6 +55,21 @@ def get_tertiary_categories(request, subcategory_id):
     return JsonResponse(tertiary_categories, safe=False)
 
 
+@swagger_auto_schema(tags=['Products'],
+                     methods=['GET'],
+                     operation_description='Get the number of NEW, HIT, POPULAR products')
+@api_view(['GET'])
+def get_counts(request):
+    new_product_count = Products.objects.filter(is_new=True).count()
+    hit_product_count = Products.objects.filter(is_hit=True).count()
+    popular_product_count = Products.objects.filter(is_popular=True).count()
+    return Response({
+        'new': new_product_count,
+        'hit': hit_product_count,
+        'popular': popular_product_count
+    }, status=status.HTTP_200_OK)
+
+
 class ProductsListView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
     parser_class = (FileUploadParser, MultiPartParser, FormParser)
@@ -61,14 +77,30 @@ class ProductsListView(APIView, PaginationMethod):
     pagination_class = StandardResultsSetPagination
     """ Products Get View """
 
-    category = openapi.Parameter('category', openapi.IN_QUERY,
-                                 description="Filter by category ID",
-                                 type=openapi.TYPE_STRING, format=openapi.FORMAT_UUID)
+    category_id = openapi.Parameter('category_id', openapi.IN_QUERY,
+                                    description="Filter by category ID",
+                                    type=openapi.TYPE_STRING)
+    search = openapi.Parameter('search', openapi.IN_QUERY,
+                               description="Seraching ...",
+                               type=openapi.TYPE_STRING)
+    is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
+                               description="NEW products",
+                               type=openapi.TYPE_BOOLEAN)
+    is_hit = openapi.Parameter('is_hit', openapi.IN_QUERY,
+                               description="HIT products",
+                               type=openapi.TYPE_BOOLEAN)
+    is_popular = openapi.Parameter('is_popular', openapi.IN_QUERY,
+                                   description="POPULAR products",
+                                   type=openapi.TYPE_BOOLEAN)
+    is_available = openapi.Parameter('is_available', openapi.IN_QUERY,
+                                     description="AVAILABLE products",
+                                     type=openapi.TYPE_BOOLEAN)
 
     @swagger_auto_schema(operation_description="Retrieve a list of products",
-                         manual_parameters=[category],
+                         manual_parameters=[category_id, search, is_new, is_hit, is_popular, is_available],
                          tags=['Products'],
-                         responses={200: ProductDetailSerializers(many=True)})
+                         responses={200: ProductDetailSerializers(many=True)}
+                         )
     def get(self, request):
         queryset = Products.objects.all()
         filterset = ProductFilter(request.GET, queryset=queryset)

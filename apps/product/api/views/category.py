@@ -33,19 +33,15 @@ class CategoryListView(APIView):
     is_hits = openapi.Parameter('hits_category', openapi.IN_QUERY,
                                 description="Filter by Hits categories",
                                 type=openapi.TYPE_BOOLEAN)
-
-    change_popular = openapi.Parameter('change_popular_category', openapi.IN_QUERY,
-                                       description="Filter by Popular categories",
-                                       type=openapi.TYPE_BOOLEAN)
-    change_new = openapi.Parameter('change_new_category', openapi.IN_QUERY,
-                                   description="Filter by New categories",
-                                   type=openapi.TYPE_BOOLEAN)
-    change_hits = openapi.Parameter('change_hits_category', openapi.IN_QUERY,
-                                    description="Filter by Hits categories",
-                                    type=openapi.TYPE_BOOLEAN)
+    search = openapi.Parameter('search', openapi.IN_QUERY,
+                               description="Seraching ...",
+                               type=openapi.TYPE_STRING)
+    is_available = openapi.Parameter('is_available', openapi.IN_QUERY,
+                                     description="AVAILABLE products",
+                                     type=openapi.TYPE_BOOLEAN)
 
     @swagger_auto_schema(operation_description="Retrieve a list of categories",
-                         manual_parameters=[is_popular, is_new, is_hits],
+                         manual_parameters=[is_popular, is_new, is_hits, search, is_available],
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
@@ -53,13 +49,6 @@ class CategoryListView(APIView):
             parent=None,
             # is_available=True
         )
-
-
-
-
-
-
-
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs

@@ -2,9 +2,11 @@ from django.urls import path
 from apps.product.api.views import product, category
 from apps.product.api.views import oasis_json
 from apps.product.api.views.image import ProductImageView
+from apps.product.api.views.product import get_counts
 
 urlpatterns = [
     path('', product.ProductsListView.as_view()),
+    path('option-counts/', get_counts, name='option-counts'),
     path('<int:pk>/', product.ProductsDetailView.as_view()),
     path('import/', oasis_json.ProductUploadView.as_view(), name='import_products'),
     path('categories/get_subcategories/<category_id>/', product.get_subcategories, name='get_subcategories'),

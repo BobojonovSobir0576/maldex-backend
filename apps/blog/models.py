@@ -5,7 +5,7 @@ from ckeditor.fields import RichTextField
 
 class Article(models.Model):
     title = models.CharField(max_length=200)
-    body = models.TextField()
+    body = RichTextField()
     tags = TaggableManager()
 
     pub_date = models.DateTimeField('date published', auto_now_add=True)

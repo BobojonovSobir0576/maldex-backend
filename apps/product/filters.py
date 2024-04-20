@@ -1,4 +1,6 @@
 from django.contrib.admin import SimpleListFilter
+from django.db.models import Q
+
 from apps.product.models import ProductCategories, Products
 from django_filters import rest_framework as filters
 
@@ -54,10 +56,12 @@ class ProductCategoryFilter(filters.FilterSet):
     popular_category = filters.BooleanFilter(method='filter_popular_categories', label="Filter by Popular categories")
     new_category = filters.BooleanFilter(method='filter_new_categories', label="Filter by New categories")
     hits_category = filters.BooleanFilter(method='filter_hits_categories', label="Filter by Hits categories")
+    is_available = filters.BooleanFilter(field_name='is_available')
+    search = filters.CharFilter(field_name='name', lookup_expr='icontains')
 
     class Meta:
         model = ProductCategories
-        fields = ['is_popular', 'is_new', 'is_hit']
+        fields = ['is_popular', 'is_new', 'is_hit', 'is_available', 'search']
 
     def filter_popular_categories(self, queryset, name, value):
         if value:
@@ -75,9 +79,24 @@ class ProductCategoryFilter(filters.FilterSet):
         return queryset
 
 
+class CategoryFilter(filters.NumberFilter):
+    def filter(self, qs, value):
+        qs = qs.filter(
+            Q(categoryId__id=value) |
+            Q(categoryId__parent__id=value) |
+            Q(categoryId__parent__parent__id=value)
+        )
+        return qs
+
+
 class ProductFilter(filters.FilterSet):
-    category = filters.UUIDFilter(field_name='categoryId__id', lookup_expr='exact')
+    category_id = CategoryFilter(field_name='categoryId_id')
+    search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    is_new = filters.BooleanFilter(field_name='is_new')
+    is_hit = filters.BooleanFilter(field_name='is_hit')
+    is_popular = filters.BooleanFilter(field_name='is_popular')
+    is_available = filters.BooleanFilter(field_name='ondemand')
 
     class Meta:
         model = Products
-        fields = ['categoryId']
+        fields = ['category_id', 'search', 'is_new', 'is_hit', 'is_popular', 'is_available']
