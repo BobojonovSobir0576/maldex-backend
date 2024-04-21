@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.gifts_baskets.filters import GiftsBasketCategoryProductFilter
 from utils.responses import (
     bad_request_response,
     success_response,
@@ -56,31 +57,16 @@ class GiftBasketCategoryListView(APIView):
         return bad_request_response(serializer.errors)
 
 
-class GiftBasketSubCategoryListView(APIView):
-    permission_classes = [AllowAny]
-
-    @swagger_auto_schema(operation_description="Retrieve a list of sub categories",
-                         tags=['Gifts Baskets Sub Categories'],
-                         responses={200: GiftBasketCategoryDetailSerializers(many=True)})
-    def get(self, request):
-        queryset = GiftsBasketCategory.objects.filter(
-            parent__isnull=False,
-        )
-        serializer = GiftBasketCategoryDetailSerializers(queryset, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class GiftBasketCategoryDetailView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
-    """ Category Get View """
 
     @swagger_auto_schema(operation_description="Retrieve gift basket category or sub categories",
                          tags=['Gifts Baskets Categories'],
                          responses={200: GiftBasketCategoryDetailSerializers(many=True)})
     def get(self, request, pk):
         queryset = get_object_or_404(GiftsBasketCategory, pk=pk)
-        serializer = GiftBasketCategoryDetailSerializers(queryset, context={'request': request, })
-        return success_response(serializer.data)
+        serializer = GiftBasketCategoryDetailSerializers(queryset, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     """ Category Put View """
 

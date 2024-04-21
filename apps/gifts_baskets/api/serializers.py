@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 from apps.gifts_baskets.models import *
+from apps.gifts_baskets.utils import create_set_products
 from apps.product.api.serializers import ProductDetailSerializers
 
 
@@ -168,3 +169,54 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
         children_serializer = GiftBasketCategoryListSerializer(obj.gift_basket_category.all(), many=True,
                                                                context=self.context.get('request'))
         return children_serializer.data
+
+
+class SetProductListSerializer(serializers.ModelSerializer):
+    product_sets = ProductDetailSerializers(read_only=True)
+
+    class Meta:
+        model = SetProducts
+        fields = ['id', 'set_category', 'product_sets', 'quantity', 'created_at']
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+
+class SetCategoryListSerializer(serializers.ModelSerializer):
+    product_sets = serializers.SerializerMethodField()
+    product_data = serializers.JSONField(write_only=True, required=False)
+
+    class Meta:
+        model = SetCategory
+        fields = ['id', 'title', 'is_available', 'product_sets', 'product_data', 'created_at']
+
+    def create(self, validated_data):
+        product_data = validated_data.pop('product_data', [])
+
+        create_set_catalog = SetCategory.objects.create(**validated_data)
+        create_set_products(product_data, create_set_catalog)
+
+        return create_set_catalog
+
+    def get_product_sets(self, obj):
+        data = SetProductListSerializer(obj.setProducts.all(), many=True, context=self.context)
+        return data.data
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+
+class AdminFilesListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AdminFiles
+        fields = ['id', 'name', 'file', 'created_at']
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        file = self.context.get('request').FILES.get('file', None)
+        instance.file = file or instance.file
+        instance.save()
+        return super().update(instance, validated_data)

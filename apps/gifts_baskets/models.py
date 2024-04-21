@@ -27,7 +27,7 @@ class GiftsBaskets(models.Model):
     price = models.FloatField(_('Цена'), default=0, null=True, blank=True)
     price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True)
     discount_price = models.FloatField(default=0, null=True, blank=True, verbose_name='Цена со скидкой')
-    created_at = models.DateField(auto_now_add=True, blank=True, null=True, verbose_name='Данные опубликованы')
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -67,3 +67,47 @@ class GiftsBasketProduct(models.Model):
         verbose_name_plural = "Подарочные наборы товара"
 
 
+class SetCategory(models.Model):
+    title = models.CharField(_(''), max_length=255, null=True, blank=True)
+    is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateField(auto_now=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        db_table = "set_category"
+        verbose_name = "Каталог наборов"
+        verbose_name_plural = "Каталог наборов"
+
+
+class SetProducts(models.Model):
+    set_category = models.ForeignKey(SetCategory, on_delete=models.CASCADE, null=True, blank=True,
+                                     related_name='setProducts')
+    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True)
+    quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='')
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateField(auto_now=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.set_category.title
+
+    class Meta:
+        db_table = "set_product"
+        verbose_name = "Наборы Каталог товаров"
+        verbose_name_plural = "Наборы Каталог товаров"
+
+
+class AdminFiles(models.Model):
+    name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Название")
+    file = models.FileField(upload_to='files/', null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "admin_files"
+        verbose_name = "Административные файлы"
+        verbose_name_plural = "Административные файлы"
