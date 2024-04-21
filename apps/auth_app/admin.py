@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
+from django.contrib.auth.models import Group
 
 from apps.auth_app.models import (
     SocialMedia,
@@ -63,3 +64,4 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(UserLastLogin, UserLastLoginAdmin)
 admin.site.register(SocialThrough)
+admin.site.unregister(Group)

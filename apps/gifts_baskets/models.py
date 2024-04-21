@@ -22,7 +22,7 @@ class GiftsBaskets(models.Model):
     small_header = models.TextField(null=True, blank=True, verbose_name="")
     article = models.CharField(_('Артикул'), max_length=155, null=True, blank=True)
     description = models.TextField(verbose_name='', null=True, blank=True)
-    gift_basket_category = models.ManyToManyField(GiftsBasketCategory, null=True, blank=True, related_name='cateGiftBasket')
+    gift_basket_category = models.ManyToManyField(GiftsBasketCategory, blank=True, related_name='cateGiftBasket')
     other_sets = models.JSONField(null=True, blank=True, verbose_name='')
     price = models.FloatField(_('Цена'), default=0, null=True, blank=True)
     price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True)
