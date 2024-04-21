@@ -17,9 +17,10 @@ admin.site.index_title = "Welcome to Maldex Admin Portal"
 
 @admin.register(ProductCategories)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'id', 'get_externals']
+    list_display = ['icon_image', 'name', 'id', 'get_externals']
     fields = ['name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo']
     search_fields = ['name']
+    readonly_fields = ['icon_image']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(parent=None)
@@ -34,6 +35,12 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
         return ', '.join(ids)
 
+    def icon_image(self, obj):
+        if obj and obj.icon:
+            return mark_safe(f'<img src="{obj.icon.url}" width="30" height="30"/>')
+        return "No image"
+
+    icon_image.short_description = 'Product Image'
     get_externals.short_description = 'external ID s'
 
 

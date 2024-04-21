@@ -159,7 +159,7 @@ CKEDITOR_FILENAME_GENERATOR = 'utils.ckeditor.get_filename'
 CKEDITOR_CONFIGS = {
     'default': {
         "versionCheck": False,
-        'toolbar': 'Custom',
+        'toolbar': 'full',
         'toolbar_Custom': [
             ['Bold', 'Italic', 'Underline'],
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter',
