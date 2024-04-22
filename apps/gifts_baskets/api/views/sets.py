@@ -10,7 +10,6 @@ from utils.responses import (
     success_created_response,
     success_deleted_response,
 )
-from utils.pagination import PaginationMethod
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
 from apps.gifts_baskets.api.serializers import *
@@ -32,7 +31,7 @@ class SetCategoryListView(APIView):
                          tags=['Sets catalog list'],
                          responses={201: SetCategoryListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'title', 'is_available', 'product_data',}
+        valid_fields = {'title', 'is_available', 'product_data'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -62,7 +61,7 @@ class SetCatalogDetailView(APIView):
                          tags=['Sets catalog list'],
                          responses={200: SetCategoryListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'title', 'is_available',}
+        valid_fields = {'title', 'is_available'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -94,14 +93,14 @@ class SetProductDetailView(APIView):
                          tags=['Sets product list'],
                          responses={200: SetProductListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'product_sets', 'quantity',}
+        valid_fields = {'product_sets', 'quantity'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(SetProducts, pk=pk)
         serializer = SetProductListSerializer(instance=queryset, data=request.data,
-                                               context={'request': request})
+                                              context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)

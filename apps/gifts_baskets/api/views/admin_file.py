@@ -1,11 +1,9 @@
 from django.shortcuts import get_object_or_404
-from drf_yasg import openapi
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.gifts_baskets.filters import GiftsBasketCategoryProductFilter
 from utils.responses import (
     bad_request_response,
     success_response,
@@ -33,7 +31,7 @@ class AdminFilesListView(APIView):
                          tags=['Admin files list'],
                          responses={201: AdminFilesListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'files',}
+        valid_fields = {'name', 'files'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -63,14 +61,13 @@ class AdminFilesDetailView(APIView):
                          tags=['Admin files list'],
                          responses={200: AdminFilesListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'files',}
+        valid_fields = {'name', 'files'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
         queryset = get_object_or_404(AdminFiles, pk=pk)
-        serializer = AdminFilesListSerializer(instance=queryset, data=request.data,
-                                               context={'request': request})
+        serializer = AdminFilesListSerializer(instance=queryset, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)

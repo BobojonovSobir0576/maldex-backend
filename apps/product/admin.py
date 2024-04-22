@@ -18,9 +18,10 @@ admin.site.index_title = "Welcome to Maldex Admin Portal"
 @admin.register(ProductCategories)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['icon_image', 'name', 'id', 'get_externals']
-    fields = ['name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo']
+    fields = ['name', 'parent', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo']
     search_fields = ['name']
     readonly_fields = ['icon_image']
+    autocomplete_fields = ['parent']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(parent=None)
@@ -62,7 +63,7 @@ class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'parent':
-            kwargs['queryset'] = ProductCategories.objects.all()
+            kwargs['queryset'] = ProductCategories.objects.filter(parent=None)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -81,6 +82,7 @@ class TertiaryCategoryAdmin(SubCategoryAdmin, ImportExportModelAdmin):
 
 class ExternalCategoriesAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ['external_id', 'category']
+    autocomplete_fields = ['category']
 
 
 class ColorInline(admin.TabularInline):
@@ -109,6 +111,7 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 
     ]
     inlines = [ProductImageInline]
+    list_filter = ['is_new', 'is_popular', 'is_hit']
 
     def category_hierarchy(self, obj):
         names = []

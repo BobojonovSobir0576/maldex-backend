@@ -45,7 +45,7 @@ class CategoryListView(APIView):
                          tags=['Categories'],
                          responses={200: CategoryListSerializers(many=True)})
     def get(self, request):
-        queryset = ProductCategories.objects.all().order_by('order').filter(
+        queryset = ProductCategories.objects.all().order_by('-id', 'order').filter(
             parent=None,
             # is_available=True
         )
