@@ -6,6 +6,7 @@ from apps.product.api.views.product import get_counts
 
 urlpatterns = [
     path('', product.ProductsListView.as_view()),
+    path('all/', product.AllProductsListView.as_view()),
     path('option-counts/', get_counts, name='option-counts'),
     path('<int:pk>/', product.ProductsDetailView.as_view()),
     path('import/', oasis_json.ProductUploadView.as_view(), name='import_products'),

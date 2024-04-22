@@ -44,4 +44,3 @@ admin.site.register(GiftsBasketProduct)
 admin.site.register(SetCategory, SetCatalogAdmin)
 admin.site.register(SetProducts, SetProductsAdmin)
 admin.site.register(AdminFiles, AdminFilesAdmin)
-

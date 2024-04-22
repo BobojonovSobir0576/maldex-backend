@@ -107,10 +107,20 @@ class CategoryOrderSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializers(serializers.ModelSerializer):
+    images_set = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Products
-        fields = '__all__'
+        fields = ['id', 'name', 'price', 'discount_price', 'images_set']
+
+    def get_images_set(self, obj):
+        images = obj.images_set.all()
+        return [{
+            'id': image.id,
+            'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
+            'image_url': image.image_url,
+            'color': image.colorID.name
+        } for image in images]
 
     def create(self, validated_data):
         return super().create(validated_data)
