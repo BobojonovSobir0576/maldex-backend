@@ -3,7 +3,7 @@ attrs==23.2.0
 defusedxml==0.7.1
 diff-match-patch==20230430
 Django==5.0.4
-django-ckeditor==6.7.1
+django-ckeditor-5~=0.2.12
 django-cors-headers==4.3.1
 django-filter==23.5
 django-import-export==3.3.7

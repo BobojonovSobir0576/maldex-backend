@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.blog.models import Article, Project, FAQ
+from apps.blog.models import Article, Project, FAQ, PrintCategory
 
 
 class FAQAdmin(admin.ModelAdmin):
@@ -13,3 +13,4 @@ class FAQAdmin(admin.ModelAdmin):
 admin.site.register(Article)
 admin.site.register(Project)
 admin.site.register(FAQ, FAQAdmin)
+admin.site.register(PrintCategory)

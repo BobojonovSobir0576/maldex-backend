@@ -12,39 +12,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='SetCategory',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(blank=True, max_length=255, null=True, verbose_name='')),
-                ('is_available', models.BooleanField(default=False, verbose_name='Доступен на сайте?')),
-                ('created_at', models.DateField(auto_now_add=True, null=True)),
-                ('updated_at', models.DateField(auto_now=True, null=True)),
-            ],
-            options={
-                'verbose_name': 'Каталог наборов',
-                'verbose_name_plural': 'Каталог наборов',
-                'db_table': 'set_category',
-            },
-        ),
-        migrations.CreateModel(
-            name='SetProducts',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.IntegerField(blank=True, default=0, null=True, verbose_name='')),
-                ('created_at', models.DateField(auto_now_add=True, null=True)),
-                ('updated_at', models.DateField(auto_now=True, null=True)),
-                ('product_sets', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
-                                                   to='product.products')),
-                ('set_category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
-                                                   related_name='setProducts', to='gifts_baskets.setcategory')),
-            ],
-            options={
-                'verbose_name': 'Наборы Каталог товаров',
-                'verbose_name_plural': 'Наборы Каталог товаров',
-                'db_table': 'set_product',
-            },
-        ),
-        migrations.CreateModel(
             name='GiftsBasketImages',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
