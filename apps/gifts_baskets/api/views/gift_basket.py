@@ -33,7 +33,7 @@ class GiftBasketListView(APIView):
                          responses={201: GiftBasketListSerializers(many=False)})
     def post(self, request):
         valid_fields = {'title', 'description', 'other_sets', 'images_data', 'category_data', 'products_data',
-                        'article', 'discount_price', 'price_type', 'price', 'price_set'}
+                        'article', 'discount_price', 'price_type', 'price', 'price_set', 'tags'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

@@ -22,13 +22,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TagSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TaggedItem
-        fields = '__all__'
-
-
 class FAQSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -9,7 +9,7 @@ from taggit.models import TaggedItem
 from django.contrib.contenttypes.models import ContentType
 
 from apps.blog.models import Article, Project, FAQ, PrintCategory
-from apps.blog.serializers import ArticleSerializer, ProjectSerializer, TagSerializer, FAQSerializer, \
+from apps.blog.serializers import ArticleSerializer, ProjectSerializer, FAQSerializer, \
     PrintCategorySerializer
 
 
@@ -123,16 +123,6 @@ class ProjectDetailView(APIView):
         project = get_object_or_404(Project, pk=pk)
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class TagListView(APIView):
-    permission_classes = (AllowAny,)
-
-    def get(self, reqeust):
-        queryset = TaggedItem.objects.all()
-        print(queryset.first().object_id, ContentType.objects.get_for_model(Article))
-        serializer = TagSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class FAQListView(APIView):

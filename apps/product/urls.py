@@ -10,6 +10,7 @@ urlpatterns = [
     path('option-counts/', get_counts, name='option-counts'),
     path('<int:pk>/', product.ProductsDetailView.as_view()),
     path('import/', oasis_json.ProductUploadView.as_view(), name='import_products'),
+    path('categories/main_categories/', product.get_maincategories, name='main_categories'),
     path('categories/get_subcategories/<category_id>/', product.get_subcategories, name='get_subcategories'),
     path('categories/get_tertiary_categories/<subcategory_id>/', product.get_tertiary_categories,
          name='get_tertiary_categories'),

@@ -32,6 +32,16 @@ subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
                                          type=openapi.TYPE_STRING)
 
 
+@swagger_auto_schema(tags=['Categories'],
+                     methods=['GET'],
+                     responses={200: SubCategorySerializer(many=True)},
+                     operation_description='Get all sub categories')
+@api_view(['GET'])
+def get_maincategories(request):
+    categories = list(ProductCategories.objects.filter(parent=None).values('id', 'name'))
+    return Response(categories, status=200)
+
+
 @swagger_auto_schema(manual_parameters=[category_id_param],
                      tags=['Categories'],
                      methods=['GET'],

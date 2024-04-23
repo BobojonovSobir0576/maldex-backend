@@ -5,7 +5,6 @@ from apps.blog.views import (
     ArticleDetailView,
     ProjectListView,
     ProjectDetailView,
-    TagListView,
     FAQListView,
     FAQDetailView,
     PrintCategoryListView,
@@ -24,6 +23,4 @@ urlpatterns = [
 
     path('print-categories/', PrintCategoryListView.as_view(), name='faq-list'),
     path('print-categories/<int:category_id>/', PrintCategoryDetailView.as_view(), name='faq-detail'),
-
-    path('tags/', TagListView.as_view(), name='tags')
 ]

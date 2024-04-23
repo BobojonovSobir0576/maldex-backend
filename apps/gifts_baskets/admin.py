@@ -21,6 +21,7 @@ class GiftBasketCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 class GiftBasketAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['title', 'id']
     inlines = [GiftsBasketImageAdmin, GiftsBasketProductAdmin]
+    filter_horizontal = ('tags',)
 
 
 class SetCatalogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
@@ -52,3 +53,4 @@ admin.site.register(GiftsBasketProduct, GiftsBasketProductAdmin)
 admin.site.register(SetCategory, SetCatalogAdmin)
 admin.site.register(SetProducts, SetProductsAdmin)
 admin.site.register(AdminFiles, AdminFilesAdmin)
+admin.site.register(Tag)

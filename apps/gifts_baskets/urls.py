@@ -1,5 +1,6 @@
 from django.urls import path
 from apps.gifts_baskets.api.views import category
+from apps.gifts_baskets.api.views import tag
 from apps.gifts_baskets.api.views import gift_basket
 from apps.gifts_baskets.api.views import sets
 from apps.gifts_baskets.api.views import admin_file
@@ -21,5 +22,8 @@ urlpatterns = [
 
     path('admin/files/', admin_file.AdminFilesListView.as_view()),
     path('admin/file/<int:pk>/', admin_file.AdminFilesDetailView.as_view()),
+
+    path('tags/', tag.TagListView.as_view()),
+    path('by-tag/<int:tag_id>/', tag.GiftBasketListByTagView.as_view())
 
 ]

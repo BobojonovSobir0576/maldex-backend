@@ -5,6 +5,12 @@ from apps.gifts_baskets.utils import create_set_products
 from apps.product.api.serializers import ProductDetailSerializers
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('id', 'name',)
+
+
 class GiftBasketCategoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -75,12 +81,13 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
         child=serializers.ImageField(allow_empty_file=False), write_only=True, required=False)
     basket_products = GiftsBasketProductSerializers(many=True, read_only=True)
     products_data = serializers.JSONField(write_only=True, required=False)
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = GiftsBaskets
         fields = ['id', 'title', 'description', 'gift_basket_category', 'category_data',  'basket_images',
                   'images_data', 'basket_products', 'products_data', 'other_sets',
-                  'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at']
+                  'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at', 'tags']
 
     def create(self, validated_data):
         categories = validated_data.pop('category_data', [])
@@ -89,6 +96,8 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
         print(images)
         products = validated_data.pop('products_data', [])
         print(products)
+        tags = validated_data.pop('tags', [])
+        print(tags)
         basket = GiftsBaskets.objects.create(**validated_data)
         basket.gift_basket_category.set(categories)
 
@@ -101,6 +110,12 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
             price_set += product.price
             GiftsBasketProduct.objects.create(
                 gift_basket=basket, product_sets=product, quantity=product_info['quantity'])
+
+        for tag in tags:
+            tag_name = tag['name']
+            tag_instance = Tag.objects.get_or_create(name=tag_name)
+            basket.tags.add(tag_instance[0])
+
         basket.price = price_set
         basket.save()
         return basket
@@ -153,11 +168,12 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
     gift_basket_images = serializers.SerializerMethodField()
     gift_basket_product = serializers.SerializerMethodField()
     gift_basket_category = serializers.SerializerMethodField()
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = GiftsBaskets
         fields = ['title', 'id', 'description', 'gift_basket_category', 'gift_basket_product', 'gift_basket_images',
-                  'other_sets', 'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at']
+                  'other_sets', 'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at', 'tags']
 
     def get_gift_basket_images(self, obj):
         children_serializer = GiftsBasketImagesSerializers(obj.basket_images.all(), many=True, context=self.context)
