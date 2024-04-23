@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from apps.product.models import *
 from apps.product.api.serializers import (
-    CategoryListSerializers, MainCategorySerializer, CategoryOrderSerializer
+    CategoryListSerializers, MainCategorySerializer, CategoryOrderSerializer, CategoryProductsSerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import (
@@ -128,6 +128,31 @@ class CategoryDetailView(APIView, PaginationMethod):
         queryset = get_object_or_404(ProductCategories, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")
+
+
+class HomeCategoryView(APIView):
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(operation_description="Retrieve category or sub categories",
+                         tags=['Categories'],
+                         responses={200: CategoryProductsSerializer(many=True)})
+    def get(self, request):
+        category = ProductCategories.objects.filter(home=True).first()
+        serializers = CategoryProductsSerializer(category, context={'request': request, })
+        return success_response(serializers.data)
+
+    def post(self, request):
+        category_id = request.data['id']
+        category = get_object_or_404(ProductCategories, id=category_id)
+        old_category = ProductCategories.objects.filter(home=True).first()
+        old_category.home = False
+        old_category.save()
+        category.home = True
+        category.save()
+
+        serializers = CategoryProductsSerializer(category, context={'request': request, })
+        return success_response(serializers.data)
 
 
 class CategoryChangeOrderView(APIView):

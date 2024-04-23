@@ -20,6 +20,8 @@ class ProductCategories(models.Model):
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
 
+    home = models.BooleanField(default=False,)
+
     objects = AllCategoryManager()
     all_levels = AllCategoryManager()
 

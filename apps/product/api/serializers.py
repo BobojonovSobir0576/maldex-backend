@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -62,14 +63,23 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 class SubCategorySerializer(serializers.ModelSerializer):
     """ Sub Category details """
     children = serializers.SerializerMethodField(read_only=True)
+    count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'children']
+        fields = ['id', 'name', 'children', 'count']
 
     def get_children(self, subcategory):
         children = TertiaryCategory.objects.filter(parent=subcategory)
         return TertiaryCategorySerializer(children, many=True).data
+
+    def get_count(self, subcategory):
+        products = Products.objects.filter(
+            Q(categoryId=subcategory) |
+            Q(categoryId__parent=subcategory) |
+            Q(categoryId__parent__parent=subcategory)
+        )
+        return products.count()
 
 
 class MainCategorySerializer(serializers.ModelSerializer):
@@ -84,6 +94,23 @@ class MainCategorySerializer(serializers.ModelSerializer):
     def get_children(self, category):
         children = SubCategory.objects.filter(parent=category)
         return SubCategorySerializer(children, many=True).data
+
+
+class CategoryProductsSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField(read_only=True)
+    children = SubCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProductCategories
+        fields = ['id', 'name', 'children', 'products']
+
+    def get_products(self, category):
+        products = Products.objects.filter(
+            Q(categoryId=category) |
+            Q(categoryId__parent=category) |
+            Q(categoryId__parent__parent=category)
+        )
+        return ProductListSerializers(products[:6], many=True).data
 
 
 class CategoryOrderSerializer(serializers.ModelSerializer):

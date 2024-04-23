@@ -16,6 +16,7 @@ urlpatterns = [
 
     path('categories/', category.CategoryListView.as_view()),
     path('category/<int:pk>/', category.CategoryDetailView.as_view()),
+    path('home-category/', category.HomeCategoryView.as_view()),
     path('category/<int:pk>/change-order/', category.CategoryChangeOrderView.as_view()),
 
     path('image/<image_id>/', ProductImageView.as_view(), name='image'),
