@@ -7,8 +7,6 @@ from apps.product.models import Products
 def create_set_products(obj, set_catalog):
     for item in obj:
         product_instance = get_object_or_404(Products, id=item['product_sets'])
-        print(product_instance)
-
         create_set_product = SetProducts.objects.create(
             set_category=set_catalog,
             product_sets=product_instance,

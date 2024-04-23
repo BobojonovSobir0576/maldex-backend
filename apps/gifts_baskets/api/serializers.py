@@ -195,7 +195,6 @@ class SetCategoryListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
-
         create_set_catalog = SetCategory.objects.create(**validated_data)
         create_set_products(product_data, create_set_catalog)
 
@@ -210,6 +209,7 @@ class SetCategoryListSerializer(serializers.ModelSerializer):
 
 
 class AdminFilesListSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=False)
 
     class Meta:
         model = AdminFiles

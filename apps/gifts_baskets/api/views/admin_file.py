@@ -31,7 +31,7 @@ class AdminFilesListView(APIView):
                          tags=['Admin files list'],
                          responses={201: AdminFilesListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'files'}
+        valid_fields = {'name', 'file'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

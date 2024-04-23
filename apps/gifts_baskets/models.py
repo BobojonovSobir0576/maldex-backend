@@ -74,7 +74,7 @@ class SetCategory(models.Model):
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return 'hello'
 
     class Meta:
         db_table = "set_category"
