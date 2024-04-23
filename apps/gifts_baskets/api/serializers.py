@@ -84,8 +84,11 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         categories = validated_data.pop('category_data', [])
+        print(categories)
         images = validated_data.pop('images_data', [])
+        print(images)
         products = validated_data.pop('products_data', [])
+        print(products)
         basket = GiftsBaskets.objects.create(**validated_data)
         basket.gift_basket_category.set(categories)
 
@@ -192,7 +195,6 @@ class SetCategoryListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
-
         create_set_catalog = SetCategory.objects.create(**validated_data)
         create_set_products(product_data, create_set_catalog)
 
@@ -207,6 +209,7 @@ class SetCategoryListSerializer(serializers.ModelSerializer):
 
 
 class AdminFilesListSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=False)
 
     class Meta:
         model = AdminFiles

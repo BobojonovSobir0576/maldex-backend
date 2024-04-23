@@ -37,10 +37,18 @@ class AdminFilesAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['id', 'name', 'created_at']
 
 
+class GiftsBasketImagesAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    pass
+
+
+class GiftsBasketProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    pass
+
+
 admin.site.register(GiftsBasketCategory, GiftBasketCategoryAdmin)
 admin.site.register(GiftsBaskets, GiftBasketAdmin)
-admin.site.register(GiftsBasketImages)
-admin.site.register(GiftsBasketProduct)
+admin.site.register(GiftsBasketImages, GiftsBasketImagesAdmin)
+admin.site.register(GiftsBasketProduct, GiftsBasketProductAdmin)
 admin.site.register(SetCategory, SetCatalogAdmin)
 admin.site.register(SetProducts, SetProductsAdmin)
 admin.site.register(AdminFiles, AdminFilesAdmin)

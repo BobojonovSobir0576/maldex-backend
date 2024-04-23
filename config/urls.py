@@ -6,7 +6,7 @@ from django.views.static import serve
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from apps.gifts_baskets.api.views import admin_file
+
 
 admin.site.site_url = None
 
@@ -36,9 +36,6 @@ urlpatterns = [
     path('banner/', include('apps.banner.urls')),
     path('gifts/baskets/', include('apps.gifts_baskets.urls')),
     path('', include('apps.blog.urls')),
-    path('admin/files/', admin_file.AdminFilesListView.as_view()),
-    path('admin/file/<int:id>/', admin_file.AdminFilesDetailView.as_view()),
-
 ]
 
 if settings.DEBUG:

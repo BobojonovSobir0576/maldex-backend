@@ -44,9 +44,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'config.middlewares.middleware.JsonErrorResponseMiddleware',
-    'config.middlewares.middleware.Custom404Middleware',
-    'config.middlewares.middleware.SimpleJWTAuthenticationMiddleware',
+    # 'config.middlewares.middleware.JsonErrorResponseMiddleware',
+    # 'config.middlewares.middleware.Custom404Middleware',
+    # 'config.middlewares.middleware.SimpleJWTAuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

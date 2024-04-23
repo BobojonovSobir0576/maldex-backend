@@ -22,7 +22,7 @@ class AdminFilesListView(APIView):
                          tags=['Admin files list'],
                          responses={200: AdminFilesListSerializer(many=True)})
     def get(self, request):
-        queryset = AdminFiles.objects.all().order_by('-id')
+        queryset = AdminFiles.objects.all()
         serializer = AdminFilesListSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -31,7 +31,7 @@ class AdminFilesListView(APIView):
                          tags=['Admin files list'],
                          responses={201: AdminFilesListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'files'}
+        valid_fields = {'name', 'file'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
