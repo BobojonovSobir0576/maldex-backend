@@ -9,9 +9,14 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Теги"
+        verbose_name_plural = "Теги"
+
 
 class GiftsBasketCategory(models.Model):
-    name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Название категории")
+    name = models.CharField(_('Название категории подарочной корзины'), max_length=150,
+                            blank=True, null=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
 
@@ -25,18 +30,17 @@ class GiftsBasketCategory(models.Model):
 
 
 class GiftsBaskets(models.Model):
-    title = models.CharField(_(''), max_length=255, null=True, blank=True)
-    small_header = models.TextField(null=True, blank=True, verbose_name="")
+    title = models.CharField(_('Название подарочной корзины'), max_length=255, null=True, blank=True)
+    small_header = models.TextField(_('Назовите небольшой заголовок подарочной корзины.'), null=True, blank=True)
     article = models.CharField(_('Артикул'), max_length=155, null=True, blank=True)
-    description = models.TextField(verbose_name='', null=True, blank=True)
+    description = models.TextField(verbose_name='Описание', null=True, blank=True)
     gift_basket_category = models.ManyToManyField(GiftsBasketCategory, blank=True, related_name='cateGiftBasket')
-    other_sets = models.JSONField(null=True, blank=True, verbose_name='')
+    other_sets = models.JSONField(null=True, blank=True, verbose_name='Другие наборы')
     price = models.FloatField(_('Цена'), default=0, null=True, blank=True)
     price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True)
     discount_price = models.FloatField(default=0, null=True, blank=True, verbose_name='Цена со скидкой')
-    created_at = models.DateField(auto_now_add=True, null=True, blank=True)
-
-    tags = models.ManyToManyField(to=Tag, related_name='baskets')
+    created_at = models.DateField(auto_now_add=True, null=True, blank=True, verbose_name='Дата публикации')
+    tags = models.ManyToManyField(Tag, related_name='baskets', verbose_name='Бирки для корзины подарков')
 
     def __str__(self):
         return self.title
@@ -50,7 +54,7 @@ class GiftsBaskets(models.Model):
 class GiftsBasketImages(models.Model):
     gift_basket = models.ForeignKey(GiftsBaskets, on_delete=models.CASCADE,
                                     null=True, blank=True, related_name='basket_images')
-    images = models.ImageField(upload_to='gift_basket/', null=True, blank=True)
+    images = models.ImageField(upload_to='gift_basket/', null=True, blank=True, verbose_name='Изображений')
 
     def __str__(self):
         return self.gift_basket.title
@@ -64,8 +68,8 @@ class GiftsBasketImages(models.Model):
 class GiftsBasketProduct(models.Model):
     gift_basket = models.ForeignKey(GiftsBaskets, on_delete=models.CASCADE, related_name='basket_products',
                                     null=True, blank=True, )
-    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True)
-    quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='')
+    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True, verbose_name='Наборы продуктов')
+    quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='Количество')
 
     def __str__(self):
         return self.gift_basket.title
@@ -77,7 +81,7 @@ class GiftsBasketProduct(models.Model):
 
 
 class SetCategory(models.Model):
-    title = models.CharField(_(''), max_length=255, null=True, blank=True)
+    title = models.CharField(_('Название'), max_length=255, null=True, blank=True)
     is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
@@ -94,8 +98,9 @@ class SetCategory(models.Model):
 class SetProducts(models.Model):
     set_category = models.ForeignKey(SetCategory, on_delete=models.CASCADE, null=True, blank=True,
                                      related_name='setProducts')
-    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True)
-    quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='')
+    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True,
+                                     verbose_name='Наборы продуктов')
+    quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='Количество')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateField(auto_now=True, null=True, blank=True)
 
