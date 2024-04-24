@@ -77,7 +77,7 @@ class ProjectListView(APIView):
                          responses={200: ProjectSerializer(many=True)})
     def get(self, request):
         projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
+        serializer = ProjectSerializer(projects, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ProjectSerializer,
@@ -85,7 +85,7 @@ class ProjectListView(APIView):
                          tags=['Project'],
                          responses={201: ProjectSerializer(many=False)})
     def post(self, request):
-        serializer = ProjectSerializer(data=request.data)
+        serializer = ProjectSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -100,7 +100,8 @@ class ProjectDetailView(APIView):
                          responses={200: ProjectSerializer(many=False)})
     def get(self, request, pk, **kwargs):
         project = get_object_or_404(Project, pk=pk)
-        serializer = ProjectSerializer(project)
+        serializer = ProjectSerializer(project, context={'request': request}
+                                       )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(request_body=ProjectSerializer,
@@ -109,7 +110,7 @@ class ProjectDetailView(APIView):
                          responses={200: ProjectSerializer(many=False)})
     def put(self, request, pk, **kwargs):
         project = get_object_or_404(Project, pk=pk)
-        serializer = ProjectSerializer(project, data=request.data)
+        serializer = ProjectSerializer(project, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

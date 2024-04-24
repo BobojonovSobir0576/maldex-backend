@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage
 
 
 class FAQAdmin(admin.ModelAdmin):
@@ -36,3 +36,4 @@ admin.site.register(Project)
 admin.site.register(FAQ, FAQAdmin)
 admin.site.register(PrintCategory)
 admin.site.register(Tag, TagAdmin)
+admin.site.register(ProjectImage)

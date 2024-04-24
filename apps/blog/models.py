@@ -5,6 +5,8 @@ from taggit.managers import TaggableManager
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.translation import gettext_lazy as _
 
+from apps.product.models import Products
+
 
 class Tag(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -43,6 +45,19 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProjectImage(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_images')
+    image = models.ImageField(upload_to='projects/', verbose_name=_('image'))
+
+    def __str__(self):
+        return self.project.title
+
+
+class ProjectProduct(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='products')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='project')
 
 
 class FAQ(models.Model):
