@@ -1,13 +1,23 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from taggit.managers import TaggableManager
 from django_ckeditor_5.fields import CKEditor5Field
 from django.utils.translation import gettext_lazy as _
 
 
+class Tag(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    name = models.CharField(_('name'), max_length=255)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
 class Article(models.Model):
     title = models.CharField(max_length=200, verbose_name=_('title'))
     body = CKEditor5Field(config_name='extends', verbose_name=_('content'))
-    tags = TaggableManager(_('tags'))
+    tags = models.ManyToManyField(Tag, verbose_name=_('article-tags'), related_name='articles')
 
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date published'))
     image = models.ImageField(upload_to='articles/', verbose_name=_('image'), null=False)
@@ -24,7 +34,7 @@ class Article(models.Model):
 class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    tags = TaggableManager()
+    tags = models.ManyToManyField(Tag, verbose_name=_('tags'))
 
     class Meta:
         ordering = ('title',)
