@@ -231,5 +231,5 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ),
-    'DATETIME_FORMAT': "%s",
+    'DATETIME_FORMAT': "%d.%m.%Y",
 }

@@ -9,7 +9,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'body', 'tags', 'image']
+        fields = ['id', 'title', 'body', 'tags', 'image', 'pub_date']
 
     def get_tags(self, obj):
         print([tag.name for tag in obj.tags.all()])
