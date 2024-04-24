@@ -50,7 +50,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta(BaseUserSerializer.Meta):
-        fields = BaseUserSerializer.Meta.fields + ['about', 'photo', 'password', 'date_of_birth', 'city', 'gender',
+        fields = BaseUserSerializer.Meta.fields + ['about', 'photo', 'password', 'date_of_birth', 'gender',
                                                    'confirm_password']
         extra_kwargs = {
             "password": {"required": True},
@@ -58,7 +58,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             "last_name": {"required": True},
             "date_of_birth": {"required": True},
             "about": {"required": True},
-            "city": {"required": True},
             "gender": {"required": True},
             "photo": {"required": True},
         }
@@ -97,7 +96,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class InformationSerializer(BaseUserSerializer):
 
     class Meta(BaseUserSerializer.Meta):
-        fields = BaseUserSerializer.Meta.fields + ['about', 'photo', 'password', 'date_of_birth', 'city', 'gender',
+        fields = BaseUserSerializer.Meta.fields + ['about', 'photo', 'password', 'date_of_birth', 'gender',
                                                    'date_joined']
 
 

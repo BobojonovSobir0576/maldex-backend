@@ -3,17 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
 from django.contrib.auth.models import Group
 
-from apps.auth_app.models import (
-    SocialMedia,
-    SocialThrough,
-    CustomUser,
-    Country, City, UserLastLogin
-)
-
-
-class SocialThroughInline(admin.TabularInline):
-    model = SocialThrough
-    extra = 1
+from apps.auth_app.models import CustomUser, UserLastLogin
 
 
 class NewUser(ImportExportModelAdmin, UserAdmin):
@@ -27,7 +17,7 @@ class NewUser(ImportExportModelAdmin, UserAdmin):
                                     'groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Personal Information',
-         {'fields': ('date_of_birth', 'photo', 'about', 'city', 'gender')}),
+         {'fields': ('date_of_birth', 'photo', 'about', 'gender')}),
     )
     add_fieldsets = (
         (None, {
@@ -35,7 +25,6 @@ class NewUser(ImportExportModelAdmin, UserAdmin):
             'fields': ('username', 'password1', 'password2'),
         }),
     )
-    inlines = [SocialThroughInline, ]
 
 
 class SocialMediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
@@ -59,9 +48,5 @@ class UserLastLoginAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 
 admin.site.register(CustomUser, NewUser)
-admin.site.register(SocialMedia, SocialMediaAdmin)
-admin.site.register(Country, CountryAdmin)
-admin.site.register(City, CityAdmin)
 admin.site.register(UserLastLogin, UserLastLoginAdmin)
-admin.site.register(SocialThrough)
 admin.site.unregister(Group)

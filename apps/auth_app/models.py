@@ -7,67 +7,6 @@ from apps.auth_app.managers.user_managers import CustomUserManager
 from django.utils.translation import gettext_lazy as _
 
 
-class SocialMedia(models.Model):
-    title = models.CharField(_('Title'), max_length=50)
-    icon = models.ImageField(_('Icon Social Media'), upload_to="path/")
-    date_create = models.DateTimeField(_('Data created'), auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        db_table = "user_social_media"
-        verbose_name = "Social Media"
-        verbose_name_plural = "Social Media"
-
-
-class SocialThrough(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='SocialThroughUser')
-    social = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='SocialThrough')
-    url = models.URLField()
-    date_update = models.DateTimeField(_('Data updated'), auto_now=True)
-    date_create = models.DateTimeField(_('Data created'), auto_now_add=True)
-
-    def __str__(self):
-        return self.url
-
-    class Meta:
-        db_table = "user_social_through"
-        verbose_name = "Social Through"
-        verbose_name_plural = "Social Through"
-
-
-class Country(models.Model):
-    name = models.CharField(_('Name Country'), max_length=200, null=True, blank=True)
-    short_name = models.CharField(_('Short name'), max_length=4, unique=True, null=True, blank=True)
-    date_create = models.DateTimeField(_('Data created'), auto_now_add=True)
-    date_update = models.DateTimeField(_('Data updated'), auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "user_country"
-        verbose_name = "County"
-        verbose_name_plural = "Counties"
-
-
-class City(models.Model):
-    name = models.CharField(_('Name city'), max_length=200, null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True, auto_created='Country')
-    short_name = models.CharField(_('Short name'), max_length=30, null=True, blank=True)
-    date_create = models.DateTimeField(_('Data created'), auto_now_add=True)
-    date_update = models.DateTimeField(_('Data updated'), auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "user_city"
-        verbose_name = "City"
-        verbose_name_plural = "Cities"
-
-
 class CustomUser(AbstractUser):
 
     class AuthType(models.TextChoices):
@@ -90,17 +29,10 @@ class CustomUser(AbstractUser):
     photo = models.ImageField(_('Avatar'), upload_to="path/")
     about = models.TextField(_('About yourself'), default="", null=True, blank=True)
     date_of_birth = models.DateField(_('Date of Birth'), null=True, blank=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True, related_name='City')
     gender = models.CharField(_('Gender'), max_length=10, null=True, blank=True, choices=GenderType.choices)
     is_active = models.BooleanField(_('Is activate'), default=True)
     is_staff = models.BooleanField(_('Is staff'), default=False)
     date_joined = models.DateTimeField(_('Data created'), default=timezone.now)
-    social_media = models.ManyToManyField(
-        SocialMedia,
-        through=SocialThrough,
-        through_fields=('user', 'social'),
-        related_name='socialLinks'
-    )
 
     objects = CustomUserManager()
 
