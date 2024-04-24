@@ -10,7 +10,7 @@ class Article(models.Model):
     tags = TaggableManager(_('tags'))
 
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date published'))
-    image = models.ImageField(upload_to='articles/', verbose_name=_('image'))
+    image = models.ImageField(upload_to='articles/', verbose_name=_('image'), null=False)
 
     class Meta:
         ordering = ('-pub_date', 'title')

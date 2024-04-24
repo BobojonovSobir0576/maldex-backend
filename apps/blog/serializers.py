@@ -5,7 +5,9 @@ from apps.blog.models import Article, Project, FAQ, PrintCategory
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
     tags = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False,)
 
     class Meta:
         model = Article
