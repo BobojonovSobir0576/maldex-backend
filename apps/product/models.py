@@ -6,6 +6,7 @@ from apps.product.managers import AllCategoryManager
 
 
 class ProductCategories(models.Model):
+    """Model to represent product categories."""
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=150, verbose_name="Название категории")
@@ -29,6 +30,7 @@ class ProductCategories(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        """Override save method to generate ID and order if not provided."""
         if not self.id:
             last_instance = ProductCategories.all_levels.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
@@ -47,17 +49,20 @@ class ProductCategories(models.Model):
 
 
 class ExternalCategory(models.Model):
-    external_id = models.CharField(max_length=255)
-    category = models.ForeignKey(ProductCategories, on_delete=models.CASCADE, related_name='external_categories',)
+    """Model to represent external categories."""
+    external_id = models.CharField(max_length=255, verbose_name='внешний идентификатор')
+    category = models.ForeignKey(ProductCategories, on_delete=models.CASCADE, related_name='external_categories',
+                                 verbose_name='категория')
 
     class Meta:
         unique_together = ('external_id', 'category')
         db_table = "product_site_category"
-        verbose_name = "Site Category"
-        verbose_name_plural = "Site Categories "
+        verbose_name = "Категория сайта"
+        verbose_name_plural = "Категории сайта"
 
 
 class Products(models.Model):
+    """Model to represent products."""
     id = models.IntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название продукта'), max_length=150)
     code = models.IntegerField(default=0)
@@ -84,8 +89,8 @@ class Products(models.Model):
     created_at = models.DateField(auto_now_add=True, verbose_name='Данные опубликованы')
 
     def save(self, *args, **kwargs):
+        """Override save method to generate ID."""
         if not self.id:
-            # Assuming you're manually handling ID generation
             last_instance = Products.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
             self.id = f"{next_id:010d}"
@@ -101,6 +106,7 @@ class Products(models.Model):
 
 
 class Colors(models.Model):
+    """Model to represent colors."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название цвета'), max_length=50)
     image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
@@ -115,6 +121,7 @@ class Colors(models.Model):
 
 
 class ProductImage(models.Model):
+    """Model to represent product images."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     productID = models.ForeignKey('Products', on_delete=models.CASCADE, null=True, blank=True,
                                   related_name='images_set', verbose_name='Код товара')
