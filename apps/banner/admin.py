@@ -25,10 +25,6 @@ class BannerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     ordering = ['-created_at']
     readonly_fields = ['created_at']
 
-    fieldsets = [
-        (None, {'fields': ['name']}),
-    ]
-
 
 class BannerCarouselProductInline(admin.TabularInline):
     model = BannerCarouselProduct
