@@ -1,8 +1,10 @@
-
 from apps.product.models import Products
 
 
 def filter_by_sub_category(queryset, request):
+    """
+    Filter products by subcategory ID.
+    """
     sub_category_id = request.query_params.get("sub_category")
     if not sub_category_id:
         return queryset
@@ -20,6 +22,9 @@ def filter_by_sub_category(queryset, request):
 
 
 def filter_by_category(queryset, request):
+    """
+    Filter products by category ID.
+    """
     category_id = request.query_params.get("category")
     if not category_id:
         return queryset
@@ -33,6 +38,9 @@ def filter_by_category(queryset, request):
 
 
 def get_subcategories(queryset, request):
+    """
+    Get subcategories.
+    """
     cate_id = request.query_params.get("sub_category")
     if not cate_id:
         return queryset
@@ -46,6 +54,9 @@ def get_subcategories(queryset, request):
 
 
 def get_tertiary_category(queryset, request):
+    """
+    Get tertiary categories.
+    """
     tertiary_category = request.query_params.get('tertiary_category')
     if not tertiary_category:
         return queryset
@@ -59,6 +70,9 @@ def get_tertiary_category(queryset, request):
 
 
 def get_popular_categories(queryset, request):
+    """
+    Get popular categories.
+    """
     is_popular = request.query_params.get('popular_category', False)
     if not is_popular:
         return queryset

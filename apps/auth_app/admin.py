@@ -27,26 +27,11 @@ class NewUser(ImportExportModelAdmin, UserAdmin):
     )
 
 
-class SocialMediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['title', 'id']
-    search_fields = ['title']
-
-
-class CountryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'short_name', 'id']
-    search_fields = ['name', 'short_name']
-
-
-class CityAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'short_name', 'country', 'id']
-    search_fields = ['name', 'short_name']
-
-
 class UserLastLoginAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['user', 'login_time', 'id']
     search_fields = ['user__username']
 
 
 admin.site.register(CustomUser, NewUser)
-admin.site.register(UserLastLogin, UserLastLoginAdmin)
+# admin.site.register(UserLastLogin, UserLastLoginAdmin)
 admin.site.unregister(Group)

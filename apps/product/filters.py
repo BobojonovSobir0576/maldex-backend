@@ -1,58 +1,45 @@
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
-
-from apps.product.models import ProductCategories, Products
 from django_filters import rest_framework as filters
+from apps.product.models import ProductCategories, Products
 
 
 class SubCategoryListFilter(SimpleListFilter):
+    """Custom filter for subcategories."""
     title = 'subcategory'
-
     parameter_name = 'subcategory'
 
     def lookups(self, request, model_admin):
-        """
-        Returns a list of tuples. The first element in each tuple is the coded value for the option that will
-        appear in the URL query. The second element is the human-readable name for the option that will appear
-        in the right sidebar.
-        """
+        """Return a list of tuples for the filter options."""
         subcategories = ProductCategories.objects.filter(parent__isnull=False, parent__parent__isnull=True)
         return [(subcategory.id, subcategory.name) for subcategory in subcategories]
 
     def queryset(self, request, queryset):
-        """
-        Returns the filtered queryset based on the value provided in the query string and retrievable via
-        `self.value()`.
-        """
+        """Return the filtered queryset based on the selected subcategory."""
         if self.value():
             return queryset.filter(parent_id=self.value())
         return queryset
 
 
 class MainCategoryListFilter(SimpleListFilter):
+    """Custom filter for main categories."""
     title = 'main category'
     parameter_name = 'main_category'
 
     def lookups(self, request, model_admin):
-        """
-        Returns a list of tuples. The first element in each tuple is the coded value for the option that will
-        appear in the URL query. The second element is the human-readable name for the option that will appear
-        in the right sidebar.
-        """
+        """Return a list of tuples for the filter options."""
         main_categories = ProductCategories.objects.filter(parent__isnull=True)
         return [(cat.id, cat.name) for cat in main_categories]
 
     def queryset(self, request, queryset):
-        """
-        Returns the filtered queryset based on the value provided in the query string and retrievable via
-        `self.value()`.
-        """
+        """Return the filtered queryset based on the selected main category."""
         if self.value():
             return queryset.filter(parent__id=self.value())
         return queryset
 
 
 class ProductCategoryFilter(filters.FilterSet):
+    """FilterSet for filtering product categories."""
     popular_category = filters.BooleanFilter(method='filter_popular_categories', label="Filter by Popular categories")
     new_category = filters.BooleanFilter(method='filter_new_categories', label="Filter by New categories")
     hits_category = filters.BooleanFilter(method='filter_hits_categories', label="Filter by Hits categories")
@@ -64,23 +51,28 @@ class ProductCategoryFilter(filters.FilterSet):
         fields = ['is_popular', 'is_new', 'is_hit', 'is_available', 'search']
 
     def filter_popular_categories(self, queryset, name, value):
+        """Filter queryset for popular categories."""
         if value:
             return queryset.filter(is_popular=True)[:15]
         return queryset
 
     def filter_new_categories(self, queryset, name, value):
+        """Filter queryset for new categories."""
         if value:
             return queryset.filter(is_new=True)[:15]
         return queryset
 
     def filter_hits_categories(self, queryset, name, value):
+        """Filter queryset for hit categories."""
         if value:
             return queryset.filter(is_hit=True)[:15]
         return queryset
 
 
 class CategoryFilter(filters.NumberFilter):
+    """Filter for product categories."""
     def filter(self, qs, value):
+        """Filter queryset based on the selected category."""
         qs = qs.filter(
             Q(categoryId__id=value) |
             Q(categoryId__parent__id=value) |
@@ -90,6 +82,7 @@ class CategoryFilter(filters.NumberFilter):
 
 
 class ProductFilter(filters.FilterSet):
+    """FilterSet for filtering products."""
     category_id = CategoryFilter(field_name='categoryId_id')
     search = filters.CharFilter(field_name='name', lookup_expr='icontains')
     is_new = filters.BooleanFilter(field_name='is_new')

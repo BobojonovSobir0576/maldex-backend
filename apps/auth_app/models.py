@@ -44,8 +44,8 @@ class CustomUser(AbstractUser):
 
     class Meta:
         db_table = "user_table"
-        verbose_name = "CustomUser"
-        verbose_name_plural = "Users"
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
 
 class UserLastLogin(models.Model):
