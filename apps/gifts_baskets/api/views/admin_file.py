@@ -38,7 +38,7 @@ class AdminFilesListView(APIView):
 
         serializer = AdminFilesListSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(file=request.FILES.get('file'))
             return success_created_response(serializer.data)
         return bad_request_response(serializer.errors)
 
@@ -61,7 +61,7 @@ class AdminFilesDetailView(APIView):
                          tags=['Admin files list'],
                          responses={200: AdminFilesListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'files'}
+        valid_fields = {'name', 'file'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

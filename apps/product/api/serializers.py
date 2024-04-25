@@ -195,9 +195,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         return product_instance
 
     def update(self, instance, validated_data):
-        print('ishladi')
         images_data = validated_data.pop('images', [])
-        print(images_data)
         for image_data in images_data:
             if image_data['image']:
                 image_data['productID'] = instance.id
@@ -210,7 +208,6 @@ class ProductDetailSerializers(serializers.ModelSerializer):
                     image_serializer.save()
                 else:
                     raise ValueError(image_serializer.errors)
-        print(validated_data)
         deleted_images = validated_data.pop('deleted_images', [])
         deleted_images = [] if deleted_images == [''] else deleted_images
         if deleted_images:

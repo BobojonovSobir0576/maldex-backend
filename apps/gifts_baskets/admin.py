@@ -46,6 +46,10 @@ class GiftsBasketProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     pass
 
 
+class TagAdmin(admin.ModelAdmin):
+    fields = ('name',)
+
+
 admin.site.register(GiftsBasketCategory, GiftBasketCategoryAdmin)
 admin.site.register(GiftsBaskets, GiftBasketAdmin)
 admin.site.register(GiftsBasketImages, GiftsBasketImagesAdmin)
@@ -53,4 +57,4 @@ admin.site.register(GiftsBasketProduct, GiftsBasketProductAdmin)
 admin.site.register(SetCategory, SetCatalogAdmin)
 admin.site.register(SetProducts, SetProductsAdmin)
 admin.site.register(AdminFiles, AdminFilesAdmin)
-admin.site.register(Tag)
+admin.site.register(Tag, TagAdmin)

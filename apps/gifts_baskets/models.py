@@ -5,6 +5,7 @@ from apps.product.models import Products
 
 class Tag(models.Model):
     name = models.CharField(_('name'), max_length=50)
+    order = models.IntegerField(blank=True)
 
     def __str__(self):
         return self.name
@@ -12,6 +13,11 @@ class Tag(models.Model):
     class Meta:
         verbose_name = "Теги"
         verbose_name_plural = "Теги"
+
+    def save(self, *args, **kwargs):
+        last_tag = Tag.objects.all().order_by('order').last()
+        self.order = last_tag.order + 1 if last_tag else 1
+        return super().save(*args, **kwargs)
 
 
 class GiftsBasketCategory(models.Model):
@@ -40,7 +46,7 @@ class GiftsBaskets(models.Model):
     price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True)
     discount_price = models.FloatField(default=0, null=True, blank=True, verbose_name='Цена со скидкой')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True, verbose_name='Дата публикации')
-    tags = models.ManyToManyField(Tag, related_name='baskets', verbose_name='Бирки для корзины подарков')
+    tags = models.ManyToManyField(Tag, related_name='baskets', verbose_name='Бирки для корзины подарков', null=True)
 
     def __str__(self):
         return self.title

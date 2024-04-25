@@ -8,7 +8,7 @@ from apps.product.api.serializers import ProductDetailSerializers
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name',)
+        fields = ('id', 'name', 'order')
 
 
 class GiftBasketCategoryListSerializer(serializers.ModelSerializer):
