@@ -27,7 +27,7 @@ class BannerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Banner
-        fields = ['id', 'name', 'product_set', 'product_data']
+        fields = ['id', 'name', 'product_set', 'product_data', 'order_by_id']
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
