@@ -121,7 +121,7 @@ class SetProducts(models.Model):
 
 class AdminFiles(models.Model):
     name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Название")
-    file = models.FileField(upload_to='files/', null=True, blank=True)
+    file = models.FileField(upload_to='files/', null=True, blank=True, verbose_name='File')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
