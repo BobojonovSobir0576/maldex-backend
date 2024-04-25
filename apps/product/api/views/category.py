@@ -76,14 +76,18 @@ class CategoryDetailView(APIView):
         request_body=CategoryListSerializers,
         operation_description="Update a specific product category",
         tags=['Categories'],
-        responses={200: MainCategorySerializer(many=False)}
+        responses={200: CategoryListSerializers(many=False)}
     )
     def put(self, request, pk):
         """
         Update a specific product category.
         """
         queryset = get_object_or_404(ProductCategories, pk=pk)
-        serializers = MainCategorySerializer(instance=queryset, data=request.data, context={
+        request.data._mutable = True
+        request.data.pop('logo', None)
+        request.data.pop('icon', None)
+        request.data._mutable = False
+        serializers = CategoryListSerializers(instance=queryset, data=request.data, context={
             'request': request,
             'logo': request.FILES.get('logo', None),
             'icon': request.FILES.get('icon', None)

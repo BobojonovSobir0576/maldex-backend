@@ -31,12 +31,13 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class CategoryListSerializers(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
     """ Category create update and details """
 
     class Meta:
         model = ProductCategories
         fields = [
-            'id', 'name', 'icon', 'logo',
+            'id', 'name', 'icon', 'logo', 'is_available'
         ]
 
     def create(self, validated_data):
@@ -44,8 +45,9 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
-        logo = self.context.get('logo')
-        icon = self.context.get('icon')
+        print(validated_data, self.context)
+        logo = self.context.get('logo') if self.context.get('logo') != 'null' else None
+        icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
         instance.save()
