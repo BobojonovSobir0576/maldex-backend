@@ -104,6 +104,49 @@ class TagListView(APIView):
         return bad_request_response(serializer.errors)
 
 
+class TagDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(operation_description="Retrieve tag category",
+                         tags=['Basket Tag'],
+                         responses={200: TagSerializer(many=True)})
+    def get(self, request, pk):
+        queryset = get_object_or_404(Tag, pk=pk)
+        serializer = TagSerializer(queryset, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    """ Category Put View """
+
+    @swagger_auto_schema(request_body=TagSerializer,
+                         operation_description="Tag Categories update",
+                         tags=['Basket Tag'],
+                         responses={200: TagSerializer(many=False)})
+    def put(self, request, pk):
+        valid_fields = {'name', 'order', 'tag_category'}
+        unexpected_fields = check_required_key(request, valid_fields)
+        if unexpected_fields:
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+
+        queryset = get_object_or_404(Tag, pk=pk)
+        serializer = TagSerializer(instance=queryset, data=request.data,
+                                               context={'request': request})
+        print(request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
+
+    """ Category Delete View """
+
+    @swagger_auto_schema(operation_description="Delete a tag category",
+                         tags=['Basket Tag'],
+                         responses={204: 'No content'})
+    def delete(self, request, pk):
+        queryset = get_object_or_404(Tag, pk=pk)
+        queryset.delete()
+        return success_deleted_response("Successfully deleted")
+
+
 class GiftBasketListByTagView(APIView):
     permission_classes = [AllowAny]
 

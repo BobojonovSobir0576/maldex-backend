@@ -27,11 +27,11 @@ class Tag(models.Model):
     class Meta:
         verbose_name = "Теги"
         verbose_name_plural = "Теги"
-
-    def save(self, *args, **kwargs):
-        last_tag = Tag.objects.all().order_by('order').last()
-        self.order = last_tag.order + 1 if last_tag else 1
-        return super().save(*args, **kwargs)
+    #
+    # def save(self, *args, **kwargs):
+    #     last_tag = Tag.objects.all().order_by('order').last()
+    #     self.order = last_tag.order + 1 if last_tag else 1
+    #     return super().save(*args, **kwargs)
 
 
 class GiftsBasketCategory(models.Model):
