@@ -64,7 +64,7 @@ class ExternalCategory(models.Model):
 class Products(models.Model):
     """Model to represent products."""
     id = models.IntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название продукта'), max_length=150)
+    name = models.CharField(_('Название продукта'), max_length=512)
     code = models.IntegerField(default=0)
     article = models.CharField(_('Артикул'), max_length=155)
     product_size = models.CharField(_('Размер товара'), max_length=155, default="S-XXL")
