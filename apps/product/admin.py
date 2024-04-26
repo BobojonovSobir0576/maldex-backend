@@ -148,8 +148,12 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     product_image.short_description = 'Product Image'
 
 
+class ProductImageAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    pass
+
+
 # Register models with the admin site
 admin.site.register(Products, ProductsAdmin)
 admin.site.register(Colors, ColorAdmin)
-admin.site.register(ProductImage)
+admin.site.register(ProductImage, ProductImageAdmin)
 admin.site.register(ExternalCategory, ExternalCategoriesAdmin)
