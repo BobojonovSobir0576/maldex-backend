@@ -5,10 +5,22 @@ from apps.gifts_baskets.utils import create_set_products
 from apps.product.api.serializers import ProductDetailSerializers
 
 
+class CategoryTagListSerializer(serializers.ModelSerializer):
+    tag_set = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TagCategory
+        fields = ['id', 'name', 'tag_set']
+
+    def get_tag_set(self, obj):
+        data = TagSerializer(obj.categoryTag.all(), many=True)
+        return data.data
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'order')
+        fields = ('id', 'name', 'order', 'tag_category')
 
 
 class GiftBasketCategoryListSerializer(serializers.ModelSerializer):

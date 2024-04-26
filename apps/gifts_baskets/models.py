@@ -3,9 +3,23 @@ from django.utils.translation import gettext_lazy as _
 from apps.product.models import Products
 
 
+class TagCategory(models.Model):
+    name = models.CharField(_('Название'), max_length=150)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "teg_category"
+        verbose_name = "Тег категории"
+        verbose_name_plural = "Тег категории"
+
+
 class Tag(models.Model):
-    name = models.CharField(_('name'), max_length=50)
+    name = models.CharField(_('Название тэга'), max_length=50)
     order = models.IntegerField(blank=True)
+    tag_category = models.ForeignKey(TagCategory, on_delete=models.CASCADE, null=True, blank=True,
+                                     related_name='categoryTag')
 
     def __str__(self):
         return self.name
@@ -26,8 +40,8 @@ class GiftsBasketCategory(models.Model):
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
     class Meta:
         db_table = "gifts_basket_category"

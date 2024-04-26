@@ -20,14 +20,10 @@ class BannerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     inlines = [
         BannerProductInline,
     ]
-    list_display = ['id', 'name', 'created_at']
+    list_display = ['id', 'name', 'order_by_id', 'created_at']
     search_fields = ['name']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
-
-    fieldsets = [
-        (None, {'fields': ['name']}),
-    ]
 
 
 class BannerCarouselProductInline(admin.TabularInline):

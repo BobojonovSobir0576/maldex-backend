@@ -24,6 +24,9 @@ urlpatterns = [
     path('admin/file/<int:pk>/', admin_file.AdminFilesDetailView.as_view()),
 
     path('tags/', tag.TagListView.as_view()),
-    path('by-tag/<int:tag_id>/', tag.GiftBasketListByTagView.as_view())
+    path('by-tag/<int:tag_id>/', tag.GiftBasketListByTagView.as_view()),
+
+    path('tag/category/', tag.TagCategoryListView.as_view()),
+    path('tag/category/<int:pk>/', tag.TagCategoryDetailView.as_view()),
 
 ]

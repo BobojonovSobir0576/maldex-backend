@@ -14,7 +14,7 @@ class GiftsBasketProductAdmin(admin.TabularInline):
 
 
 class GiftBasketCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'id', 'is_available', 'parent']
+    list_display = ['id', 'name', 'is_available', 'parent']
     list_filter = ['is_available']
 
 
@@ -46,8 +46,13 @@ class GiftsBasketProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     pass
 
 
-class TagAdmin(admin.ModelAdmin):
-    fields = ('name',)
+class TagAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('name',)
+
+
+class TagCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    inlines = []
 
 
 admin.site.register(GiftsBasketCategory, GiftBasketCategoryAdmin)
@@ -58,3 +63,4 @@ admin.site.register(SetCategory, SetCatalogAdmin)
 admin.site.register(SetProducts, SetProductsAdmin)
 admin.site.register(AdminFiles, AdminFilesAdmin)
 admin.site.register(Tag, TagAdmin)
+admin.site.register(TagCategory, TagCategoryAdmin)
