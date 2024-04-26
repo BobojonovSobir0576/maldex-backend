@@ -8,7 +8,7 @@ class Banner(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название баннера'), max_length=155)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
-    order_by_id = models.IntegerField(default=0, null=True, blank=True, verbose_name="")
+    order_by_id = models.IntegerField(default=0, null=True, blank=True, verbose_name="Order By ID")
 
     def __str__(self):
         return self.name

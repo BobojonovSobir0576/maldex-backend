@@ -8,16 +8,18 @@ from apps.blog.views import (
     FAQListView,
     FAQDetailView,
     PrintCategoryListView,
-    PrintCategoryDetailView
+    PrintCategoryDetailView, get_article_tags, get_project_tags
 )
 
 urlpatterns = [
     # URLs for articles
     path('articles/', ArticleListView.as_view(), name='article_list'),  # List view for articles
+    path('articles/tags/', get_article_tags, name='article_list'),  # List view for articles
     path('articles/<int:pk>/', ArticleDetailView.as_view(), name='article_detail'),  # Detail view
 
     # URLs for projects
     path('projects/', ProjectListView.as_view(), name='project_list'),  # List view for projects
+    path('projects/tags/', get_project_tags, name='project_list'),  # List view for projects
     path('projects/<int:pk>/', ProjectDetailView.as_view(), name='project_detail'),  # Detail view
 
     # URLs for FAQs

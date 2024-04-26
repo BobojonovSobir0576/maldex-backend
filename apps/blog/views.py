@@ -1,12 +1,14 @@
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag
 from apps.blog.serializers import ArticleSerializer, ProjectSerializer, FAQSerializer, PrintCategorySerializer
 from utils.responses import success_response, success_created_response, bad_request_response, success_deleted_response
 
@@ -104,6 +106,9 @@ class ProjectListView(APIView):
     permission_classes = (AllowAny,)
 
     @swagger_auto_schema(
+        manual_parameters=[openapi.Parameter('tag_id', openapi.IN_QUERY,
+                                             description="Tag name",
+                                             type=openapi.TYPE_INTEGER)],
         operation_description="List all projects",
         tags=['Project'],
         responses={200: ProjectSerializer(many=True)}
@@ -112,7 +117,9 @@ class ProjectListView(APIView):
         """
         Get all projects.
         """
+        tag_id = request.GET.get('tag_id', None)
         projects = Project.objects.all()
+        projects = projects.filter(tags__id=tag_id) if tag_id else projects
         serializer = ProjectSerializer(projects, many=True, context={'request': request})
         return success_response(serializer.data)
 
@@ -181,6 +188,22 @@ class ProjectDetailView(APIView):
         project = get_object_or_404(Project, pk=pk)
         project.delete()
         return success_deleted_response('deleted')
+
+
+@api_view(['GET'])
+@swagger_auto_schema(tags=['Article'],
+                     operation_description='Get all article tags')
+def get_article_tags(request):
+    tags = list(Tag.objects.filter(content_type=ContentType.objects.get_for_model(Article)).values('id', 'name'))
+    return success_response(tags)
+
+
+@api_view(['GET'])
+@swagger_auto_schema(tags=['Project'],
+                     operation_description='Get all project tags')
+def get_project_tags(request):
+    tags = list(Tag.objects.filter(content_type=ContentType.objects.get_for_model(Project)).values('id', 'name'))
+    return success_response(tags)
 
 
 class FAQListView(APIView):

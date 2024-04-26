@@ -30,10 +30,11 @@ class ArticleSerializer(serializers.ModelSerializer):
 # Serializer for Projects
 class ProjectSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField(read_only=True)
-    tags = serializers.SerializerMethodField(read_only=True)
+    tag_set = serializers.SerializerMethodField()
     images = serializers.ListField(write_only=True)
     images_set = serializers.SerializerMethodField(read_only=True)
     product_ids = serializers.ListField(write_only=True)
+    tags = serializers.ListField(write_only=True)
 
     class Meta:
         model = Project
@@ -43,9 +44,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Create a new project with associated images and products
         images = validated_data.pop('images')
         product_ids = validated_data.pop('product_ids')
+        tags = list(map(int, validated_data.pop('tags')[0].split(',')))
         project = Project.objects.create(**validated_data)
 
         # Add images to the project
+
+        for tag_id in tags:
+            project.tags.add(Tag.objects.get(pk=tag_id))
         for image in images:
             image_file = image.pop('image')[0]
             ProjectImage.objects.create(project=project, image=image_file)
@@ -62,11 +67,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Retrieve the absolute URLs of project images
         images = []
         request = self.context['request']
-        for image in obj.project_images.all().values_list('image', flat=True):
-            images.append(request.build_absolute_uri(image[0]))
+        # print(obj.project_images.all()[0].image)
+        for image in obj.project_images.all():
+            images.append(request.build_absolute_uri(image.image.url))
         return images
 
-    def get_tags(self, obj):
+    def get_tag_set(self, obj):
         # Retrieve tags associated with the project
         return [tag['name'] for tag in obj.tags.all().values('name')]
 
