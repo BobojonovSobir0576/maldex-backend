@@ -93,7 +93,7 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
         child=serializers.ImageField(allow_empty_file=False), write_only=True, required=False)
     basket_products = GiftsBasketProductSerializers(many=True, read_only=True)
     products_data = serializers.JSONField(write_only=True, required=False)
-    tags = TagSerializer(many=True)
+    tags = TagSerializer(many=True, required=False)
 
     class Meta:
         model = GiftsBaskets
