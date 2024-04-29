@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -18,6 +20,7 @@ class CategoryListView(APIView):
     """
     permission_classes = [AllowAny]
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
         manual_parameters=[],
@@ -28,7 +31,7 @@ class CategoryListView(APIView):
         """
         Get all product categories.
         """
-        queryset = ProductCategories.objects.all().order_by('-id', 'order').filter(parent=None)
+        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children').filter(parent=None).order_by('-id', 'order')
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
@@ -118,6 +121,7 @@ class HomeCategoryView(APIView):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
         tags=['Categories'],

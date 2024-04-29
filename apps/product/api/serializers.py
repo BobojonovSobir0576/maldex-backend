@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -36,9 +36,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = [
-            'id', 'name', 'icon', 'logo', 'is_available'
-        ]
+        fields = ['id', 'name', 'icon', 'logo', 'is_available', 'is_popular', 'is_hit',  'is_new']
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -64,24 +62,24 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
 class SubCategorySerializer(serializers.ModelSerializer):
     """ Sub Category details """
-    children = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = SubCategory
+        fields = ['id', 'name']
+
+
+class SubCategoryWithCountSerializer(serializers.ModelSerializer):
+    """ Sub Category with Count details """
     count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'children', 'count']
-
-    def get_children(self, subcategory):
-        children = TertiaryCategory.objects.filter(parent=subcategory)
-        return TertiaryCategorySerializer(children, many=True).data
+        fields = ['id', 'name', 'count']
 
     def get_count(self, subcategory):
-        products = Products.objects.filter(
-            Q(categoryId=subcategory) |
-            Q(categoryId__parent=subcategory) |
-            Q(categoryId__parent__parent=subcategory)
-        )
-        return products.count()
+        return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
+            Q(categoryId=subcategory) | Q(categoryId__parent=subcategory)
+        ).aggregate(total=Count('id'))['total'] or 0
 
 
 class MainCategorySerializer(serializers.ModelSerializer):
@@ -94,13 +92,13 @@ class MainCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo', 'children']
 
     def get_children(self, category):
-        children = SubCategory.objects.filter(parent=category)
+        children = category.children
         return SubCategorySerializer(children, many=True).data
 
 
 class CategoryProductsSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField(read_only=True)
-    children = SubCategorySerializer(many=True, read_only=True)
+    children = SubCategoryWithCountSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductCategories

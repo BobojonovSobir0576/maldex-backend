@@ -1,5 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -19,6 +21,7 @@ class ArticleListView(APIView):
     """
     permission_classes = (AllowAny,)
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="List all articles",
         tags=['Article'],
@@ -105,6 +108,7 @@ class ProjectListView(APIView):
     """
     permission_classes = (AllowAny,)
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         manual_parameters=[openapi.Parameter('tag_id', openapi.IN_QUERY,
                                              description="Tag name",
@@ -191,6 +195,7 @@ class ProjectDetailView(APIView):
 
 
 @api_view(['GET'])
+@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Article'],
                      operation_description='Get all article tags')
 def get_article_tags(request):
@@ -199,6 +204,7 @@ def get_article_tags(request):
 
 
 @api_view(['GET'])
+@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Project'],
                      operation_description='Get all project tags')
 def get_project_tags(request):
@@ -212,6 +218,7 @@ class FAQListView(APIView):
     """
     permission_classes = (AllowAny,)
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="List all FAQs",
         tags=['FAQ'],
@@ -308,6 +315,7 @@ class PrintCategoryListView(APIView):
     """
     permission_classes = (AllowAny,)
 
+    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="List all print categories",
         tags=['Print Category'],
