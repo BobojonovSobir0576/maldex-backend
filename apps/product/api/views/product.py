@@ -24,7 +24,6 @@ subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Categories'],
                      responses={200: SubCategorySerializer(many=True)},
                      operation_description='Get all sub categories')
@@ -34,7 +33,6 @@ def get_maincategories(request):
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(manual_parameters=[category_id_param], tags=['Categories'],
                      responses={200: SubCategorySerializer(many=True)},
                      operation_description='Get all sub categories')
@@ -44,7 +42,6 @@ def get_subcategories(request, category_id):
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
                      responses={200: TertiaryCategorySerializer(many=True)},
                      operation_description='Get all tertiary categories')
@@ -54,7 +51,6 @@ def get_tertiary_categories(request, subcategory_id):
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Products'],
                      operation_description='Get the number of NEW, HIT, POPULAR products')
 def get_counts(request):
