@@ -195,7 +195,6 @@ class ProjectDetailView(APIView):
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Article'],
                      operation_description='Get all article tags')
 def get_article_tags(request):
@@ -204,7 +203,6 @@ def get_article_tags(request):
 
 
 @api_view(['GET'])
-@method_decorator(cache_page(600))
 @swagger_auto_schema(tags=['Project'],
                      operation_description='Get all project tags')
 def get_project_tags(request):
