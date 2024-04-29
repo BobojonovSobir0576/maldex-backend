@@ -61,7 +61,8 @@ class BannerCarouselProductListSerializer(serializers.ModelSerializer):
 class BannerCarouselListSerializer(serializers.ModelSerializer):
     product_set = serializers.SerializerMethodField()
     product_data = serializers.ListSerializer(
-        child=serializers.IntegerField(required=True)
+        child=serializers.IntegerField(required=True),
+        write_only=True
     )
 
     class Meta:
