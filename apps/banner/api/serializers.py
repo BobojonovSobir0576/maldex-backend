@@ -54,7 +54,7 @@ class BannerCarouselProductListSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def get_productCarouselID(self, obj):
-        data = ProductDetailSerializers(obj.productID, context=self.context)
+        data = ProductDetailSerializers(obj.productCarouselID, context=self.context)
         return data.data
 
 
