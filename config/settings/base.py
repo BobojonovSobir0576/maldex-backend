@@ -238,3 +238,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173", 'https://*.mydomain.com',
     'https://*.127.0.0.1', 'http://localhost', 'http://localhost:5174'
 ]
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = True
+

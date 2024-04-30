@@ -164,16 +164,16 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     article = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    # categoryId = serializers.IntegerField(required=False, write_only=False)
+    categoryId = serializers.IntegerField(required=False)
 
     class Meta:
         model = Products  # Make sure to specify your model here
         fields = '__all__'
 
-    def validate_categoryId(self, attrs):
-        # print(attrs['categoryId'])
-        print(attrs)
-        return []
+    # def validate_categoryId(self, attrs):
+    #     # print(attrs['categoryId'])
+    #     print(attrs)
+    #     return []
 
     def create(self, validated_data):
         images = validated_data.pop('images')
