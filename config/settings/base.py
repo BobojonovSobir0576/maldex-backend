@@ -235,3 +235,5 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com', 'https://*.127.0.0.1', 'http://localhost', 'http://localhost:5174']
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
