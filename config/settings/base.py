@@ -233,3 +233,5 @@ REST_FRAMEWORK = {
     ),
     'DATETIME_FORMAT': "%d.%m.%Y",
 }
+
+CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com', 'https://*.127.0.0.1', 'http://localhost', 'http://localhost:5174']
