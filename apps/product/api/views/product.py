@@ -1,58 +1,23 @@
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser, MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductCategories
-from apps.product.api.serializers import (
-    ProductDetailSerializers, SubCategorySerializer, TertiaryCategorySerializer, ProductListSerializers
-)
+from apps.product.models import Products
+from apps.product.api.serializers import ProductDetailSerializers, ProductListSerializers
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
-category_id_param = openapi.Parameter('category_id', openapi.IN_QUERY,
-                                      description="Main Category ID",
-                                      type=openapi.TYPE_STRING)
-subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
-                                         description="Sub Category ID",
-                                         type=openapi.TYPE_STRING)
 
 
-@api_view(['GET'])
-@swagger_auto_schema(tags=['Categories'],
-                     responses={200: SubCategorySerializer(many=True)},
-                     operation_description='Get all sub categories')
-def get_maincategories(request):
-    categories = list(ProductCategories.objects.filter(parent=None).values('id', 'name'))
-    return success_response(categories)
-
-
-@api_view(['GET'])
-@swagger_auto_schema(manual_parameters=[category_id_param], tags=['Categories'],
-                     responses={200: SubCategorySerializer(many=True)},
-                     operation_description='Get all sub categories')
-def get_subcategories(request, category_id):
-    subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
-    return success_response(subcategories)
-
-
-@api_view(['GET'])
-@swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
-                     responses={200: TertiaryCategorySerializer(many=True)},
-                     operation_description='Get all tertiary categories')
-def get_tertiary_categories(request, subcategory_id):
-    tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
-    return success_response(tertiary_categories)
-
-
-@api_view(['GET'])
 @swagger_auto_schema(tags=['Products'],
-                     operation_description='Get the number of NEW, HIT, POPULAR products')
+                     operation_description='Get the number of NEW, HIT, POPULAR products',
+                     method='GET')
+@api_view(['GET'])
 def get_counts(request):
     new_product_count = Products.objects.filter(is_new=True).count()
     hit_product_count = Products.objects.filter(is_hit=True).count()

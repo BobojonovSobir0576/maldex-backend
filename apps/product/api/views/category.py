@@ -1,16 +1,18 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from apps.product.models import ProductCategories
 from apps.product.api.serializers import (
-    CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer
+    CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer, TertiaryCategorySerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from apps.product.filters import ProductCategoryFilter
 
 
@@ -124,7 +126,7 @@ class HomeCategoryView(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
         tags=['Categories'],
-        responses={200: CategoryProductsSerializer(many=True)}
+        responses={200: CategoryProductsSerializer}
     )
     def get(self, request):
         """
@@ -134,6 +136,11 @@ class HomeCategoryView(APIView):
         serializers = CategoryProductsSerializer(category, context={'request': request})
         return success_response(serializers.data)
 
+    @swagger_auto_schema(
+        operation_description="Create category or sub categories for home view",
+        tags=['Categories'],
+        responses={200: CategoryProductsSerializer}
+    )
     def post(self, request):
         """
         Set a category as the home category.
@@ -148,3 +155,41 @@ class HomeCategoryView(APIView):
 
         serializers = CategoryProductsSerializer(category, context={'request': request})
         return success_response(serializers.data)
+
+
+category_id_param = openapi.Parameter('category_id', openapi.IN_QUERY,
+                                      description="Main Category ID",
+                                      type=openapi.TYPE_STRING)
+subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
+                                         description="Sub Category ID",
+                                         type=openapi.TYPE_STRING)
+
+
+@swagger_auto_schema(tags=['Categories'],
+                     responses={200: SubCategorySerializer(many=True)},
+                     operation_description='Get all sub categories',
+                     method='GET')
+@api_view(['GET'])
+def get_maincategories(request):
+    categories = list(ProductCategories.objects.filter(parent=None).values('id', 'name'))
+    return success_response(categories)
+
+
+@swagger_auto_schema(manual_parameters=[category_id_param], tags=['Categories'],
+                     responses={200: SubCategorySerializer(many=True)},
+                     operation_description='Get all sub categories',
+                     method='GET')
+@api_view(['GET'])
+def get_subcategories(request, category_id):
+    subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
+    return success_response(subcategories)
+
+
+@swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
+                     responses={200: TertiaryCategorySerializer(many=True)},
+                     operation_description='Get all tertiary categories',
+                     method='GET')
+@api_view(['GET'])
+def get_tertiary_categories(request, subcategory_id):
+    tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
+    return success_response(tertiary_categories)

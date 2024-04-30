@@ -194,17 +194,19 @@ class ProjectDetailView(APIView):
         return success_deleted_response('deleted')
 
 
-@api_view(['GET'])
 @swagger_auto_schema(tags=['Article'],
-                     operation_description='Get all article tags')
+                     operation_description='Get all article tags',
+                     method='GET')
+@api_view(['GET'])
 def get_article_tags(request):
     tags = list(Tag.objects.filter(content_type=ContentType.objects.get_for_model(Article)).values('id', 'name'))
     return success_response(tags)
 
 
-@api_view(['GET'])
 @swagger_auto_schema(tags=['Project'],
-                     operation_description='Get all project tags')
+                     operation_description='Get all project tags',
+                     method='GET')
+@api_view(['GET'])
 def get_project_tags(request):
     tags = list(Tag.objects.filter(content_type=ContentType.objects.get_for_model(Project)).values('id', 'name'))
     return success_response(tags)

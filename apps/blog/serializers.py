@@ -47,10 +47,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         tags = list(map(int, validated_data.pop('tags')[0].split(',')))
         project = Project.objects.create(**validated_data)
 
-        # Add images to the project
-
+        # Add tags to the project
         for tag_id in tags:
             project.tags.add(Tag.objects.get(pk=tag_id))
+
+        # Add images to the project
         for image in images:
             image_file = image.pop('image')[0]
             ProjectImage.objects.create(project=project, image=image_file)
@@ -67,7 +68,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Retrieve the absolute URLs of project images
         images = []
         request = self.context['request']
-        # print(obj.project_images.all()[0].image)
+
         for image in obj.project_images.all():
             images.append(request.build_absolute_uri(image.image.url))
         return images

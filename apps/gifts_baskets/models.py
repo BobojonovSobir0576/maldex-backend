@@ -60,7 +60,7 @@ class GiftsBaskets(models.Model):
     price_type = models.CharField(_('Цена валюта'), max_length=10, null=True, blank=True)
     discount_price = models.FloatField(default=0, null=True, blank=True, verbose_name='Цена со скидкой')
     created_at = models.DateField(auto_now_add=True, null=True, blank=True, verbose_name='Дата публикации')
-    tags = models.ManyToManyField(Tag, related_name='baskets', verbose_name='Бирки для корзины подарков', null=True)
+    tags = models.ManyToManyField(Tag, related_name='baskets', verbose_name='Бирки для корзины подарков')
 
     def __str__(self):
         return self.title
