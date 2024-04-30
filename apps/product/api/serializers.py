@@ -177,6 +177,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
+        category_id = validated_data.pop('categoryId', None)
+        category = get_object_or_404(ProductCategories, id=category_id)
+        validated_data['categoryId'] = category
         product_instance = Products.objects.create(**validated_data)
 
         for image_data in images:
