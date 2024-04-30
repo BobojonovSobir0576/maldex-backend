@@ -37,7 +37,7 @@ class ProductCategories(models.Model):
             self.id = f"{next_id:010d}"
 
         if not self.order:
-            last_instance = ProductCategories.objects.filter(parent=None).order_by('order').last()
+            last_instance = ProductCategories.objects.filter(parent=self.parent).order_by('order').last()
             next_id = 1 if not (last_instance and last_instance.order) else last_instance.order + 1
             self.order = next_id
         super(ProductCategories, self).save(*args, **kwargs)

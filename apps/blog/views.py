@@ -45,7 +45,7 @@ class ArticleListView(APIView):
         """
         Create a new article.
         """
-        serializer = ArticleSerializer(data=request.data)
+        serializer = ArticleSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_created_response(serializer.data)
@@ -68,7 +68,7 @@ class ArticleDetailView(APIView):
         Retrieve a specific article.
         """
         article = get_object_or_404(Article, pk=pk)
-        serializer = ArticleSerializer(article)
+        serializer = ArticleSerializer(article, context={'request': request})
         return success_response(serializer.data)
 
     @swagger_auto_schema(
@@ -82,7 +82,7 @@ class ArticleDetailView(APIView):
         Update a specific article.
         """
         article = get_object_or_404(Article, pk=pk)
-        serializer = ArticleSerializer(article, data=request.data)
+        serializer = ArticleSerializer(article, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)
