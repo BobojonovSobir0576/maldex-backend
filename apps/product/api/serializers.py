@@ -164,7 +164,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     article = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    categoryId = serializers.IntegerField(required=False)
+    # categoryId = serializers.IntegerField(required=False)
 
     class Meta:
         model = Products  # Make sure to specify your model here
@@ -177,10 +177,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
-        category_id = validated_data.pop('categoryId', None)
-        category = get_object_or_404(ProductCategories, id=category_id)
-        validated_data['categoryId'] = category
+        print(validated_data)
         product_instance = Products.objects.create(**validated_data)
+        print(product_instance)
 
         for image_data in images:
             print(image_data)
