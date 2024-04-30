@@ -20,7 +20,6 @@ class CategoryListView(APIView):
     """
     permission_classes = [AllowAny]
 
-    @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
         manual_parameters=[],
