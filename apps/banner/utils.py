@@ -14,6 +14,16 @@ def create_banner_products(product_data, create_banner):
     return create_banner_product
 
 
+def update_banner_products(banner, product_data):
+    for item in product_data:
+        product_instance = get_object_or_404(Products, id=item)
+        BannerProduct.objects.get_or_create(
+            bannerID=banner,
+            productID=product_instance
+        )
+    return None
+
+
 def create_banner_carousel_products(product_data, create_banner_carousel):
     for item in product_data:
         product_instance = get_object_or_404(Products, id=item)

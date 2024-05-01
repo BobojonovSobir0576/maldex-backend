@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.banner.models import *
-from apps.banner.utils import create_banner_products, create_banner_carousel_products
+from apps.banner.utils import create_banner_products, create_banner_carousel_products, update_banner_products
 from apps.product.api.serializers import ProductDetailSerializers
 
 
@@ -36,6 +36,8 @@ class BannerListSerializer(serializers.ModelSerializer):
         return create_banner
 
     def update(self, instance, validated_data):
+        product_data = validated_data.pop('product_data', [])
+        update_banner_products(instance, product_data)
         return super().update(instance, validated_data)
 
     def get_product_set(self, obj):
