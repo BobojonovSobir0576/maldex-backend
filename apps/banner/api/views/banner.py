@@ -1,6 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -119,7 +117,6 @@ class BannerCarouselListView(APIView):
     permission_classes = [AllowAny]
     """ Banner Carousel Get View """
 
-    @method_decorator(cache_page(600))
     @swagger_auto_schema(operation_description="Retrieve a list of banner carousel",
                          tags=['Banner Carousel'],
                          responses={200: BannerCarouselListSerializer(many=True)})
