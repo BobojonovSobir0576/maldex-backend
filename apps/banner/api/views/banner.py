@@ -95,7 +95,7 @@ class BannerProductDetailView(APIView):
                          tags=['Banner Product'],
                          responses={200: BannerProductListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'productID'}
+        valid_fields = {'product_id'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")

@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from apps.banner.models import *
 from apps.banner.utils import create_banner_products, create_banner_carousel_products, update_banner_products
@@ -6,13 +7,17 @@ from apps.product.api.serializers import ProductDetailSerializers
 
 class BannerProductListSerializer(serializers.ModelSerializer):
     productID = serializers.SerializerMethodField()
+    product_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = BannerProduct
-        fields = ['id', 'productID']
+        fields = ['id', 'productID', 'product_id']
 
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        product = get_object_or_404(Products, id=validated_data.pop('product_id'))
+        instance.productID = product
+        instance.save()
+        return instance
 
     def get_productID(self, obj):
         data = ProductDetailSerializers(obj.productID, context=self.context)
