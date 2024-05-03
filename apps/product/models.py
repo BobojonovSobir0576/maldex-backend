@@ -22,6 +22,8 @@ class ProductCategories(models.Model):
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
 
     home = models.BooleanField(default=False,)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
 
     objects = AllCategoryManager()
     all_levels = AllCategoryManager()
@@ -86,7 +88,9 @@ class Products(models.Model):
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
     is_hit = models.BooleanField(default=False, verbose_name="Хит?")
     is_new = models.BooleanField(default=False, verbose_name="Новый?")
+
     created_at = models.DateField(auto_now_add=True, verbose_name='Данные опубликованы')
+    updated_at = models.DateField(auto_now=True)
 
     def save(self, *args, **kwargs):
         """Override save method to generate ID."""
