@@ -46,6 +46,7 @@ class ProductCategories(models.Model):
 
     class Meta:
         db_table = "product_category"
+        ordering = ('-is_available', 'order')
         verbose_name = "Категория"
         verbose_name_plural = "Категория"
 
