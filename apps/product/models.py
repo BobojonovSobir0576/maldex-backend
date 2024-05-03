@@ -42,6 +42,8 @@ class ProductCategories(models.Model):
             last_instance = ProductCategories.objects.filter(parent=self.parent, is_available=True).order_by('order').last()
             next_id = 1 if not (last_instance and last_instance.order) else last_instance.order + 1
             self.order = next_id
+        elif not self.is_available:
+            self.order = None
         super(ProductCategories, self).save(*args, **kwargs)
 
     class Meta:
