@@ -89,7 +89,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo', 'children']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order', 'icon', 'logo', 'children']
 
     def get_children(self, category):
         children = category.children
