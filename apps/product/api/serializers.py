@@ -36,7 +36,8 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular', 'is_hit',  'is_new', 'order']
+        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
+                  'is_hit',  'is_new', 'order', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -89,7 +90,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order', 'icon', 'logo', 'children']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available',
+                  'order', 'icon', 'logo', 'children', 'created_at', 'updated_at']
 
     def get_children(self, category):
         children = category.children
