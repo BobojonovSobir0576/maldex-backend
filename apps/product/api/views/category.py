@@ -1,13 +1,16 @@
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.product.models import ProductCategories
+from apps.product.models import ProductCategories, ExternalCategory
 from apps.product.api.serializers import (
-    CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer, TertiaryCategorySerializer
+    CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
+    TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
@@ -193,3 +196,34 @@ def get_subcategories(request, category_id):
 def get_tertiary_categories(request, subcategory_id):
     tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
     return success_response(tertiary_categories)
+
+
+class ExternalCategoryList(APIView):
+    permission_classes = [AllowAny]
+    @swagger_auto_schema(
+        operation_description="Retrieve category or sub categories for home view",
+        tags=['External Categories'],
+        responses={200: CategoryProductsSerializer(many=True)}
+    )
+
+    def get(self, request):
+        queryset = ExternalCategory.objects.all()
+        serializer = ExternalCategoryListSerializer(queryset, many=True)
+        return success_response(serializer.data)
+
+
+class CategoryUploaderListView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=CategoryAutoUploaderSerializer,
+        operation_description="Upload new product category",
+        tags=['Uploader Categories'],
+        responses={201: CategoryAutoUploaderSerializer(many=False), 400: 'Bad request'}
+    )
+    def post(self, request):
+        serializer = CategoryAutoUploaderSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            category = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

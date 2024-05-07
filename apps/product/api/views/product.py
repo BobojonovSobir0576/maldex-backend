@@ -8,7 +8,8 @@ from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
 from apps.product.models import Products
-from apps.product.api.serializers import ProductDetailSerializers, ProductListSerializers
+from apps.product.api.serializers import ProductDetailSerializers, ProductListSerializers, \
+    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
@@ -155,3 +156,35 @@ class ProductsDetailView(APIView):
         queryset = get_object_or_404(Products, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")
+
+
+class ProductAutoUploaderView(APIView):
+
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(request_body=ProductAutoUploaderSerializer,
+                         operation_description="Products Auto Uploader",
+                         tags=['Products Auto Uploader'],
+                         responses={201: ProductAutoUploaderSerializer(many=False)})
+    def post(self, request):
+        # print(request.data)
+        product_serializer = ProductAutoUploaderSerializer(data=request.data, context={'request': request})
+        if product_serializer.is_valid(raise_exception=True):
+            product_serializer.save()
+            return success_created_response(product_serializer.data)
+        return bad_request_response(product_serializer.errors)
+
+
+class ProductAutoUploaderDetailView(APIView):
+    @swagger_auto_schema(request_body=ProductAutoUploaderDetailSerializer,
+                         operation_description="Products auto uploader update",
+                         tags=['Products Auto Uploader'],
+                         responses={200: ProductAutoUploaderDetailSerializer(many=False)})
+    def put(self, request, pk):
+        product_instance = get_object_or_404(Products, pk=pk)
+        serializer = ProductAutoUploaderDetailSerializer(instance=product_instance, data=request.data,
+                                              context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)

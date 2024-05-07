@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Q, Count
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
@@ -36,7 +37,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular', 'is_hit',  'is_new', 'order']
+        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular', 'is_hit', 'is_new', 'order']
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -164,6 +165,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     article = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
+
     # categoryId = serializers.IntegerField(required=False)
 
     class Meta:
@@ -259,3 +261,128 @@ class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
             )
 
         return product
+
+
+class ExternalCategoryListSerializer(serializers.ModelSerializer):
+    category = CategoryListSerializers(read_only=True)
+
+    class Meta:
+        model = ExternalCategory
+        fields = '__all__'
+
+
+class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
+    external_id = serializers.IntegerField(required=False)
+    parent_id = serializers.IntegerField(write_only=True, required=False)
+    name = serializers.CharField(max_length=255, required=False)
+
+    class Meta:
+        model = ProductCategories
+        fields = [
+            'id', 'name', 'parent', 'external_id', 'parent_id',
+        ]
+
+    def create(self, validated_data):
+        external_id = validated_data.pop('external_id', None)
+        parent_id = validated_data.pop('parent_id', None)
+        name = validated_data['name']
+
+        category = ProductCategories.objects.filter(external_categories__external_id=external_id).first()
+        parent_category = ProductCategories.objects.filter(external_categories__external_id__in=[parent_id]).first()
+
+        new_category = None
+
+        if not category:
+            try:
+                is_4_level = parent_category.parent.parent is not None
+            except:
+
+                is_4_level = False
+            if not is_4_level:
+                new_category = ProductCategories.objects.create(name=name, parent=parent_category)
+                ExternalCategory.objects.create(external_id=external_id, category=new_category)
+            else:
+                ExternalCategory.objects.create(external_id=external_id, category=parent_category)
+
+        return category or new_category or parent_category
+
+
+class ProductAutoUploaderSerializer(serializers.ModelSerializer):
+    color_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    image_set = serializers.JSONField(required=False)
+    categoryId = serializers.IntegerField(required=False, allow_null=True, write_only=True)
+
+    class Meta:
+        model = Products
+        fields = [
+            'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
+            'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
+            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity'
+        ]
+
+    def check_color_exists(self, color_name):
+        if color_name:
+            color, _ = Colors.objects.get_or_create(name=color_name)
+            return color
+        return None
+
+    def create_img_into_product(self, img_set, color_instance, product_instance):
+        for img in img_set:
+            ProductImage.objects.create(
+                productID=product_instance,
+                colorID=color_instance,
+                image_url=img['name']
+            )
+
+    def get_category_instance(self, cate_id):
+        if cate_id is not None:
+            external_category = ExternalCategory.objects.filter(external_id=cate_id).first()
+            if external_category and external_category.category:
+                return external_category.category
+        return None
+
+    @transaction.atomic
+    def create(self, validated_data):
+        color_name = validated_data.pop('color_name', None)
+        image_set = validated_data.pop('image_set', [])
+        categoryId = validated_data.pop('categoryId', None)
+
+        color_instance = self.check_color_exists(color_name)
+        category_instance = self.get_category_instance(categoryId)
+
+        # Since you are only creating a single product instance, unpacking is appropriate
+        product_instance, created = Products.objects.get_or_create(**validated_data)
+
+        if category_instance:
+            product_instance.categoryId = category_instance
+            product_instance.save()
+
+        if image_set:
+            self.create_img_into_product(image_set, color_instance, product_instance)
+
+        return product_instance
+
+
+class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
+    price = serializers.FloatField()
+    discount_price = serializers.FloatField()
+    quantity = serializers.FloatField()
+
+    class Meta:
+        model = Products
+        fields = [
+            'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
+            'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
+            'created_at', 'updated_at', 'categoryId', 'quantity'
+        ]
+
+    def update(self, instance, validated_data):
+        # Update the instance fields with new values from validated_data or use existing if not provided
+        instance.quantity = validated_data.get('quantity', instance.quantity)
+        instance.price = validated_data.get('price', instance.price)
+        instance.discount_price = validated_data.get('discount_price', instance.discount_price)
+
+        # Save the updated instance
+        instance.save()
+
+        return instance
