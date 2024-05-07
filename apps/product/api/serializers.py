@@ -37,18 +37,21 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular', 'is_hit', 'is_new', 'order']
+        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
+                  'is_hit',  'is_new', 'order', 'created_at', 'updated_at']
+
 
     def create(self, validated_data):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        super().update(instance, validated_data)
-        print(validated_data, self.context)
+        order = validated_data.pop('order', None)
+        print(order)
         logo = self.context.get('logo') if self.context.get('logo') != 'null' else None
         icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
+        instance.order = int(order)
         instance.save()
         return instance
 
@@ -90,7 +93,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available', 'icon', 'logo', 'children']
+        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available',
+                  'order', 'icon', 'logo', 'children', 'created_at', 'updated_at']
 
     def get_children(self, category):
         children = category.children

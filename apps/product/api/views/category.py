@@ -35,7 +35,7 @@ class CategoryListView(APIView):
         """
         Get all product categories.
         """
-        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children').filter(parent=None).order_by('-id', 'order')
+        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children').filter(parent=None).order_by('order')
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
