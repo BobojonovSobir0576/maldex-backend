@@ -43,12 +43,13 @@ class CategoryListSerializers(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        super().update(instance, validated_data)
-        print(validated_data, self.context)
+        order = validated_data.pop('order', None)
+        print(order)
         logo = self.context.get('logo') if self.context.get('logo') != 'null' else None
         icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
+        instance.order = int(order)
         instance.save()
         return instance
 
