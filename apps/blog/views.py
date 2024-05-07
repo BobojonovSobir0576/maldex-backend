@@ -6,8 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag
-from apps.blog.serializers import ArticleSerializer, ProjectSerializer, FAQSerializer, PrintCategorySerializer
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, LinkTag
+from apps.blog.serializers import ArticleSerializer, ProjectSerializer, FAQSerializer, PrintCategorySerializer, \
+    LinkSerializer
 from utils.responses import success_response, success_created_response, bad_request_response, success_deleted_response
 
 
@@ -384,5 +385,91 @@ class PrintCategoryDetailView(APIView):
         Delete a specific print category.
         """
         category = get_object_or_404(PrintCategory, id=category_id)
+        category.delete()
+        return success_deleted_response('deleted')
+
+
+class LinkList(APIView):
+    """
+    API endpoint to list and create link tags.
+    """
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(
+        operation_description="List all link tags",
+        tags=['Link Tag'],
+        responses={200: LinkSerializer(many=True)}
+    )
+    def get(self, request):
+        """
+        Get all print link tags.
+        """
+        categories = LinkTag.objects.all()
+        serializer = LinkSerializer(categories, many=True, context={'request': request})
+        return success_response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=LinkSerializer,
+        operation_description="Create a link tag",
+        tags=['Link Tag'],
+        responses={201: LinkSerializer()}
+    )
+    def post(self, request):
+        """
+        Create a new link tag.
+        """
+        serializer = LinkSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_created_response(serializer.data)
+        return bad_request_response(serializer.errors)
+
+
+class LinkDetail(APIView):
+    """
+    API endpoint to retrieve, update, and delete a specific print category.
+    """
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific print category",
+        tags=['Link Tag'],
+        responses={200: LinkSerializer()}
+    )
+    def get(self, request, link_id, **kwargs):
+        """
+        Retrieve a specific print category.
+        """
+        category = get_object_or_404(LinkTag, id=link_id)
+        serializer = LinkSerializer(category, context={'request': request})
+        return success_response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=LinkSerializer,
+        operation_description="Update a specific print category",
+        tags=['Link Tag'],
+        responses={200: LinkSerializer()}
+    )
+    def put(self, request, link_id, **kwargs):
+        """
+        Update a specific print category.
+        """
+        category = get_object_or_404(LinkTag, id=link_id)
+        serializer = LinkSerializer(category, data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
+
+    @swagger_auto_schema(
+        operation_description="Delete a specific print category",
+        tags=['Link Tag'],
+        responses={204: 'No content'}
+    )
+    def delete(self, request, link_id, **kwargs):
+        """
+        Delete a specific print category.
+        """
+        category = get_object_or_404(LinkTag, id=link_id)
         category.delete()
         return success_deleted_response('deleted')

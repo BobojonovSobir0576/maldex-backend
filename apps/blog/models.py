@@ -130,3 +130,23 @@ class PrintCategory(models.Model):
         ordering = ('title',)
         verbose_name = _('Категория печати')
         verbose_name_plural = _('Категории печати')
+
+
+class LinkTag(models.Model):
+    title = models.CharField(max_length=100)
+    link = models.URLField()
+    order = models.PositiveSmallIntegerField(default=1, blank=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        db_table = 'link_tag'
+        ordering = ('order',)
+
+    def save(self, *args, **kwargs):
+        if not self.order:
+            last_instance = LinkTag.objects.all().last()
+            order = 1 if not last_instance else int(last_instance.order) + 1
+            self.order = order
+        super().save(*args, **kwargs)

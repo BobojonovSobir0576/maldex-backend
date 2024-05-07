@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, LinkTag
 
 
 # Customizing the admin interface for FAQs
@@ -33,6 +33,13 @@ class TagAdmin(admin.ModelAdmin):
         if db_field.name == 'content_type':
             kwargs['queryset'] = ContentType.objects.filter(app_label='blog')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(LinkTag)
+class LinkAdmin(admin.ModelAdmin):
+    list_display = ['title', 'order']
+    search_fields = ['title']
+    fields = ['title', 'link', 'order']
 
 
 # Registering models with their respective customized admin interfaces

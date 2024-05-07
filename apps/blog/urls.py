@@ -8,7 +8,7 @@ from apps.blog.views import (
     FAQListView,
     FAQDetailView,
     PrintCategoryListView,
-    PrintCategoryDetailView, get_article_tags, get_project_tags
+    PrintCategoryDetailView, get_article_tags, get_project_tags, LinkList, LinkDetail
 )
 
 urlpatterns = [
@@ -29,4 +29,8 @@ urlpatterns = [
     # URLs for print categories
     path('print-categories/', PrintCategoryListView.as_view(), name='print_category_list'),  # List view
     path('print-categories/<int:category_id>/', PrintCategoryDetailView.as_view(), name='print_category_detail'),
+
+    # URLs for link tags
+    path('link-tags/', LinkList.as_view(), name='links-list'),  # List view
+    path('link-tags/<int:link_id>/', LinkDetail.as_view(), name='link-detail'),
 ]

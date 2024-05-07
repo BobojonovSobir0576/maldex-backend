@@ -153,9 +153,20 @@ SWAGGER_SETTINGS = {
 
 CKEDITOR_5_CONFIGS = {
     'default': {
+        'allowedContent': True,
+        "removePlugins": "stylesheetparser",
         'toolbar': ['heading', '|', 'bold', 'italic', 'link',
                     'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', ],
-
+    },
+    'htmlSupport': {
+        'allow': [
+            {
+                'name': '/.*/',
+                'attributes': True,
+                'classes': False,
+                'styles': True
+            }
+        ]
     },
     'extends': {
         'blockToolbar': [

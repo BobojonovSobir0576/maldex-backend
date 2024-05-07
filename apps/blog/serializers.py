@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, ProjectProduct
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, ProjectProduct, LinkTag
 from apps.product.api.serializers import ProductListSerializers
 from apps.product.models import Products
 
@@ -96,4 +96,14 @@ class PrintCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PrintCategory
+        fields = '__all__'
+
+
+class LinkSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+    link = serializers.URLField(required=False)
+    order = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = LinkTag
         fields = '__all__'
