@@ -20,7 +20,7 @@ class ProductCategories(models.Model):
     is_available = models.BooleanField(default=True, verbose_name="Доступен на сайте?")
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
-
+    site = models.CharField(max_length=255, null=True, blank=True)
     home = models.BooleanField(default=False,)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)

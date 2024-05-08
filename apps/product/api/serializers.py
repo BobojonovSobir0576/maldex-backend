@@ -38,7 +38,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
-                  'is_hit',  'is_new', 'order', 'created_at', 'updated_at']
+                  'is_hit',  'is_new', 'order', 'created_at', 'updated_at', 'site']
 
 
     def create(self, validated_data):
@@ -61,7 +61,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TertiaryCategory
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'site']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -69,7 +69,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'site']
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -94,7 +94,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available',
-                  'order', 'icon', 'logo', 'children', 'created_at', 'updated_at']
+                  'order', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site']
 
     def get_children(self, category):
         children = category.children
@@ -283,7 +283,7 @@ class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = [
-            'id', 'name', 'parent', 'external_id', 'parent_id',
+            'id', 'name', 'parent', 'external_id', 'parent_id', 'site',
         ]
 
     def create(self, validated_data):
@@ -303,7 +303,7 @@ class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
 
                 is_4_level = False
             if not is_4_level:
-                new_category = ProductCategories.objects.create(name=name, parent=parent_category)
+                new_category = ProductCategories.objects.create(name=name, parent=parent_category, site=validated_data.get('site', None))
                 ExternalCategory.objects.create(external_id=external_id, category=new_category)
             else:
                 ExternalCategory.objects.create(external_id=external_id, category=parent_category)
