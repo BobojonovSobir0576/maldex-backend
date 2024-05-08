@@ -20,7 +20,7 @@ admin.site.index_title = "Welcome to Maldex Admin Portal"
 # Admin configuration for Product Categories
 @admin.register(ProductCategories)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['icon_image', 'name', 'id', 'order', 'get_externals']
+    list_display = ['icon_image', 'name', 'id', 'order', 'get_externals', 'site']
     fields = ['name', 'parent', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order']
     search_fields = ['name']
     readonly_fields = ['icon_image']
@@ -53,7 +53,7 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 # Admin configuration for Subcategories
 @admin.register(SubCategory)
 class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
-    list_display = ['name', 'id', 'parent', 'get_externals']
+    list_display = ['name', 'id', 'parent', 'get_externals', 'site']
     fields = ['name', 'parent']
     search_fields = ['name']
     list_filter = ['parent']
