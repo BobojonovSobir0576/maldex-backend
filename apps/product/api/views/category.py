@@ -125,7 +125,7 @@ class HomeCategoryView(APIView):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
 
-    @method_decorator(cache_page(600))
+    # @method_decorator(cache_page(600))
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
         tags=['Categories'],

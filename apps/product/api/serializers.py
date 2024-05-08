@@ -321,7 +321,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity'
+            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity', 'site'
         ]
 
     def check_color_exists(self, color_name):

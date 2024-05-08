@@ -117,18 +117,18 @@ class ProductImageInline(admin.TabularInline):
 
 # Admin configuration for Products
 class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'id', 'price', 'price_type', 'category_hierarchy']
+    list_display = ['name', 'id', 'price', 'site', 'category_hierarchy']
     search_fields = ['id', 'name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
     fields = [
         'name', 'categoryId', 'code', 'article', 'product_size', 'material', 'description',
         'brand', 'price', 'price_type', 'discount_price', 'weight', 'barcode', 'ondemand',
-        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'quantity'
+        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'quantity', 'site'
     ]
     inlines = [ProductImageInline]
     list_filter = ['is_new', 'is_popular', 'is_hit']
     list_per_page = 500
-
+    ordering = ('-created_at',)
     def category_hierarchy(self, obj):
         # Display hierarchy of categories
         names = []
