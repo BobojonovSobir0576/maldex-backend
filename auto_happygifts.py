@@ -84,6 +84,7 @@ def process_happygifts_data():
         category_id = product_set['GROUP_ID']
         article = product_set['Article']
         weight = product_set['UnitWeight']
+        brand = product_set['BrendName']
         for product in products_set:
             product_id = product['ID']
             exists, existing_product_data = check_product_exists(product_id)
@@ -98,16 +99,16 @@ def process_happygifts_data():
                     'id': product_id,
                     'categoryId': category_id,
                     'name': product['NAME'],
-                    'brand': '',
+                    'brand': brand,
                     'article': article,
                     'description': product['Description'],
                     'material': product['Material1'],
                     'weight': weight,
                     'quantity': product['FreeQuantityCenter'],
                     'color_name': product['Color'],
-                    'image_set': [{"name": url} for url in product['Image']],
+                    'image_set': [{"name": 'https://happygifts.ru' + url} for url in product['Image']] if 'Image' in product else [],
                     'price': product['Price'],
-                    'discount_price': product['PriceDiscount'],
+                    'discount_price': product['PriceDiscount'] if 'PriceDiscount' in product else 0,
                     'product_size': product['Size'],
                     'pack': {
                         'quantity': product['PackagingQuantity'],
@@ -119,7 +120,6 @@ def process_happygifts_data():
                     },
                 }
                 upload_product(data)
-                print('Added ' + str(product_id))
 
 
 def get_all_product_ids():
