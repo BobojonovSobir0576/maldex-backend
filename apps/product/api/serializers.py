@@ -4,6 +4,7 @@ from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from apps.gifts_baskets.models import GiftsBasketCategory, GiftsBaskets
 from apps.product.models import *
 from apps.product.proxy import *
 
@@ -320,13 +321,14 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
     color_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     image_set = serializers.JSONField(required=False)
     categoryId = serializers.IntegerField(required=False, allow_null=True, write_only=True)
+    sets = serializers.ListSerializer(child=serializers.IntegerField(), required=False)
 
     class Meta:
         model = Products
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity', 'site'
+            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity', 'site', 'sets'
         ]
 
     def check_color_exists(self, color_name):
@@ -350,11 +352,29 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                 return external_category.category
         return None
 
+    def create_sets(self, product, sets):
+        parent_category = product.categoryId.parent.name
+        category = product.categoryId.name
+        create_parent_set_category = GiftsBasketCategory.objects.get_or_create(name=parent_category)
+        create_set_category = GiftsBasketCategory.objects.get_or_create(name=category,
+                                                                        parent=create_parent_set_category)
+        create_set = GiftsBaskets.objects.get_or_create(
+            title=product.name,
+            small_header=product.name,
+            description=product.description
+
+        )
+        for item in sets:
+            check_product = Products.objects.filter(id=item['product_id'])
+
+        return
+
     @transaction.atomic
     def create(self, validated_data):
         color_name = validated_data.pop('color_name', None)
         image_set = validated_data.pop('image_set', [])
         categoryId = validated_data.pop('categoryId', None)
+        sets = validated_data.pop('sets', [])
 
         color_instance = self.check_color_exists(color_name)
         category_instance = self.get_category_instance(categoryId)
@@ -365,6 +385,8 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         if category_instance:
             product_instance.categoryId = category_instance
             product_instance.save()
+
+        create_set = self.create_sets(product_instance, sets)
 
         if image_set:
             self.create_img_into_product(image_set, color_instance, product_instance)
