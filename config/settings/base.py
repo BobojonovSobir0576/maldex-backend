@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     "django_filters",
     'import_export',
     'django_ckeditor_5',
-    'taggit',
 
     "apps.auth_app",
     "apps.product",
