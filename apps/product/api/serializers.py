@@ -424,7 +424,7 @@ class FilterProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductFilterModel
-        fields = ['id', 'name', 'products', 'product_data']
+        fields = ['id', 'title', 'products', 'product_data']
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])

@@ -128,7 +128,6 @@ class LinkSerializer(serializers.ModelSerializer):
         return category.title
 
     def create(self, validated_data):
-        print(0000)
         category = get_object_or_404(LinkTagCategory, id=validated_data.pop('category_id'))
         return LinkTag.objects.create(category=category, **validated_data)
 

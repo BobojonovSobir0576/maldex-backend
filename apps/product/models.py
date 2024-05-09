@@ -68,7 +68,7 @@ class ExternalCategory(models.Model):
 
 class Products(models.Model):
     """Model to represent products."""
-    id = models.IntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
+    id = models.CharField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название продукта'), max_length=512, null=True, blank=True)
     code = models.IntegerField(default=0, null=True, blank=True)
     article = models.CharField(_('Артикул'), max_length=512, null=True, blank=True)
@@ -149,7 +149,7 @@ class ProductImage(models.Model):
 
 class ProductFilterModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
 
     class Meta:

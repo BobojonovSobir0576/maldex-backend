@@ -27,7 +27,7 @@ class FilterProductListView(APIView):
                          tags=['Filter Product'],
                          responses={201: FilterProductSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'product_data'}
+        valid_fields = {'title', 'product_data'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -55,7 +55,7 @@ class FilterProductDetailView(APIView):
                          tags=['Filter Product'],
                          responses={200: FilterProductSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name'}
+        valid_fields = {'title'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
