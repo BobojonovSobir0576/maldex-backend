@@ -37,9 +37,10 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(LinkTag)
 class LinkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'order']
+    list_display = ['title', 'category', 'order']
     search_fields = ['title']
-    fields = ['title', 'link', 'order']
+    fields = ['title', 'category', 'link', 'order']
+    readonly_fields = ('order',)
 
 
 # Registering models with their respective customized admin interfaces

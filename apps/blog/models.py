@@ -132,9 +132,21 @@ class PrintCategory(models.Model):
         verbose_name_plural = _('Категории печати')
 
 
+class LinkTagCategory(models.Model):
+    title = models.CharField(max_length=200, verbose_name=_('заголовок'))
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        db_table = 'link_tag_category'
+        ordering = ('title',)
+
+
 class LinkTag(models.Model):
     title = models.CharField(max_length=100)
     link = models.URLField()
+    category = models.ForeignKey(LinkTagCategory, on_delete=models.CASCADE, related_name='tags')
     order = models.PositiveSmallIntegerField(default=1, blank=True)
 
     def __str__(self):
@@ -150,3 +162,4 @@ class LinkTag(models.Model):
             order = 1 if not last_instance else int(last_instance.order) + 1
             self.order = order
         super().save(*args, **kwargs)
+

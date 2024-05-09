@@ -394,4 +394,59 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         # Save the updated instance
         instance.save()
 
+        return
+
+
+class ProductFilterProductSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
+    product_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = ProductFilterProducts
+        fields = ['id', 'product', 'product_id']
+
+    def update(self, instance, validated_data):
+        product = get_object_or_404(Products, id=validated_data.pop('product_id'))
+        instance.product = product
+        instance.save()
         return instance
+
+    def get_product(self, obj):
+        data = ProductDetailSerializers(obj.product, context=self.context)
+        return data.data
+
+
+class FilterProductSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+    product_data = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True
+    )
+
+    class Meta:
+        model = ProductFilterModel
+        fields = ['id', 'name', 'products', 'product_data']
+
+    def create(self, validated_data):
+        product_data = validated_data.pop('product_data', [])
+        product_filter = ProductFilterModel.objects.create(**validated_data)
+        for item in product_data:
+            product_instance = get_object_or_404(Products, id=item)
+            ProductFilterProducts.objects.create(
+                filter=product_filter,
+                product=product_instance
+            )
+        return product_filter
+
+    def update(self, instance, validated_data):
+        product_data = validated_data.pop('product_data', [])
+        for item in product_data:
+            product_instance = get_object_or_404(Products, id=item)
+            ProductFilterProducts.objects.get_or_create(
+                filter=instance,
+                product=product_instance
+            )
+        return super().update(instance, validated_data)
+
+    def get_products(self, obj):
+        data = ProductFilterProductSerializer(obj.products.all(), many=True, context=self.context)
+        return data.data

@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, ProjectProduct, LinkTag
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, ProjectProduct, LinkTag, \
+    LinkTagCategory
 from apps.product.api.serializers import ProductListSerializers
 from apps.product.models import Products
 
@@ -99,11 +100,40 @@ class PrintCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class LinkCategorySerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+    tags = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = LinkTagCategory
+        fields = ['id', 'title', 'tags']
+
+    def get_tags(self, obj):
+        tags = obj.tags
+        return LinkSerializer(tags, many=True).data
+
+
 class LinkSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=False)
     link = serializers.URLField(required=False)
-    order = serializers.IntegerField(required=False)
+    category_id = serializers.IntegerField(write_only=True)
+    category_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = LinkTag
-        fields = '__all__'
+        fields = ['id', 'title', 'link', 'category_id', 'category_name']
+        
+    def get_category_name(self, obj):
+        category = obj.category
+        return category.title
+
+    def create(self, validated_data):
+        print(0000)
+        category = get_object_or_404(LinkTagCategory, id=validated_data.pop('category_id'))
+        return LinkTag.objects.create(category=category, **validated_data)
+
+    def update(self, instance, validated_data):
+        category_id = validated_data.pop('category_id')
+        instance.category.id = category_id
+        instance.save()
+        return instance

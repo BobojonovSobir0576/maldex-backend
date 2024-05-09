@@ -145,3 +145,26 @@ class ProductImage(models.Model):
         db_table = "product_images"
         verbose_name = "Изображения продукта"
         verbose_name_plural = "Изображения продукта"
+
+
+class ProductFilterModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
+    name = models.CharField(max_length=255)
+    created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
+
+    class Meta:
+        db_table = "filter_for_product"
+        verbose_name = "фильтр для продукта"
+        verbose_name_plural = "фильтры для продукта"
+
+
+class ProductFilterProducts(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
+    filter = models.ForeignKey(ProductFilterModel, on_delete=models.CASCADE, related_name='products')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
+
+    class Meta:
+        db_table = "filter_for_product_products"
+        verbose_name = "фильтрует продукты по продукту"
+        verbose_name_plural = "фильтрует продукты по продукту"
