@@ -113,6 +113,15 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     inlines = [ColorInline]
+    fields = ('_image', 'image', 'image_url', 'colorID')
+    readonly_fields = ('_image',)
+
+    def _image(self, obj):
+        image_url = obj.image_url
+        html = mark_safe(f'<img src="{image_url}" width=70 height=70 style="object-fit: cover">')
+        return html if image_url else ''
+
+    _image.short_description = ''
 
 
 # Admin configuration for Products
