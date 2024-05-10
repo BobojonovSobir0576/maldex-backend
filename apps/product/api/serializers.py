@@ -386,7 +386,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             product_instance.categoryId = category_instance
             product_instance.save()
 
-        create_set = self.create_sets(product_instance, sets)
+        # create_set = self.create_sets(product_instance, sets)
 
         if image_set:
             self.create_img_into_product(image_set, color_instance, product_instance)
