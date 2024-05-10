@@ -41,7 +41,6 @@ class CategoryListSerializers(serializers.ModelSerializer):
         fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
                   'is_hit',  'is_new', 'order', 'created_at', 'updated_at', 'site']
 
-
     def create(self, validated_data):
         return super().create(validated_data)
 
@@ -53,8 +52,9 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
         instance.is_popular = validated_data.pop('is_popular', instance.is_popular)
-        instance.is_hit = validated_data.pop('is_hit', instance.is_popular)
-        instance.is_new = validated_data.pop('is_new', instance.is_popular)
+        instance.is_hit = validated_data.pop('is_hit', instance.is_hit)
+        instance.is_new = validated_data.pop('is_new', instance.is_new)
+        instance.is_available = validated_data.pop('is_available', instance.is_available)
         if order:
             instance.order = int(order)
         instance.save()
