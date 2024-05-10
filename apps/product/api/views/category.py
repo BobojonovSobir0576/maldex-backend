@@ -90,10 +90,8 @@ class CategoryDetailView(APIView):
         Update a specific product category.
         """
         queryset = get_object_or_404(ProductCategories, pk=pk)
-        request.data._mutable = True
         request.data.pop('logo', None)
         request.data.pop('icon', None)
-        request.data._mutable = False
         serializers = CategoryListSerializers(instance=queryset, data=request.data, context={
             'request': request,
             'logo': request.FILES.get('logo', None),
