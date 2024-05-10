@@ -51,13 +51,13 @@ class CategoryListSerializers(serializers.ModelSerializer):
         icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
+        instance.name = validated_data.pop('name', instance.name)
         instance.is_popular = validated_data.pop('is_popular', instance.is_popular)
         instance.is_hit = validated_data.pop('is_hit', instance.is_hit)
         instance.is_new = validated_data.pop('is_new', instance.is_new)
         instance.is_available = validated_data.pop('is_available', instance.is_available)
         if order:
             instance.order = int(order)
-        instance.save()
         instance.save()
         return instance
 
