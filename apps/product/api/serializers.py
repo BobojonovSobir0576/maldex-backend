@@ -416,7 +416,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         # Save the updated instance
         instance.save()
 
-        return
+        return instance
 
 
 class ProductFilterProductSerializer(serializers.ModelSerializer):
