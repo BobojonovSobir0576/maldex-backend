@@ -43,6 +43,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Create a new project with associated images and products
+        print(validated_data)
         images = validated_data.pop('images')
         product_ids = validated_data.pop('product_ids')
         tags = list(map(int, validated_data.pop('tags')[0].split(',')))
@@ -81,7 +82,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_products(self, obj):
         # Retrieve products associated with the project
         products = Products.objects.filter(project__project=obj)
-        return ProductListSerializers(products, many=True).data
+        return ProductListSerializers(products, many=True, context=self.context).data
 
 
 # Serializer for FAQs
