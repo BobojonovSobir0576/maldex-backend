@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products
+from apps.product.models import Products, ProductFilterModel
 from apps.product.api.serializers import ProductDetailSerializers, ProductListSerializers, \
     ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
@@ -39,6 +39,9 @@ class ProductsListView(APIView, PaginationMethod):
     category_id = openapi.Parameter('category_id', openapi.IN_QUERY,
                                     description="Filter by category ID",
                                     type=openapi.TYPE_STRING)
+    filter_id = openapi.Parameter('filter_id', openapi.IN_QUERY,
+                                  description="Filter by Filter ID",
+                                  type=openapi.FORMAT_UUID)
     search = openapi.Parameter('search', openapi.IN_QUERY,
                                description="Searching ...",
                                type=openapi.TYPE_STRING)
@@ -64,6 +67,9 @@ class ProductsListView(APIView, PaginationMethod):
         filterset = ProductFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
+        filter_id = request.query_params.get('filter_id', None)
+        filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
+        queryset = queryset.filter(filter_products__filter=filter_model) if filter_model else queryset
         serializers = super().page(queryset, ProductDetailSerializers, request)
         return success_response(serializers.data)
 
