@@ -161,7 +161,7 @@ class ProductFilterModel(models.Model):
 class ProductFilterProducts(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     filter = models.ForeignKey(ProductFilterModel, on_delete=models.CASCADE, related_name='products')
-    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='filter_products')
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
 
     class Meta:
