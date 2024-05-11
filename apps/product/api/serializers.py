@@ -56,6 +56,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
         instance.name = validated_data.get('name', instance.name)
+        instance.parent = validated_data.get('parent', instance.parent)
         instance.is_popular = validated_data.get('is_popular', instance.is_popular)
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
