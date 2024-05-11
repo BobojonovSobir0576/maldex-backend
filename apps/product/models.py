@@ -110,6 +110,7 @@ class Products(models.Model):
 
     class Meta:
         db_table = "product"
+        ordering = ('-updated_at',)
         verbose_name = "Продукт"
         verbose_name_plural = "Продукт"
 
