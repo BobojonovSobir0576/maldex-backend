@@ -76,11 +76,12 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
+    children = TertiaryCategorySerializer(read_only=True)
     """ Sub Category details """
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'site']
+        fields = ['id', 'name', 'children', 'site']
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
