@@ -15,7 +15,7 @@ class Banner(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order_by_id:
-            if Banner.objects.last().exists():
+            if Banner.objects.last():
                 order = Banner.objects.last().order_by_id + 1
                 self.order_by_id = order
             else:
