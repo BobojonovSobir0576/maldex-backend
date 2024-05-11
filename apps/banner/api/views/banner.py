@@ -26,7 +26,7 @@ class BannerListView(APIView):
                          tags=['Banners'],
                          responses={200: BannerListSerializer(many=True)})
     def get(self, request):
-        queryset = Banner.objects.all().order_by('-created_at')
+        queryset = Banner.objects.all().order_by('order_by_id')
         serializer = BannerListSerializer(queryset, many=True, context={'request': request})
         return success_response(serializer.data)
 

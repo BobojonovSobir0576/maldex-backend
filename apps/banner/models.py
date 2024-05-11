@@ -13,8 +13,15 @@ class Banner(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not self.order_by_id:
+            order = Banner.objects.last().order_by_id + 1
+            self.order_by_id = order
+        return super().save(*args, **kwargs)
+
     class Meta:
         db_table = "banner"
+        ordering = ['order_by_id']
         verbose_name = "Баннер"
         verbose_name_plural = "Баннер"
 
