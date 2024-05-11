@@ -76,7 +76,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
-    children = TertiaryCategorySerializer(read_only=True)
+    children = TertiaryCategorySerializer(read_only=True, many=True)
     """ Sub Category details """
 
     class Meta:
