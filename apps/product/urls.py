@@ -9,7 +9,6 @@ from apps.product.api.views.product_filter import FilterProductDetailView, Filte
 urlpatterns = [
     # Product URLs
     path('', product.ProductsListView.as_view()),  # List view for all products
-    path('all', product.AllProductsListView.as_view()),  # List view for all products
     path('counts/', get_counts, name='products-counts'),  # Endpoint to get counts for product options
     path('<int:pk>/', product.ProductsDetailView.as_view()),  # Detail view for a specific product
     path('import/', oasis_json.ProductUploadView.as_view(), name='import_products'),  # Endpoint to import products

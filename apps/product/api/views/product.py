@@ -8,11 +8,10 @@ from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
 from apps.product.models import Products, ProductFilterModel
-from apps.product.api.serializers import ProductDetailSerializers, ProductListSerializers, \
+from apps.product.api.serializers import ProductDetailSerializers, \
     ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
-
 
 
 @swagger_auto_schema(tags=['Products'],
@@ -83,44 +82,6 @@ class ProductsListView(APIView, PaginationMethod):
             product_serializer.save()
             return success_created_response(product_serializer.data)
         return bad_request_response(product_serializer.errors)
-
-
-class AllProductsListView(APIView):
-    permission_classes = [AllowAny]
-    parser_class = (FileUploadParser, MultiPartParser, FormParser)
-    serializer_class = ProductDetailSerializers
-    pagination_class = StandardResultsSetPagination
-
-    category_id = openapi.Parameter('category_id', openapi.IN_QUERY,
-                                    description="Filter by category ID",
-                                    type=openapi.TYPE_STRING)
-    search = openapi.Parameter('search', openapi.IN_QUERY,
-                               description="Searching ...",
-                               type=openapi.TYPE_STRING)
-    is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
-                               description="NEW products",
-                               type=openapi.TYPE_BOOLEAN)
-    is_hit = openapi.Parameter('is_hit', openapi.IN_QUERY,
-                               description="HIT products",
-                               type=openapi.TYPE_BOOLEAN)
-    is_popular = openapi.Parameter('is_popular', openapi.IN_QUERY,
-                                   description="POPULAR products",
-                                   type=openapi.TYPE_BOOLEAN)
-    is_available = openapi.Parameter('is_available', openapi.IN_QUERY,
-                                     description="AVAILABLE products",
-                                     type=openapi.TYPE_BOOLEAN)
-
-    @swagger_auto_schema(operation_description="Retrieve a list of products",
-                         manual_parameters=[category_id, search, is_new, is_hit, is_popular, is_available],
-                         tags=['Products'],
-                         responses={200: ProductListSerializers(many=True)})
-    def get(self, request):
-        queryset = Products.objects.all().order_by('-id')
-        filterset = ProductFilter(request.GET, queryset=queryset)
-        if filterset.is_valid():
-            queryset = filterset.qs
-        serializers = ProductListSerializers(queryset[:200], many=True, context={'request': request})
-        return success_response(serializers.data)
 
 
 class ProductsDetailView(APIView):

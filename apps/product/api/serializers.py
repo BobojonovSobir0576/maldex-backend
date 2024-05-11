@@ -1,3 +1,4 @@
+import requests
 from django.db import transaction
 from django.db.models import Q, Count
 from django.forms import ValidationError
@@ -339,11 +340,25 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
 
     def create_img_into_product(self, img_set, color_instance, product_instance):
         for img in img_set:
-            ProductImage.objects.create(
-                productID=product_instance,
-                colorID=color_instance,
-                image_url=img['name']
-            )
+            is_gifts = product_instance.categoryId.site == 'Gifts.ru'
+            if not is_gifts:
+                ProductImage.objects.create(
+                    productID=product_instance,
+                    colorID=color_instance,
+                    image_url=img['name']
+                )
+            else:
+                image_url = img['name']
+                response = requests.get(image_url)
+                name = f'midea/gifts/{uuid.uuid4()}.jpg'
+                file = open(name, 'wb')
+                file.write(response.content)
+                file.close()
+                ProductImage.objects.create(
+                    productID=product_instance,
+                    colorID=color_instance,
+                    image=name
+                )
 
     def get_category_instance(self, cate_id):
         if cate_id is not None:
