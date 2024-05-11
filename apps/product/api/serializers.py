@@ -350,7 +350,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             else:
                 image_url = img['name']
                 response = requests.get(image_url)
-                name = f'midea/product/{uuid.uuid4()}.jpg'
+                name = f'media/product/{uuid.uuid4()}.jpg'
                 file = open(name, 'wb')
                 file.write(response.content)
                 file.close()
