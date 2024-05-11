@@ -54,8 +54,7 @@ def get_data(URL):
     if isinstance(response, requests.Response):
         ip_address = extract_ip_address(response.text)
         if ip_address:
-            print(f"IP Address Found: {ip_address}")
             update_ip_address(ip_address)
-        else:
-            print("No IP address found in the response.")
-        return fetch_data(URL, auth=(USERNAME, PASSWORD))
+        data = fetch_data(URL, auth=(USERNAME, PASSWORD))
+        print(data)
+        return data
