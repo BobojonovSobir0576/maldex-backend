@@ -15,8 +15,11 @@ class Banner(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order_by_id:
-            order = Banner.objects.last().order_by_id + 1
-            self.order_by_id = order
+            if Banner.objects.last().exists():
+                order = Banner.objects.last().order_by_id + 1
+                self.order_by_id = order
+            else:
+                self.order_by_id = 1
         return super().save(*args, **kwargs)
 
     class Meta:
