@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from apps.gifts_baskets.models import GiftsBasketCategory, GiftsBaskets
+from apps.product.api.access import get_data
 from apps.product.models import *
 from apps.product.proxy import *
 
@@ -351,7 +352,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                 )
             else:
                 image_url = img['name']
-                response = requests.get(image_url)
+                response = get_data(image_url)
                 name = f'{uuid.uuid4()}.jpg'
                 file = open(os.path.join('media', name), 'wb')
                 file.write(response.content)
