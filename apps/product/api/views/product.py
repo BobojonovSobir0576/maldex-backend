@@ -70,7 +70,7 @@ class ProductsListView(APIView, PaginationMethod):
         filter_id = request.query_params.get('filter_id', None)
         filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
         queryset = queryset.filter(filter_products__filter=filter_model) if filter_model else queryset
-        serializers = super().page(queryset, ProductDetailSerializers, request)
+        serializers = super().page(queryset.order_by('-updated_at'), ProductDetailSerializers, request)
         return success_response(serializers.data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
