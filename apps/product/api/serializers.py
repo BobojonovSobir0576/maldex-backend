@@ -352,8 +352,8 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             else:
                 image_url = img['name']
                 response = requests.get(image_url)
-                name = os.path.join('media', f'{uuid.uuid4()}.jpg')
-                file = open(name, 'wb')
+                name = f'{uuid.uuid4()}.jpg'
+                file = open(os.path.join('media', name), 'wb')
                 file.write(response.content)
                 file.close()
                 ProductImage.objects.create(
