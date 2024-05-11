@@ -1,3 +1,5 @@
+import os
+
 import requests
 from django.db import transaction
 from django.db.models import Q, Count
@@ -350,7 +352,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             else:
                 image_url = img['name']
                 response = requests.get(image_url)
-                name = f'/media/product/{uuid.uuid4()}.jpg'
+                name = os.path.join('media', f'{uuid.uuid4()}.jpg')
                 file = open(name, 'wb')
                 file.write(response.content)
                 file.close()
