@@ -94,8 +94,8 @@ class Products(models.Model):
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)
     is_new = models.BooleanField(default=False, verbose_name="Новый?", null=True, blank=True)
     site = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateField(auto_now_add=True, verbose_name='Данные опубликованы')
-    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Данные опубликованы')
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         """Override save method to generate ID."""
