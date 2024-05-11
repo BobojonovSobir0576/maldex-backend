@@ -342,7 +342,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
 
     def create_img_into_product(self, img_set, color_instance, product_instance):
         for img in img_set:
-            is_gifts = product_instance.categoryId.site == 'Gifts.ru'
+            is_gifts = 'files.gifts.ru' in img
             if not is_gifts:
                 ProductImage.objects.create(
                     productID=product_instance,
