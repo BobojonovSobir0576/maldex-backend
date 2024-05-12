@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 from django.db import transaction
@@ -342,6 +343,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         return None
 
     def create_img_into_product(self, img_set, color_instance, product_instance):
+        count = 0
         for img in img_set:
             is_gifts = 'api2.gifts.ru' in img['name']
             if not is_gifts:
@@ -351,17 +353,24 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                     image_url=img['name']
                 )
             else:
+                count += 1
                 image_url = img['name']
                 response = get_data(image_url)
-                name = f'{uuid.uuid4()}.jpg'
-                file = open(os.path.join('media', name), 'wb')
-                file.write(response.content)
-                file.close()
-                ProductImage.objects.create(
-                    productID=product_instance,
-                    colorID=color_instance,
-                    image=name
-                )
+                if response and isinstance(response, requests.Response):
+                    name = f'{uuid.uuid4()}.jpg'
+                    file_path = os.path.join('media', name)
+                    with open(file_path, 'wb') as file:
+                        file.write(response.content)
+                    ProductImage.objects.create(
+                        productID=product_instance,
+                        colorID=color_instance,
+                        image=name
+                    )
+                else:
+                    print(f"Failed to download image from {image_url}")
+            if count % 10 == 0:
+                time.sleep(5)
+        time.sleep(2)
 
     def get_category_instance(self, cate_id):
         if cate_id is not None:
