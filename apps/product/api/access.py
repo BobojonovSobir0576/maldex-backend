@@ -6,11 +6,14 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import os
 
+from requests.exceptions import RequestException
+
 URL_ACCESS = 'https://api2.gifts.ru/export/v2/access'
 URL_MANAGE_IP = "https://api2.gifts.ru/export/v2/manageip"
 USERNAME = "20033_xmlexport"
 PASSWORD = "O2NyQRLZ"
 from requests.exceptions import RequestException
+
 
 def fetch_data(url, params=None, auth=None):
     try:

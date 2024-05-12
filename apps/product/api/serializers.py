@@ -57,6 +57,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
         instance.name = validated_data.get('name', instance.name)
+        instance.parent = validated_data.get('parent', instance.parent)
         instance.is_popular = validated_data.get('is_popular', instance.is_popular)
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
@@ -76,11 +77,12 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
+    children = TertiaryCategorySerializer(read_only=True, many=True)
     """ Sub Category details """
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'site']
+        fields = ['id', 'name', 'children', 'site']
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -371,6 +373,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             if count % 10 == 0:
                 time.sleep(5)
         time.sleep(2)
+
 
     def get_category_instance(self, cate_id):
         if cate_id is not None:

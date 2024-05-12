@@ -135,9 +135,10 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'quantity', 'site'
     ]
     inlines = [ProductImageInline]
-    list_filter = ['is_new', 'is_popular', 'is_hit']
+    list_filter = ['is_new', 'is_popular', 'is_hit', 'site']
     list_per_page = 500
     ordering = ('-created_at',)
+
     def category_hierarchy(self, obj):
         # Display hierarchy of categories
         names = []
