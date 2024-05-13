@@ -1,4 +1,4 @@
-from django.db.models import Count, Sum
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -151,7 +151,7 @@ class ProductAutoUploaderDetailView(APIView):
     def put(self, request, pk):
         product_instance = get_object_or_404(Products, pk=pk)
         serializer = ProductAutoUploaderDetailSerializer(instance=product_instance, data=request.data,
-                                              context={'request': request})
+                                                         context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)

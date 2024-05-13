@@ -73,19 +73,28 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
+    count = serializers.SerializerMethodField()
 
     class Meta:
         model = TertiaryCategory
-        fields = ['id', 'name', 'site']
+        fields = ['id', 'name', 'count',  'site']
+
+    def get_count(self, category):
+        return Products.objects.filter(categoryID=category, categoryId__parent=category,
+                                       categoryId__parent__parent=category).count()
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
     children = TertiaryCategorySerializer(read_only=True, many=True)
+    count = serializers.SerializerMethodField()
     """ Sub Category details """
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'children', 'site']
+        fields = ['id', 'name', 'count', 'children', 'site']
+
+    def get_count(self, category):
+        return Products.objects.filter(categoryID=category, categoryId__parent=category, categoryId__parent__parent=category).count()
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -106,15 +115,19 @@ class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
     children = serializers.SerializerMethodField(read_only=True)
     name = serializers.CharField(required=False)
+    count = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'is_popular', 'is_hit', 'is_new', 'is_available',
+        fields = ['id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available',
                   'order', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site']
 
     def get_children(self, category):
         children = category.children
         return SubCategorySerializer(children, many=True).data
+
+    def get_count(self, category):
+        return Products.objects.filter(categoryId=category, categoryId__parent=category, categoryId__parent__parent=category).count()
 
 
 class CategoryProductsSerializer(serializers.ModelSerializer):
