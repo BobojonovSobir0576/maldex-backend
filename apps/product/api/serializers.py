@@ -94,7 +94,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'children', 'site']
 
     def get_count(self, category):
-        return Products.objects.select_related('categoryId', 'categoryId__parent').filter(
+        return Products.objects.prefetch_related('categoryId', 'categoryId__parent').filter(
             categoryId=category, categoryId__parent=category).count()
 
 
@@ -128,7 +128,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
         return SubCategorySerializer(children, many=True).data
 
     def get_count(self, category):
-        return Products.objects.select_related('categoryId', 'categoryId__parent', 'categoryId__parent__parent').filter(
+        return Products.objects.prefetch_related('categoryId', 'categoryId__parent', 'categoryId__parent__parent').filter(
             categoryId=category, categoryId__parent=category, categoryId__parent__parent=category).count()
 
 
