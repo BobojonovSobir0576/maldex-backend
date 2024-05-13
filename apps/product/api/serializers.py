@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 from django.db import transaction
@@ -76,11 +77,12 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
+    children = TertiaryCategorySerializer(read_only=True, many=True)
     """ Sub Category details """
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'site']
+        fields = ['id', 'name', 'children', 'site']
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -349,6 +351,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         return None
 
     def create_img_into_product(self, img_set, color_instance, product_instance):
+        count = 0
         for img in img_set:
             is_gifts = 'api2.gifts.ru' in img['name']
             if not is_gifts:
@@ -358,6 +361,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                     image_url=img['name']
                 )
             else:
+                count += 1
                 image_url = img['name']
                 response = get_data(image_url)
                 if response and isinstance(response, requests.Response):
@@ -372,6 +376,10 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                     )
                 else:
                     print(f"Failed to download image from {image_url}")
+            if count % 10 == 0:
+                time.sleep(5)
+        time.sleep(2)
+
 
     def get_category_instance(self, cate_id):
         if cate_id is not None:

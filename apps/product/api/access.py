@@ -12,7 +12,7 @@ URL_ACCESS = 'https://api2.gifts.ru/export/v2/access'
 URL_MANAGE_IP = "https://api2.gifts.ru/export/v2/manageip"
 USERNAME = "20033_xmlexport"
 PASSWORD = "O2NyQRLZ"
-
+from requests.exceptions import RequestException
 
 
 def fetch_data(url, params=None, auth=None):
@@ -24,8 +24,7 @@ def fetch_data(url, params=None, auth=None):
             response.raise_for_status()  # This will raise an exception for HTTP errors
             return response
     except RequestException as e:
-        raise ValueError(f"An error occurred: {e}")  # Raise an exception instead of returning a string
-
+        raise ValueError(f"An error occurred: {e}")
 
 
 def extract_ip_address(html_content):
@@ -63,4 +62,4 @@ def get_data(URL):
         return data
     except ValueError as e:
         print(e)  # Handle or log the error appropriately
-        return None  # Return None or a suitable default
+        return None
