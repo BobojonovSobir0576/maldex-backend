@@ -62,7 +62,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
         if order:
-            category = get_object_or_404(ProductCategories, order=instance.order, parent=instance.parent)
+            category = get_object_or_404(ProductCategories, order=order, parent=instance.parent)
             category.order = instance.order
             category.save()
             instance.order = int(order)

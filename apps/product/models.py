@@ -44,6 +44,8 @@ class ProductCategories(models.Model):
         elif not self.is_available:
             self.order = None
 
+        print(self, self.order)
+
         super(ProductCategories, self).save(*args, **kwargs)
 
     class Meta:
