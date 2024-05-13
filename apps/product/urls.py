@@ -2,7 +2,7 @@ from django.urls import path
 from apps.product.api.views import product, category
 from apps.product.api.views import oasis_json
 from apps.product.api.views.image import ProductImageView
-from apps.product.api.views.product import get_counts
+from apps.product.api.views.product import get_counts, BrandList, MaterialList
 from apps.product.api.views.product_filter import FilterProductDetailView, FilterProductListView, \
     FilterProductsDetailView
 
@@ -31,6 +31,9 @@ urlpatterns = [
     path('filters/<uuid:pk>', FilterProductDetailView.as_view()),
     path('filters/product/<uuid:pk>', FilterProductsDetailView.as_view()),
     # path('product/<uuid:pk>/', banner.BannerProductDetailView.as_view()),
+
+    path('brands/', BrandList.as_view(), name='brand-list'),
+    path('materials/', MaterialList.as_view(), name='material-list'),
 
     # Image URLs
     path('image/<image_id>/', ProductImageView.as_view(), name='image'),  # Endpoint to get image by ID

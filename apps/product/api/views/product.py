@@ -1,3 +1,4 @@
+from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -155,3 +156,33 @@ class ProductAutoUploaderDetailView(APIView):
             serializer.save()
             return success_response(serializer.data)
         return bad_request_response(serializer.errors)
+
+
+class BrandList(APIView):
+    @swagger_auto_schema(
+        tags=['Product'],
+        responses={200: 'brand-list'}
+    )
+    def get(self, request):
+        products = Products.objects.all()
+        brands = products.values('brand').annotate(count=Count('brand')).order_by('-count')
+        count = products.values('brand').distinct().count()
+        return success_response({
+            'count': count,
+            'brands': brands,
+        })
+
+
+class MaterialList(APIView):
+    @swagger_auto_schema(
+        tags=['Product'],
+        responses={200: 'brand-list'}
+    )
+    def get(self, request):
+        products = Products.objects.all()
+        materials = products.values('material').annotate(count=Count('material')).order_by('-count')
+        count = products.values('material').distinct().count()
+        return success_response({
+            'count': count,
+            'materials': materials,
+        })
