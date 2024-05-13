@@ -51,7 +51,6 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         order = validated_data.pop('order', None)
-        print(order)
         logo = self.context.get('logo') if self.context.get('logo') != 'null' else None
         icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
@@ -63,7 +62,11 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
         if order:
+            category = get_object_or_404(ProductCategories, order=instance.order)
+            category.order = instance.order
+            category.save()
             instance.order = int(order)
+
         instance.save()
         return instance
 
