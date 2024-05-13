@@ -93,11 +93,9 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'children', 'site']
 
     def get_count(self, category):
-        print(category.children)
-        count = category.products.all().count()
-        subcategories = category.children.all()
-        for subcategory in subcategories:
-            count += subcategory.products.all().count()
+        category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+        descendants_query = Q(categoryId__in=category_ids)
+        count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
 
         return count
 
