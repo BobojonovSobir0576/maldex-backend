@@ -231,6 +231,12 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         deleted_images = [] if deleted_images == [''] else deleted_images
         if deleted_images:
             ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
+        if instance.is_new:
+            instance.categoryId.is_new = True
+            instance.cattegoryId.save()
+        if instance.is_hit:
+            instance.categoryId.is_hit = True
+            instance.cattegoryId.save()
         return super().update(instance, validated_data)
 
     def get_images_set(self, obj):
