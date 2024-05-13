@@ -80,8 +80,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count',  'site']
 
     def get_count(self, category):
-        return Products.objects.select_related('categoryId').filter(
-            categoryId=category).count()
+        return category.products.all().count()
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -94,8 +93,12 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'children', 'site']
 
     def get_count(self, category):
-        return Products.objects.prefetch_related('categoryId', 'categoryId__parent').filter(
-            Q(categoryId=category) | Q(categoryId__parent=category)).count()
+        count = category.products.all().count()
+        subcategories = category.children.all()
+        for subcategory in subcategories:
+            count += subcategory.products.all().count()
+
+        return count
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -128,8 +131,14 @@ class MainCategorySerializer(serializers.ModelSerializer):
         return SubCategorySerializer(children, many=True).data
 
     def get_count(self, category):
-        return Products.objects.prefetch_related('categoryId', 'categoryId__parent', 'categoryId__parent__parent').filter(
-            Q(categoryId=category) | Q(categoryId__parent=category) | Q(categoryId__parent__parent=category)).count()
+        count = category.products.all().count()
+        subcategories = category.children.all()
+        for subcategory in subcategories:
+            count += subcategory.products.all().count()
+            tertiary_categories = subcategory.children.all()
+            for tertiary_category in tertiary_categories:
+                count += tertiary_category.products.all().count()
+        return count
 
 
 class CategoryProductsSerializer(serializers.ModelSerializer):
