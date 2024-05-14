@@ -63,11 +63,6 @@ class BannerDetailView(APIView):
                          tags=['Banners'],
                          responses={200: BannerListSerializer(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-
         queryset = get_object_or_404(Banner, pk=pk)
         serializer = BannerListSerializer(instance=queryset, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
