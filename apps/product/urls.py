@@ -12,7 +12,7 @@ urlpatterns = [
     path('counts/', get_counts, name='products-counts'),  # Endpoint to get counts for product options
     path('<int:pk>/', product.ProductsDetailView.as_view()),  # Detail view for a specific product
     path('import/', oasis_json.ProductUploadView.as_view(), name='import_products'),  # Endpoint to import products
-    path('categories/main_categories/', category.get_maincategories, name='main_categories'),
+    path('categories/main_categories/', category.get_main_categories, name='main_categories'),
     path('categories/uploader/', category.CategoryUploaderListView.as_view()),
     path('external/categories/', category.ExternalCategoryList.as_view()),
     # Endpoint to get main categories

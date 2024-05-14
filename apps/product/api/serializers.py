@@ -44,7 +44,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
-                  'is_hit',  'is_new', 'order', 'created_at', 'updated_at', 'site']
+                  'is_hit', 'is_new', 'order', 'created_at', 'updated_at', 'site']
 
     def create(self, validated_data):
         return super().create(validated_data)
@@ -77,9 +77,10 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TertiaryCategory
-        fields = ['id', 'name', 'count',  'site']
+        fields = ['id', 'name', 'count', 'site']
 
-    def get_count(self, category):
+    @staticmethod
+    def get_count(category):
         return category.products.all().count()
 
 
@@ -92,7 +93,8 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = ['id', 'name', 'count', 'children', 'site']
 
-    def get_count(self, category):
+    @staticmethod
+    def get_count(category):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
         descendants_query = Q(categoryId__in=category_ids)
         count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
@@ -108,10 +110,16 @@ class SubCategoryWithCountSerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = ['id', 'name', 'count']
 
-    def get_count(self, subcategory):
+    @staticmethod
+    def get_count(subcategory):
         return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
             Q(categoryId=subcategory) | Q(categoryId__parent=subcategory)
         ).aggregate(total=Count('id'))['total'] or 0
+
+
+def get_children(category):
+    children = category.children
+    return SubCategorySerializer(children, many=True).data
 
 
 class MainCategorySerializer(serializers.ModelSerializer):
@@ -125,11 +133,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available',
                   'order', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site']
 
-    def get_children(self, category):
-        children = category.children
-        return SubCategorySerializer(children, many=True).data
-
-    def get_count(self, category):
+    @staticmethod
+    def get_count(category):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
         descendants_query = Q(categoryId__in=category_ids)
 
@@ -347,7 +352,8 @@ class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
 
                 is_4_level = False
             if not is_4_level:
-                new_category = ProductCategories.objects.create(name=name, parent=parent_category, site=validated_data.get('site', None))
+                new_category = ProductCategories.objects.create(name=name, parent=parent_category,
+                                                                site=validated_data.get('site', None))
                 ExternalCategory.objects.create(external_id=external_id, category=new_category)
             else:
                 ExternalCategory.objects.create(external_id=external_id, category=parent_category)
@@ -369,13 +375,15 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity', 'site', 'sets'
         ]
 
-    def check_color_exists(self, color_name):
+    @staticmethod
+    def check_color_exists(color_name):
         if color_name:
             color, _ = Colors.objects.get_or_create(name=color_name)
             return color
         return None
 
-    def create_img_into_product(self, img_set, color_instance, product_instance):
+    @staticmethod
+    def create_img_into_product(img_set, color_instance, product_instance):
         count = 0
         for img in img_set:
             is_gifts = 'api2.gifts.ru' in img['name']
@@ -405,28 +413,29 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                 time.sleep(5)
         time.sleep(2)
 
-
-    def get_category_instance(self, cate_id):
+    @staticmethod
+    def get_category_instance(cate_id):
         if cate_id is not None:
             external_category = ExternalCategory.objects.filter(external_id=cate_id).first()
             if external_category and external_category.category:
                 return external_category.category
         return None
 
-    def create_sets(self, product, sets):
+    @staticmethod
+    def create_sets(product, sets):
         parent_category = product.categoryId.parent.name
         category = product.categoryId.name
         create_parent_set_category = GiftsBasketCategory.objects.get_or_create(name=parent_category)
-        create_set_category = GiftsBasketCategory.objects.get_or_create(name=category,
-                                                                        parent=create_parent_set_category)
-        create_set = GiftsBaskets.objects.get_or_create(
+        GiftsBasketCategory.objects.get_or_create(name=category,
+                                                  parent=create_parent_set_category)
+        GiftsBaskets.objects.get_or_create(
             title=product.name,
             small_header=product.name,
             description=product.description
 
         )
-        for item in sets:
-            check_product = Products.objects.filter(id=item['product_id'])
+        # for item in sets:
+        #     check_product = Products.objects.filter(id=item['product_id'])
 
         return
 
@@ -434,11 +443,11 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         color_name = validated_data.pop('color_name', None)
         image_set = validated_data.pop('image_set', [])
-        categoryId = validated_data.pop('categoryId', None)
-        sets = validated_data.pop('sets', [])
+        category_id = validated_data.pop('categoryId', None)
+        # sets = validated_data.pop('sets', [])
 
         color_instance = self.check_color_exists(color_name)
-        category_instance = self.get_category_instance(categoryId)
+        category_instance = self.get_category_instance(category_id)
 
         # Since you are only creating a single product instance, unpacking is appropriate
         product_instance, created = Products.objects.get_or_create(**validated_data)

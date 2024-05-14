@@ -4,7 +4,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from apps.product.api.serializers import FilterProductSerializer, ProductFilterProductSerializer
-from apps.product.filters import ProductFilter
 from apps.product.models import ProductFilterProducts, ProductFilterModel
 from utils.expected_fields import check_required_key
 from utils.responses import success_response, success_created_response, bad_request_response, success_deleted_response

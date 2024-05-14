@@ -1,6 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -35,7 +33,8 @@ class CategoryListView(APIView):
         """
         Get all product categories.
         """
-        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children').filter(parent=None).order_by('order')
+        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children')\
+            .filter(parent=None).order_by('order')
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
@@ -129,7 +128,7 @@ class HomeCategoryView(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
         tags=['Categories'],
-        responses={200: CategoryProductsSerializer}
+        responses={200: CategoryProductsSerializer()}
     )
     def get(self, request):
         """
@@ -142,7 +141,7 @@ class HomeCategoryView(APIView):
     @swagger_auto_schema(
         operation_description="Create category or sub categories for home view",
         tags=['Categories'],
-        responses={200: CategoryProductsSerializer}
+        responses={200: CategoryProductsSerializer()}
     )
     def post(self, request):
         """
@@ -173,7 +172,7 @@ subcategory_id_param = openapi.Parameter('subcategory_id', openapi.IN_QUERY,
                      operation_description='Get all sub categories',
                      method='GET')
 @api_view(['GET'])
-def get_maincategories(request):
+def get_main_categories(request):
     categories = list(ProductCategories.objects.filter(parent=None).values('id', 'name'))
     return success_response(categories)
 
@@ -200,12 +199,12 @@ def get_tertiary_categories(request, subcategory_id):
 
 class ExternalCategoryList(APIView):
     permission_classes = [AllowAny]
+
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
         tags=['External Categories'],
         responses={200: CategoryProductsSerializer(many=True)}
     )
-
     def get(self, request):
         queryset = ExternalCategory.objects.all()
         serializer = ExternalCategoryListSerializer(queryset, many=True)
@@ -224,6 +223,6 @@ class CategoryUploaderListView(APIView):
     def post(self, request):
         serializer = CategoryAutoUploaderSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            category = serializer.save()
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

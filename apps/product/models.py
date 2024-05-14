@@ -83,7 +83,7 @@ class Products(models.Model):
                                   choices=[('RUB', 'RUB'), ('USD', 'USD')], default='RUB', null=True, blank=True)
     discount_price = models.FloatField(default=None, null=True, blank=True, verbose_name='Цена со скидкой')
     categoryId = models.ForeignKey(ProductCategories, on_delete=models.CASCADE, null=True, blank=True,
-                                   related_name='products', verbose_name='Категория продукта')
+                                   related_name='products', verbose_name='Категория продукта', db_index=True)
     weight = models.CharField(_('Масса'), max_length=128, null=True, blank=True)
     barcode = models.CharField(_('Штрих-код продукта'), max_length=128, null=True, blank=True)
     ondemand = models.BooleanField(default=True, null=True, blank=True)
