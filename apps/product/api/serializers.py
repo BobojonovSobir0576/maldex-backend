@@ -117,16 +117,17 @@ class SubCategoryWithCountSerializer(serializers.ModelSerializer):
         ).aggregate(total=Count('id'))['total'] or 0
 
 
-def get_children(category):
-    children = category.children
-    return SubCategorySerializer(children, many=True).data
-
 
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
     children = serializers.SerializerMethodField(read_only=True)
     name = serializers.CharField(required=False)
     count = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_children(category):
+        children = category.children
+        return SubCategorySerializer(children, many=True).data
 
     class Meta:
         model = ProductCategories
