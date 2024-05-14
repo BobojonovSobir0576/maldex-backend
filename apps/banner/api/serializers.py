@@ -25,6 +25,7 @@ class BannerProductListSerializer(serializers.ModelSerializer):
 
 
 class BannerListSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
     product_set = serializers.SerializerMethodField()
     product_data = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
