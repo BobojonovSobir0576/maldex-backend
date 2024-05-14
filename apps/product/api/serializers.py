@@ -117,7 +117,6 @@ class SubCategoryWithCountSerializer(serializers.ModelSerializer):
         ).aggregate(total=Count('id'))['total'] or 0
 
 
-
 class MainCategorySerializer(serializers.ModelSerializer):
     """ Main Category details """
     children = serializers.SerializerMethodField(read_only=True)
@@ -213,6 +212,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     article = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
+    categories = serializers.SerializerMethodField(read_only=True)
 
     # categoryId = serializers.IntegerField(required=False)
 
@@ -220,10 +220,15 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         model = Products  # Make sure to specify your model here
         fields = '__all__'
 
-    # def validate_categoryId(self, attrs):
-    #     # print(attrs['categoryId'])
-    #     print(attrs)
-    #     return []
+    def get_categories(self, product):
+        categories = []
+        category = product.categoryId
+        categories.append({'id': category.id, 'name': category.name})
+        while category.parent:
+            category = category.parent
+            categories.append({'id': category.id, 'name': category.name})
+
+        return categories[::-1]
 
     def create(self, validated_data):
         images = validated_data.pop('images')
@@ -264,12 +269,15 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         deleted_images = [] if deleted_images == [''] else deleted_images
         if deleted_images:
             ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
-        if instance.is_new:
-            instance.categoryId.is_new = True
-            instance.cattegoryId.save()
-        if instance.is_hit:
-            instance.categoryId.is_hit = True
-            instance.cattegoryId.save()
+        category = instance.categoryId
+        while category.parent:
+            category = category.parent
+        if validated_data.get('is_new'):
+            category.is_new = True
+            category.save()
+        if validated_data.get('is_hit'):
+            category.is_hit = True
+            category.save()
         return super().update(instance, validated_data)
 
     def get_images_set(self, obj):

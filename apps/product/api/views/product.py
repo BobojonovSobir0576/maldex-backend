@@ -105,11 +105,6 @@ class ProductsDetailView(APIView):
         product_instance = get_object_or_404(Products, pk=pk)
         serializer = ProductDetailSerializers(instance=product_instance, data=request.data,
                                               context={'request': request})
-        request.data._mutable = True
-        category_id = request.data.get('categoryId', 'null')
-        if category_id == 'null':
-            request.data.pop('categoryId')
-        request.data._mutable = False
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
