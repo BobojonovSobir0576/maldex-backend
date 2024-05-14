@@ -17,7 +17,7 @@ class ProductCategories(models.Model):
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
     is_hit = models.BooleanField(default=False, verbose_name="Хит?")
     is_new = models.BooleanField(default=False, verbose_name="Новый?")
-    is_available = models.BooleanField(default=True, verbose_name="Доступен на сайте?")
+    is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
     site = models.CharField(max_length=255, null=True, blank=True)
