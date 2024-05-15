@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.product.models import ProductCategories, ExternalCategory
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
-    TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer
+    TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer, CategoryMoveSerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
@@ -187,6 +187,14 @@ def get_subcategories(request, category_id):
     return success_response(subcategories)
 
 
+@api_view(['GET'])
+def get_all_subcategories(request):
+    search = request.GET.get('search')
+    subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False, parent__is_available=False)
+    subcategories = subcategories.filter(name__icontains=search) if search else subcategories
+    return success_response(list(subcategories.values('id', 'name')))
+
+
 @swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
                      responses={200: TertiaryCategorySerializer(many=True)},
                      operation_description='Get all tertiary categories',
@@ -225,4 +233,18 @@ class CategoryUploaderListView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryMove(APIView):
+    @swagger_auto_schema(
+        tags=['Category'],
+        responses={200: MainCategorySerializer()},
+        request_body=CategoryMoveSerializer()
+    )
+    def post(self, request):
+        serializer = CategoryMoveSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

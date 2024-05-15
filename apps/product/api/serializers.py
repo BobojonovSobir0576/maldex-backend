@@ -370,6 +370,37 @@ class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
         return category or new_category or parent_category
 
 
+class CategoryMoveSerializer(serializers.Serializer):
+    category_id = serializers.IntegerField(write_only=True)
+    categories_data = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    data = serializers.SerializerMethodField(read_only=True)
+
+    def create(self, validated_data):
+        category_id = validated_data.pop('category_id', None)
+        categories_data = validated_data.pop('categories_data', [])
+
+        # Get the main category
+        category = get_object_or_404(ProductCategories, id=category_id)
+
+        # Iterate over the categories_data
+        for cat_id in categories_data:
+            # Get the current category
+            cat = get_object_or_404(ProductCategories, id=cat_id)
+
+            # Move all products to the main category
+            cat.products.update(categoryId=category)
+
+            # Move all subcategories and their products to the main category
+            for sub in cat.children.all():
+                new_sub = ProductCategories.objects.create(name=sub.name, parent=category)
+                sub.products.update(categoryId=new_sub)
+
+        return category
+
+    def get_data(self, category):
+        return MainCategorySerializer(category).data
+
+
 class ProductAutoUploaderSerializer(serializers.ModelSerializer):
     color_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     image_set = serializers.JSONField(required=False)
