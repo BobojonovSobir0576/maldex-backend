@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -5,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.product.models import ProductCategories, ExternalCategory
+from apps.product.models import ProductCategories, ExternalCategory, Products
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
     TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer, CategoryMoveSerializer
@@ -190,9 +191,13 @@ def get_subcategories(request, category_id):
 @api_view(['GET'])
 def get_all_subcategories(request):
     search = request.GET.get('search')
+    response = []
     subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False, parent__is_available=False)
     subcategories = subcategories.filter(name__icontains=search) if search else subcategories
-    return success_response(list(subcategories.values('id', 'name')))
+    for cat in subcategories:
+        count = Products.objects.filter(Q(categoryId__id=cat.id) | Q(categoryId__parent__id=cat.id)).count()
+        response.append({'name': cat.name, 'id': cat.id, 'count': count})
+    return Response(response)
 
 
 @swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
