@@ -271,7 +271,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         if deleted_images:
             ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
         category = instance.categoryId
-        while category.parent:
+        while category and category.parent:
             category = category.parent
         if validated_data.get('is_new'):
             category.is_new = True
