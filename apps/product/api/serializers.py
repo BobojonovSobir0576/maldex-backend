@@ -223,10 +223,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def get_categories(self, product):
         categories = []
         category = product.categoryId
-        categories.append({'id': category.id, 'name': category.name})
-        while category.parent:
-            category = category.parent
+        if category:
             categories.append({'id': category.id, 'name': category.name})
+            while category.parent:
+                category = category.parent
+                categories.append({'id': category.id, 'name': category.name})
 
         return categories[::-1]
 
