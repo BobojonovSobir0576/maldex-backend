@@ -65,7 +65,7 @@ class ProductsListView(APIView, PaginationMethod):
                                      type=openapi.TYPE_BOOLEAN)
 
     @swagger_auto_schema(operation_description="Retrieve a list of products",
-                         manual_parameters=[category_id, search, is_new, is_hit, is_popular
+                         manual_parameters=[category_id, search, is_new, is_hit, is_popular,
                                             is_available, material, brand, warehouse],
                          tags=['Products'],
                          responses={200: ProductDetailSerializers(many=True)})
