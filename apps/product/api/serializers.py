@@ -522,7 +522,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes'
+            'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes', 'quantity'
         ]
 
     def update(self, instance, validated_data):
