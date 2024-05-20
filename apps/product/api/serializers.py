@@ -39,6 +39,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class CategoryListSerializers(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
+    is_available = serializers.BooleanField(required=False)
     """ Category create update and details """
 
     class Meta:
