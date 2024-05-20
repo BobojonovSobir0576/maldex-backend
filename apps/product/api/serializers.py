@@ -44,7 +44,7 @@ class CategoryListSerializers(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
-                  'is_hit', 'is_new', 'order', 'created_at', 'updated_at', 'site']
+                  'is_hit', 'is_new', 'order', 'order_top', 'created_at', 'updated_at', 'site']
 
     def create(self, validated_data):
         return super().create(validated_data)

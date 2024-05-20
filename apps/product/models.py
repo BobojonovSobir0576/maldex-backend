@@ -45,7 +45,7 @@ class ProductCategories(models.Model):
         elif not self.is_available:
             self.order = None
 
-        if self.is_popular and self.parent is None:
+        if not self.order_top and self.is_popular and self.parent is None:
             popular_categories = ProductCategories.objects.filter(is_popular=True, parent=None).order_by('order_top')
             if popular_categories.exists():
                 self.order_top = popular_categories.last().order_top + 1
