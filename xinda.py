@@ -3,6 +3,7 @@ import os
 from ftplib import FTP
 import xmltodict
 
+
 def convert_xml_to_json_and_save(xml_dict, filename):
     # Ensure the directory exists
     directory = os.path.dirname(filename)
@@ -16,6 +17,7 @@ def convert_xml_to_json_and_save(xml_dict, filename):
         print(f"XML data converted and saved to {filename} successfully.")
     except Exception as e:
         print(f"Failed to save to JSON: {e}")
+
 
 def get_data_from_elod_ftp():
     ftp = FTP()
@@ -47,7 +49,8 @@ def get_data_from_elod_ftp():
         print(f"An error occurred: {e}")
     finally:
         ftp.quit()
-        
+
+
 def get_catalogue_data():
     ftp = FTP()
     try:
@@ -79,9 +82,11 @@ def get_catalogue_data():
     finally:
         ftp.quit()
 
+
 def main():
     get_data_from_elod_ftp()
     get_catalogue_data()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

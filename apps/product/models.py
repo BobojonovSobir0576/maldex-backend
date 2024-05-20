@@ -9,6 +9,7 @@ class ProductCategories(models.Model):
     """Model to represent product categories."""
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
     order = models.PositiveSmallIntegerField(null=True, blank=True)
+    order_top = models.PositiveSmallIntegerField(null=True, blank=True)
     name = models.CharField(max_length=150, verbose_name="Название категории")
     title = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -34,17 +35,22 @@ class ProductCategories(models.Model):
     def save(self, *args, **kwargs):
         """Override save method to generate ID and order if not provided."""
         if not self.id:
-            last_instance = ProductCategories.all_levels.all().order_by('id').last()
+            last_instance = ProductCategories.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
             self.id = f"{next_id:010d}"
-        if not self.order:
+        if not self.order and self.is_available:
             last_instance = ProductCategories.objects.filter(parent=self.parent, is_available=True).order_by('order').last()
             next_id = 1 if not (last_instance and last_instance.order) else last_instance.order + 1
             self.order = next_id
         elif not self.is_available:
             self.order = None
 
-        print(self, self.order)
+        if self.is_popular and self.parent is None:
+            popular_categories = ProductCategories.objects.filter(is_popular=True, parent=None).order_by('order_top')
+            if popular_categories.exists():
+                self.order_top = popular_categories.last().order_top + 1
+            else:
+                self.order_top = 1
 
         super(ProductCategories, self).save(*args, **kwargs)
 
