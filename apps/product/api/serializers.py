@@ -307,7 +307,7 @@ class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'brand', 'article', 'price', 'price_type',
             'categoryId', 'description', 'discount_price',
-            'is_popular', 'is_hit', 'is_new', 'created_at', 'images', 'category_name', 'images_set'
+            'is_popular', 'is_hit', 'is_new', 'created_at', 'images', 'category_name', 'images_set', 'warehouse', 'site', 'sizes'
         ]
 
     def create(self, validated_data):
@@ -419,7 +419,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'quantity', 'site', 'sets'
+            'created_at', 'updated_at', 'color_name', 'image_set', 'categoryId', 'warehouse', 'site', 'sets', 'sizes'
         ]
 
     @staticmethod
@@ -521,7 +521,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'categoryId', 'quantity'
+            'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes'
         ]
 
     def update(self, instance, validated_data):
@@ -589,3 +589,6 @@ class FilterProductSerializer(serializers.ModelSerializer):
     def get_products(self, obj):
         data = ProductFilterProductSerializer(obj.products.all(), many=True, context=self.context)
         return data.data
+
+
+
