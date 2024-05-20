@@ -72,10 +72,9 @@ class Products(models.Model):
     """Model to represent products."""
     id = models.BigIntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название продукта'), max_length=512, null=True, blank=True)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     code = models.IntegerField(default=0, null=True, blank=True)
     article = models.CharField(_('Артикул'), max_length=512, null=True, blank=True)
-    product_size = models.CharField(_('Размер товара'), max_length=256, default="S-XXL", null=True, blank=True)
+    product_size = models.CharField(_('Размер товара'), max_length=256, null=True, blank=True)
     material = models.CharField(_('Материал'), max_length=512, default="S-XXL", null=True, blank=True)
     description = models.TextField(verbose_name='Описания', null=True, blank=True)
     brand = models.CharField(_('Бренд'), max_length=128, null=True, blank=True)
