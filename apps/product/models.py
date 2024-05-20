@@ -38,15 +38,16 @@ class ProductCategories(models.Model):
             last_instance = ProductCategories.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
             self.id = f"{next_id:010d}"
-        if not self.order and self.is_available:
-            last_instance = ProductCategories.objects.filter(parent=self.parent, is_available=True).order_by('order').last()
-            next_id = 1 if not (last_instance and last_instance.order) else last_instance.order + 1
-            self.order = next_id
-        elif not self.is_available:
-            self.order = None
 
-        if not self.order_top and self.is_popular and self.parent is None:
-            popular_categories = ProductCategories.objects.filter(is_popular=True, parent=None).order_by('order_top')
+        if not self.order and self.is_available and self.parent is None:
+            popular_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
+            if popular_categories.exists():
+                self.order = popular_categories.last().order + 1
+            else:
+                self.order = 1
+
+        if not self.order_top and self.is_available and self.is_popular and self.parent is None:
+            popular_categories = ProductCategories.objects.filter(is_popular=True, is_available=True, parent=None).order_by('order_top')
             if popular_categories.exists():
                 self.order_top = popular_categories.last().order_top + 1
             else:
