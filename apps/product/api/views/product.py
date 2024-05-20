@@ -45,6 +45,12 @@ class ProductsListView(APIView, PaginationMethod):
     search = openapi.Parameter('search', openapi.IN_QUERY,
                                description="Searching ...",
                                type=openapi.TYPE_STRING)
+    material = openapi.Parameter('material', openapi.IN_QUERY,
+                                 type=openapi.TYPE_STRING)
+    brand = openapi.Parameter('brand', openapi.IN_QUERY,
+                              type=openapi.TYPE_STRING)
+    warehouse = openapi.Parameter('warehouse', openapi.IN_QUERY,
+                              type=openapi.TYPE_STRING)
     is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
                                description="NEW products",
                                type=openapi.TYPE_BOOLEAN)

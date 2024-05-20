@@ -85,11 +85,24 @@ class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
     category_id = CategoryFilter(field_name='categoryId_id')
     search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    material = filters.CharFilter(field_name='material', lookup_expr='icontains')
+    brand = filters.CharFilter(field_name='brand', lookup_expr='icontains')
     is_new = filters.BooleanFilter(field_name='is_new')
     is_hit = filters.BooleanFilter(field_name='is_hit')
     is_popular = filters.BooleanFilter(field_name='is_popular')
     is_available = filters.BooleanFilter(field_name='ondemand')
+    warehouse = filters.CharFilter(field_name='warehouse', method='filter_warehouse')
+
+    def filter_warehouse(self, queryset, name, value):
+        if value == 'Европа':
+            lookup = '__'.join([name, '0', 'quantity', 'gt'])
+        elif value == 'Москва':
+            lookup = '__'.join([name, '1', 'quantity', 'gt'])
+        else:
+            return Products.objects.none()
+        print(lookup)
+        return queryset.filter(**{lookup: 0})
 
     class Meta:
         model = Products
-        fields = ['category_id', 'search', 'is_new', 'is_hit', 'is_popular', 'is_available']
+        fields = ['category_id', 'search', 'brand', 'material', 'warehouse', 'is_new', 'is_hit', 'is_popular', 'is_available']
