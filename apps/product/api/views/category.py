@@ -39,6 +39,8 @@ class CategoryListView(APIView):
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
+        if all(filter(lambda p: p.is_popular, queryset)):
+            queryset = queryset.order_by('order_top')
         serializers = MainCategorySerializer(queryset, many=True, context={'request': request})
         return success_response(serializers.data)
 

@@ -165,5 +165,3 @@ _migrations/*
 
 tests/
 .idea/
-staticfiles/
-
