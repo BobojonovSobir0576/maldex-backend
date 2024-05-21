@@ -92,6 +92,8 @@ class ProductFilter(filters.FilterSet):
     is_popular = filters.BooleanFilter(field_name='is_popular')
     is_available = filters.BooleanFilter(field_name='ondemand')
     warehouse = filters.CharFilter(field_name='warehouse', method='filter_warehouse')
+    price = filters.CharFilter(field_name='price', method='filter_price')
+    quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
 
     def filter_warehouse(self, queryset, name, value):
         if value == 'Европа':
@@ -102,6 +104,16 @@ class ProductFilter(filters.FilterSet):
             return Products.objects.none()
         print(lookup)
         return queryset.filter(**{lookup: 0})
+
+    def filter_price(self, queryset, name, value):
+        if ',' not in value:
+            return queryset.filter(price__gte=value)
+        start, end = map(int, value.split(','))
+        print(start, end)
+        return queryset.filter(price__gte=start, price__lte=end)
+
+    def filter_quantity(self, queryset, name, value):
+        return queryset.filter(warehouse__0__quantity__gte=int(value))
 
     class Meta:
         model = Products
