@@ -71,12 +71,18 @@ class ProductsListView(APIView, PaginationMethod):
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request):
         queryset = Products.objects.all()
-        filterset = ProductFilter(request.GET, queryset=queryset)
+        print(1, queryset.count())
+        print(request.GET)
+        filterset = ProductFilter(request.query_params, queryset=queryset)
+        # print(filterset, filterset.qs.count())
         if filterset.is_valid():
+            print('valid')
             queryset = filterset.qs
+        print(2, queryset.count())
         filter_id = request.query_params.get('filter_id', None)
         filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
         queryset = queryset.filter(filter_products__filter=filter_model) if filter_model else queryset
+
         serializers = super().page(queryset.order_by('-updated_at'), ProductDetailSerializers, request)
         return success_response(serializers.data)
 

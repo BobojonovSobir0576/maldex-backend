@@ -77,16 +77,16 @@ class CategoryFilter(filters.NumberFilter):
             Q(categoryId__id=value) |
             Q(categoryId__parent__id=value) |
             Q(categoryId__parent__parent__id=value)
-        )
+        ) if value else qs
         return qs
 
 
 class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
-    category_id = CategoryFilter(field_name='categoryId_id')
+    category_id = CategoryFilter(field_name='categoryId_id', lookup_expr='exact')
     search = filters.CharFilter(field_name='name', lookup_expr='icontains')
-    material = filters.CharFilter(field_name='material', lookup_expr='icontains')
-    brand = filters.CharFilter(field_name='brand', lookup_expr='icontains')
+    material = filters.CharFilter(field_name='material', method='filter_material')
+    brand = filters.CharFilter(field_name='brand', method='filter_brand')
     is_new = filters.BooleanFilter(field_name='is_new')
     is_hit = filters.BooleanFilter(field_name='is_hit')
     is_popular = filters.BooleanFilter(field_name='is_popular')
@@ -95,6 +95,20 @@ class ProductFilter(filters.FilterSet):
     price = filters.CharFilter(field_name='price', method='filter_price')
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
 
+    def filter_material(self, queryset, name, value):
+        values = value.split(',')
+        print(f'Filtering by material: {values}')
+        filtered_queryset = queryset.filter(material__in=values)
+        print(f'Filtered queryset count: {filtered_queryset.count()}')
+        return filtered_queryset
+
+    def filter_brand(self, queryset, name, value):
+        values = value.split(',')
+        print(f'Filtering by brand: {values}')
+        filtered_queryset = queryset.filter(brand__in=values)
+        print(f'Filtered queryset count: {filtered_queryset.count()}')
+        return filtered_queryset
+
     def filter_warehouse(self, queryset, name, value):
         if value == 'Европа':
             lookup = '__'.join([name, '0', 'quantity', 'gt'])
@@ -102,19 +116,27 @@ class ProductFilter(filters.FilterSet):
             lookup = '__'.join([name, '1', 'quantity', 'gt'])
         else:
             return Products.objects.none()
-        print(lookup)
-        return queryset.filter(**{lookup: 0})
+        print(f'Filtering by warehouse: {lookup}')
+        filtered_queryset = queryset.filter(**{lookup: 0})
+        print(f'Filtered queryset count: {filtered_queryset.count()}')
+        return filtered_queryset
 
     def filter_price(self, queryset, name, value):
         if ',' not in value:
-            return queryset.filter(price__gte=value)
+            filtered_queryset = queryset.filter(price__gte=value)
+            print(f'Filtering by price >= {value}, count: {filtered_queryset.count()}')
+            return filtered_queryset
         start, end = map(int, value.split(','))
-        print(start, end)
-        return queryset.filter(price__gte=start, price__lte=end)
+        filtered_queryset = queryset.filter(price__gte=start, price__lte=end)
+        print(f'Filtering by price between {start} and {end}, count: {filtered_queryset.count()}')
+        return filtered_queryset
 
     def filter_quantity(self, queryset, name, value):
-        return queryset.filter(warehouse__0__quantity__gte=int(value))
+        filtered_queryset = queryset.filter(warehouse__0__quantity__gte=int(value))
+        print(f'Filtering by quantity >= {value}, count: {filtered_queryset.count()}')
+        return filtered_queryset
 
     class Meta:
-        model = Products
-        fields = ['category_id', 'search', 'brand', 'material', 'warehouse', 'is_new', 'is_hit', 'is_popular', 'is_available']
+        # model = Products
+        fields = []
+        # fields = ['category_id', 'search', 'brand', 'material', 'warehouse', 'is_new', 'is_hit', 'is_popular', 'is_available']
