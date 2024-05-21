@@ -273,10 +273,15 @@ class ProductDetailSerializers(serializers.ModelSerializer):
                     image_serializer.save()
                 else:
                     raise ValueError(image_serializer.errors)
-        deleted_images = validated_data.pop('deleted_images', [])
-        deleted_images = [] if deleted_images == [''] else deleted_images
-        if deleted_images:
-            ProductImage.objects.filter(productID=instance, id__in=deleted_images).delete()
+        
+        code = validated_data.pop('code')
+        price = validated_data.pop('price')
+        discount_price = validated_data.pop('discount_price')
+        instance.code = code if code > 0 else instance.code
+        instance.price = price if price > 0 else instance.price
+        instance.discount_price = discount_price if discount_price > 0 else instance.discount_price
+        categoryId = validated_data.pop('categoryId')
+        instance.categoryId = get_object_or_404(ProductCategories, id=categoryId) if categoryId else instance.categoryId
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
