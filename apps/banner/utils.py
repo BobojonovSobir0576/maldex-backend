@@ -16,7 +16,7 @@ def create_banner_products(product_data, create_banner):
 
 def create_banner_buttons(buttons_data, banner):
     for button in buttons_data:
-        Button.objects.create(
+        Button.objects.get_or_create(
             title=button.title,
             url=button.url,
             banner=banner
