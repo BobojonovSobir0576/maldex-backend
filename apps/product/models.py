@@ -67,11 +67,10 @@ class ProductCategories(models.Model):
 
 @receiver(pre_save, sender=ProductCategories)
 def pre_save_category(sender, instance, **kwargs):
-    previous = ProductCategories.objects.filter(pk=instance.pk).first()
-    print(instance, previous, instance.order_top, previous.order_top, kwargs)
-    if previous.order_top != instance.order_top and previous.order_top is not None:
-        ProductCategories.objects.filter(pk=previous.pk).update(order_top=instance.order_top)
-        ProductCategories.objects.filter(pk=instance.pk).update(order_top=previous.order_top)
+    old = ProductCategories.objects.filter(pk=instance.pk).first()
+    previous = ProductCategories.objects.filter(order_top=instance.order_top).first()
+    if previous.order_top != old.order_top and previous.order_top is not None:
+        ProductCategories.objects.filter(pk=previous.pk).update(order_top=old.order_top)
 
 
 @receiver(post_save, sender=ProductCategories)
