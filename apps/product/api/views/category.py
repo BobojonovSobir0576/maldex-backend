@@ -39,7 +39,8 @@ class CategoryListView(APIView):
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        if request.query_params.get('is_popular', None) is True:
+        is_popular = bool(request.query_params.get('is_popular', None))
+        if is_popular is True:
             queryset = queryset.order_by('order_top')
         serializers = MainCategorySerializer(queryset, many=True, context={'request': request})
         return success_response(serializers.data)
@@ -254,4 +255,4 @@ class CategoryMove(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status)

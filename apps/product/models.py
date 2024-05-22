@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from apps.product.managers import AllCategoryManager
 
@@ -53,13 +55,22 @@ class ProductCategories(models.Model):
             else:
                 self.order_top = 1
 
-        super(ProductCategories, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "product_category"
         ordering = ('-is_available', 'order')
         verbose_name = "Категория"
         verbose_name_plural = "Категория"
+
+
+@receiver(post_save, sender=ProductCategories)
+def pre_save_category(sender, instance, **kwargs):
+    top_categories = ProductCategories.objects.filter(is_available=True, is_popular=True, parent=None).order_by(
+        'order_top')
+    for num, category in enumerate(top_categories):
+        ProductCategories.objects.filter(pk=category.pk).update(order_top=num + 1)
+    ProductCategories.objects.filter(is_popular=False, parent=None).update(order_top=None)
 
 
 class ExternalCategory(models.Model):
