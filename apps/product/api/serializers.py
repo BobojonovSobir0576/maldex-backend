@@ -267,11 +267,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         code = validated_data.pop('code', instance.code)
         price = validated_data.pop('price', instance.price)
         discount_price = validated_data.pop('discount_price', instance.discount_price)
-        instance.code = code if code > 0 else instance.code
-        instance.price = price if price > 0 else instance.price
-        instance.discount_price = discount_price if discount_price > 0 else instance.discount_price
-        categoryId = validated_data.pop('categoryId', instance.categoryId.id)
-        instance.categoryId = get_object_or_404(ProductCategories, id=categoryId) if categoryId else instance.categoryId
+        instance.code = code if code and code > 0 else instance.code
+        instance.price = price if price and price > 0 else instance.price
+        instance.discount_price = discount_price if discount_price else instance.discount_price
+        categoryId = validated_data.pop('categoryId', instance.categoryId)
+        instance.categoryId = categoryId
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
