@@ -65,7 +65,8 @@ class ProductCategories(models.Model):
 
 
 @receiver(post_save, sender=ProductCategories)
-def pre_save_category(sender, instance, **kwargs):
+def post_save_category(sender, instance, **kwargs):
+    print(sender, instance, kwargs, instance.name)
     top_categories = ProductCategories.objects.filter(is_available=True, is_popular=True, parent=None).order_by(
         'order_top')
     for num, category in enumerate(top_categories):

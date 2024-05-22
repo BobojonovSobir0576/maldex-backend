@@ -64,15 +64,11 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
         if order:
-            category = get_object_or_404(ProductCategories, order=order, parent=instance.parent)
-            category.order = instance.order
-            category.save()
-            instance.order = int(order)
+            ProductCategories.objects.filter(order=order, parent=instance.parent).update(order=instance.order)
+            ProductCategories.objects.filter(pk=instance.pk).update(order=int(order))
         if order_top:
-            category = get_object_or_404(ProductCategories, order_top=order_top, parent=instance.parent)
-            category.order_top = instance.order_top
-            category.save()
-            instance.order_top = int(order_top)
+            ProductCategories.objects.filter(order_top=order_top, parent=instance.parent).update(order_top=instance.order_top)
+            ProductCategories.objects.filter(pk=instance.pk).update(order_top=int(order_top))
 
         instance.save()
         return instance
