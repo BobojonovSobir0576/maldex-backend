@@ -38,8 +38,6 @@ class BannerListSerializer(serializers.ModelSerializer):
     product_data = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
-    buttons = ButtonSerializer(many=True, read_only=True)
-    buttons_data = serializers.ListSerializer(child=ButtonSerializer())
 
     class Meta:
         model = Banner
@@ -47,10 +45,8 @@ class BannerListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
-        buttons_data = validated_data.pop('buttons_data', [])
         create_banner = Banner.objects.create(**validated_data)
         create_banner_products(product_data, create_banner)
-        create_banner_buttons(buttons_data, create_banner)
         return create_banner
 
     def update(self, instance, validated_data):
@@ -84,15 +80,19 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(required=True),
         write_only=True
     )
+    buttons = ButtonSerializer(many=True, read_only=True)
+    buttons_data = serializers.ListSerializer(child=ButtonSerializer())
 
     class Meta:
         model = BannerCarousel
-        fields = ['id', 'name', 'product_set', 'product_data']
+        fields = ['id', 'name', 'product_set', 'product_data', 'buttons', 'buttons_data']
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
+        buttons_data = validated_data.pop('buttons_data', [])
         create_banner_carousel = BannerCarousel.objects.create(**validated_data)
         create_banner_carousel_products(product_data, create_banner_carousel)
+        create_banner_buttons(buttons_data, create_banner_carousel)
         return create_banner_carousel
 
     def update(self, instance, validated_data):

@@ -14,12 +14,12 @@ def create_banner_products(product_data, create_banner):
     return create_banner_product
 
 
-def create_banner_buttons(buttons_data, banner):
+def create_banner_buttons(buttons_data, banner_carousel):
     for button in buttons_data:
         Button.objects.get_or_create(
             title=button.title,
             url=button.url,
-            banner=banner
+            banner_carousel=banner_carousel
         )
     return None
 
