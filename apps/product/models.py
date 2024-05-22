@@ -35,6 +35,7 @@ class ProductCategories(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        print(self.order_top)
         """Override save method to generate ID and order if not provided."""
         if not self.id:
             last_instance = ProductCategories.objects.all().order_by('id').last()
@@ -67,6 +68,7 @@ class ProductCategories(models.Model):
 @receiver(pre_save, sender=ProductCategories)
 def pre_save_category(sender, instance, **kwargs):
     previous = ProductCategories.objects.filter(pk=instance.pk).first()
+    print(instance, previous, instance.order_top, previous.order_top, kwargs)
     if previous.order_top != instance.order_top and previous.order_top is not None:
         ProductCategories.objects.filter(pk=previous.pk).update(order_top=instance.order_top)
         ProductCategories.objects.filter(pk=instance.pk).update(order_top=previous.order_top)
@@ -74,7 +76,7 @@ def pre_save_category(sender, instance, **kwargs):
 
 @receiver(post_save, sender=ProductCategories)
 def post_save_category(sender, instance, **kwargs):
-    print(sender, instance, kwargs, instance.name)
+    print(instance, instance.order_top, kwargs)
     top_categories = ProductCategories.objects.filter(is_available=True, is_popular=True, parent=None).order_by(
         'order_top')
     for num, category in enumerate(top_categories):
