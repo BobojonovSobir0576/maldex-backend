@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 
-from apps.banner.models import BannerProduct
+from apps.banner.models import BannerProduct, Button
 from apps.product.models import Products
 
 
@@ -12,6 +12,16 @@ def create_banner_products(product_data, create_banner):
             productID=product_instance
         )
     return create_banner_product
+
+
+def create_banner_buttons(buttons_data, banner):
+    for button in buttons_data:
+        Button.objects.create(
+            title=button.title,
+            url=button.url,
+            banner=banner
+        )
+    return None
 
 
 def update_banner_products(banner, product_data):

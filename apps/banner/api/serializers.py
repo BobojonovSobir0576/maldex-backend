@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from apps.banner.models import *
-from apps.banner.utils import create_banner_products, create_banner_carousel_products, update_banner_products
+from apps.banner.utils import create_banner_products, create_banner_carousel_products, update_banner_products, \
+    create_banner_buttons
 from apps.product.api.serializers import ProductDetailSerializers
 
 
@@ -24,21 +25,32 @@ class BannerProductListSerializer(serializers.ModelSerializer):
         return data.data
 
 
+class ButtonSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Button
+        fields = ['title', 'url']
+
+
 class BannerListSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     product_set = serializers.SerializerMethodField()
     product_data = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
     )
+    buttons = ButtonSerializer(many=True, read_only=True)
+    buttons_data = serializers.ListSerializer(child=ButtonSerializer())
 
     class Meta:
         model = Banner
-        fields = ['id', 'name', 'product_set', 'product_data', 'order_by_id']
+        fields = ['id', 'name', 'product_set', 'product_data', 'order_by_id', 'buttons', 'buttons_data']
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
+        buttons_data = validated_data.pop('buttons_data', [])
         create_banner = Banner.objects.create(**validated_data)
         create_banner_products(product_data, create_banner)
+        create_banner_buttons(buttons_data, create_banner)
         return create_banner
 
     def update(self, instance, validated_data):

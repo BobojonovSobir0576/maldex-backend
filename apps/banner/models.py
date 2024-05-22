@@ -4,6 +4,7 @@ from django.db import models
 from apps.product.models import Products
 
 
+
 class Banner(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название баннера'), max_length=155)
@@ -27,6 +28,15 @@ class Banner(models.Model):
         ordering = ['order_by_id']
         verbose_name = "Баннер"
         verbose_name_plural = "Баннер"
+
+
+class Button(models.Model):
+    title = models.CharField(max_length=512)
+    url = models.URLField()
+    banner = models.ForeignKey(Banner, on_delete=models.CASCADE, related_name='buttons')
+
+    def __str__(self):
+        return self.title
 
 
 class BannerProduct(models.Model):
