@@ -41,4 +41,4 @@ def create_banner_carousel_products(product_data, create_banner_carousel):
             bannerCarouselID=create_banner_carousel,
             productCarouselID=product_instance
         )
-    return create_banner_carousel_product
+    return None
