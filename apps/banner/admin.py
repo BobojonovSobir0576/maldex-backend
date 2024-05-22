@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.banner.models import Banner, BannerProduct, BannerCarousel, BannerCarouselProduct
+from apps.banner.models import Banner, BannerProduct, BannerCarousel
 from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 
@@ -26,32 +26,14 @@ class BannerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     readonly_fields = ['created_at']
 
 
-class BannerCarouselProductInline(admin.TabularInline):
-    model = BannerCarouselProduct
-    extra = 1
-    autocomplete_fields = ['productCarouselID']
-    readonly_fields = ['product_image']
-
-    def product_image(self, obj):
-        if obj and obj.productCarouselID and obj.productCarouselID.images_set.all():
-            print(obj.productCarouselID.images_set)
-            return format_html('<img src="{}" width="100px" height="100px"/>', obj.productCarouselID.images_set.all()[0].image.url)
-        return "No image"
-
-    product_image.short_description = 'Product Images'
-
-
 class BannerCarouselAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    inlines = [
-        BannerCarouselProductInline,
-    ]
     list_display = ['id', 'name', 'created_at']
     search_fields = ['name']
     ordering = ['-created_at']
     readonly_fields = ['created_at', 'banner_carousel_video']
 
     fieldsets = [
-        (None, {'fields': ['name', 'video', 'created_at']}),
+        (None, {'fields': ['name', 'video', 'product', 'created_at']}),
     ]
 
     def banner_carousel_video(self, obj):

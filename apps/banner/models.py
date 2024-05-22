@@ -54,6 +54,7 @@ class BannerCarousel(models.Model):
     name = models.CharField(_('Название баннерной карусели'), max_length=155, null=True, blank=True)
     video = models.FileField(upload_to="media/banner/carousel/video/", null=True, blank=True,
                                            verbose_name='Баннер-карусель Видео')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):
@@ -67,24 +68,5 @@ class BannerCarousel(models.Model):
 
 class Button(models.Model):
     title = models.CharField(max_length=512)
-    url = models.URLField()
+    url = models.CharField(max_length=512)
     banner_carousel = models.ForeignKey(BannerCarousel, on_delete=models.CASCADE, related_name='buttons')
-
-
-class BannerCarouselProduct(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    bannerCarouselID = models.ForeignKey(BannerCarousel, on_delete=models.CASCADE, null=True, blank=True,
-                                         related_name='bannerCarouselID',
-                                         verbose_name='Идентификатор баннерной карусели')
-    productCarouselID = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,
-                                          related_name='bannerCarouselProduct',
-                                          verbose_name='Идентификатор карусели товаров баннера')
-    created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
-
-    def __str__(self):
-        return self.bannerCarouselID.name
-
-    class Meta:
-        db_table = "banner_carousel_product"
-        verbose_name = "Баннер-карусель Продукт"
-        verbose_name_plural = "Баннер-карусель Продукт"

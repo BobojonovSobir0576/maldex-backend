@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from apps.banner.models import *
 from apps.banner.api.serializers import (
     BannerListSerializer,
-    BannerCarouselListSerializer, BannerProductListSerializer, BannerCarouselProductListSerializer
+    BannerCarouselListSerializer, BannerProductListSerializer
 )
 
 from utils.responses import (
@@ -125,7 +125,8 @@ class BannerCarouselListView(APIView):
                          tags=['Banner Carousel'],
                          responses={201: BannerCarouselListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'product_data', 'buttons_data', 'video'}
+        print(request.data)
+        valid_fields = {'name', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
@@ -170,35 +171,5 @@ class BannerCarouselDetailView(APIView):
                          responses={204: 'No content'})
     def delete(self, request, pk):
         queryset = get_object_or_404(BannerCarousel, pk=pk)
-        queryset.delete()
-        return success_deleted_response("Successfully deleted")
-
-
-class BannerCarouselProductDetailView(APIView):
-    permission_classes = [AllowAny]
-
-    @swagger_auto_schema(request_body=BannerCarouselProductListSerializer,
-                         operation_description="Banners Carousel product update",
-                         tags=['Banner Carousel Product'],
-                         responses={200: BannerCarouselProductListSerializer(many=False)})
-    def put(self, request, pk):
-        valid_fields = {'productID'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-
-        queryset = get_object_or_404(BannerCarouselProduct, pk=pk)
-        serializer = BannerCarouselProductListSerializer(instance=queryset, data=request.data,
-                                                         context={'request': request})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return success_response(serializer.data)
-        return bad_request_response(serializer.errors)
-
-    @swagger_auto_schema(operation_description="Delete a Banners Carousel product",
-                         tags=['Banner Carousel Product'],
-                         responses={204: 'No content'})
-    def delete(self, request, pk):
-        queryset = get_object_or_404(BannerCarouselProduct, pk=pk)
         queryset.delete()
         return success_deleted_response("Successfully deleted")

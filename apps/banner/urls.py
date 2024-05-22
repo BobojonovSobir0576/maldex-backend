@@ -8,5 +8,4 @@ urlpatterns = [
     path('product/<uuid:pk>/', banner.BannerProductDetailView.as_view()),
     path('carousel/', banner.BannerCarouselListView.as_view()),
     path('carousel/<int:pk>/', banner.BannerCarouselDetailView.as_view()),
-    path('carousel/product/<int:pk>/', banner.BannerCarouselProductDetailView.as_view()),
 ]
