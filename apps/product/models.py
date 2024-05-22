@@ -69,18 +69,25 @@ class ProductCategories(models.Model):
 def pre_save_category(sender, instance, **kwargs):
     old = ProductCategories.objects.filter(pk=instance.pk).first()
     previous = ProductCategories.objects.filter(order_top=instance.order_top).first()
+    previous_by_order = ProductCategories.objects.filter(order=instance.order).first()
     if previous.order_top != old.order_top and previous.order_top is not None:
         ProductCategories.objects.filter(pk=previous.pk).update(order_top=old.order_top)
+    if previous_by_order.order != old.order and previous_by_order.order is not None:
+        ProductCategories.objects.filter(pk=previous_by_order.pk).update(order=old.order)
 
 
 @receiver(post_save, sender=ProductCategories)
 def post_save_category(sender, instance, **kwargs):
-    print(instance, instance.order_top, kwargs)
     top_categories = ProductCategories.objects.filter(is_available=True, is_popular=True, parent=None).order_by(
         'order_top')
     for num, category in enumerate(top_categories):
         ProductCategories.objects.filter(pk=category.pk).update(order_top=num + 1)
     ProductCategories.objects.filter(is_popular=False, parent=None).update(order_top=None)
+
+    ava_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
+    for num, category in enumerate(ava_categories):
+        ProductCategories.objects.filter(pk=category.pk).update(order=num+1)
+    ProductCategories.objects.filter(is_available=False, parent=None).update(order=None)
 
 
 class ExternalCategory(models.Model):

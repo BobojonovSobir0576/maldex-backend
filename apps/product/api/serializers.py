@@ -51,21 +51,18 @@ class CategoryListSerializers(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        order = validated_data.pop('order', None)
         logo = self.context.get('logo') if self.context.get('logo') != 'null' else None
         icon = self.context.get('icon') if self.context.get('icon') != 'null' else None
         instance.logo = logo or instance.logo
         instance.icon = icon or instance.icon
         instance.order_top = validated_data.get('order_top', instance.order_top)
+        instance.order = validated_data.get('order', instance.order_top)
         instance.name = validated_data.get('name', instance.name)
         instance.parent = validated_data.get('parent', instance.parent)
         instance.is_popular = validated_data.get('is_popular', instance.is_popular)
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
-        if order:
-            ProductCategories.objects.filter(order=order, parent=instance.parent).update(order=instance.order)
-            ProductCategories.objects.filter(pk=instance.pk).update(order=int(order))
 
         instance.save()
         return instance
