@@ -78,10 +78,10 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     product_set = serializers.SerializerMethodField()
     product_data = serializers.ListSerializer(
         child=serializers.IntegerField(required=True),
-        write_only=True
+        write_only=True, required=False
     )
     buttons = ButtonSerializer(many=True, read_only=True)
-    buttons_data = serializers.ListSerializer(child=ButtonSerializer(), write_only=True)
+    buttons_data = serializers.ListSerializer(child=ButtonSerializer(), write_only=True, required=False)
 
     class Meta:
         model = BannerCarousel
