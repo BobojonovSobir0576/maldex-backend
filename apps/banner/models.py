@@ -52,6 +52,8 @@ class BannerProduct(models.Model):
 class BannerCarousel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название баннерной карусели'), max_length=155, null=True, blank=True)
+    video = models.FileField(upload_to="media/banner/carousel/video/", null=True, blank=True,
+                                           verbose_name='Баннер-карусель Видео')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):
@@ -77,8 +79,6 @@ class BannerCarouselProduct(models.Model):
     productCarouselID = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,
                                           related_name='bannerCarouselProduct',
                                           verbose_name='Идентификатор карусели товаров баннера')
-    bannerCarouselVideo = models.FileField(upload_to="media/banner/carousel/video/", null=True, blank=True,
-                                           verbose_name='Баннер-карусель Видео')
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):

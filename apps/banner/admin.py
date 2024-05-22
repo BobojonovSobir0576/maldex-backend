@@ -30,14 +30,29 @@ class BannerCarouselProductInline(admin.TabularInline):
     model = BannerCarouselProduct
     extra = 1
     autocomplete_fields = ['productCarouselID']
-    readonly_fields = ['product_image', 'banner_carousel_video']
+    readonly_fields = ['product_image']
 
     def product_image(self, obj):
-        if obj and obj.productCarouselID and obj.productCarouselID.image:
-            return format_html('<img src="{}" width="50%" height="50%"/>', obj.productCarouselID.image.url)
+        if obj and obj.productCarouselID and obj.productCarouselID.images_set.all():
+            print(obj.productCarouselID.images_set)
+            return format_html('<img src="{}" width="100px" height="100px"/>', obj.productCarouselID.images_set.all()[0].image.url)
         return "No image"
 
-    product_image.short_description = 'Product Image'
+    product_image.short_description = 'Product Images'
+
+
+class BannerCarouselAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    inlines = [
+        BannerCarouselProductInline,
+    ]
+    list_display = ['id', 'name', 'created_at']
+    search_fields = ['name']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'banner_carousel_video']
+
+    fieldsets = [
+        (None, {'fields': ['name', 'video', 'created_at']}),
+    ]
 
     def banner_carousel_video(self, obj):
         if obj and obj.bannerCarouselVideo:
@@ -50,20 +65,6 @@ class BannerCarouselProductInline(admin.TabularInline):
         return "No video"
 
     banner_carousel_video.short_description = 'Banner Carousel Video'
-
-
-class BannerCarouselAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    inlines = [
-        BannerCarouselProductInline,
-    ]
-    list_display = ['id', 'name', 'created_at']
-    search_fields = ['name']
-    ordering = ['-created_at']
-    readonly_fields = ['created_at']
-
-    fieldsets = [
-        (None, {'fields': ['name', 'created_at']}),
-    ]
 
 
 admin.site.register(Banner, BannerAdmin)

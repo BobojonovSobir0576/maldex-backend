@@ -60,16 +60,16 @@ class BannerListSerializer(serializers.ModelSerializer):
 
 
 class BannerCarouselProductListSerializer(serializers.ModelSerializer):
-    productCarouselID = serializers.SerializerMethodField()
+    product = serializers.SerializerMethodField()
 
     class Meta:
         model = BannerCarouselProduct
-        fields = ['id', 'bannerCarouselID', 'productCarouselID', 'bannerCarouselVideo']
+        fields = ['id', 'product']
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
-    def get_productCarouselID(self, obj):
+    def get_product(self, obj):
         data = ProductDetailSerializers(obj.productCarouselID, context=self.context)
         return data.data
 
@@ -85,7 +85,7 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BannerCarousel
-        fields = ['id', 'name', 'product_set', 'product_data', 'buttons', 'buttons_data']
+        fields = ['id', 'name', 'video', 'product_set', 'product_data', 'buttons', 'buttons_data']
 
     def create(self, validated_data):
         product_data = validated_data.pop('product_data', [])
