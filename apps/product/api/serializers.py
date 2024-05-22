@@ -66,9 +66,6 @@ class CategoryListSerializers(serializers.ModelSerializer):
         if order:
             ProductCategories.objects.filter(order=order, parent=instance.parent).update(order=instance.order)
             ProductCategories.objects.filter(pk=instance.pk).update(order=int(order))
-        if order_top:
-            ProductCategories.objects.filter(order_top=order_top, parent=instance.parent).update(order_top=instance.order_top)
-            ProductCategories.objects.filter(pk=instance.pk).update(order_top=int(order_top))
 
         instance.save()
         return instance

@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.utils.translation import gettext_lazy as _
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from apps.product.managers import AllCategoryManager
@@ -62,6 +62,14 @@ class ProductCategories(models.Model):
         ordering = ('-is_available', 'order')
         verbose_name = "Категория"
         verbose_name_plural = "Категория"
+
+
+@receiver(pre_save, sender=ProductCategories)
+def pre_save_category(sender, instance, **kwargs):
+    previous = ProductCategories.objects.filter(pk=instance.pk).first()
+    if previous.order_top != instance.order_top and previous.order_top is not None:
+        ProductCategories.objects.filter(pk=previous.pk).update(order_top=instance.order_top)
+        ProductCategories.objects.filter(pk=instance.pk).update(order_top=previous.order_top)
 
 
 @receiver(post_save, sender=ProductCategories)
