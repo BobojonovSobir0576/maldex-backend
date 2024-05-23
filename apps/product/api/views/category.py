@@ -139,7 +139,7 @@ class HomeCategoryView(APIView):
         """
         Retrieve category or sub categories for home view.
         """
-        category = ProductCategories.objects.filter(home=True).first()
+        category = ProductCategories.objects.filter(parent=None, home=True).first()
         serializers = HomeCategorySerializer(category, context={'request': request})
         return success_response(serializers.data)
 

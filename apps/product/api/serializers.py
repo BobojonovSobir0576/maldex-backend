@@ -157,7 +157,7 @@ class HomeCategorySerializer(serializers.Serializer):
 
     @staticmethod
     def get_children(category):
-        children = category.children.filter(home=True)
+        children = category.children.all().filter(home=True)
         return SubCategorySerializer(children, many=True).data
 
     @staticmethod
