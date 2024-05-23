@@ -188,6 +188,8 @@ class HomeCategorySerializer(serializers.Serializer):
             categoryy.home = True
             categoryy.save()
 
+        return category
+
 
 class CategoryProductsSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField(read_only=True)
