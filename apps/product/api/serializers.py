@@ -271,10 +271,13 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         instance.price = price if price and price > 0 else instance.price
         instance.discount_price = discount_price if discount_price else instance.discount_price
         categoryId = validated_data.pop('categoryId', instance.categoryId)
+        categoryId = categoryId or instance.categoryId
+        print(categoryId, instance.categoryId)
         instance.categoryId = categoryId
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
+        print(category)
         if validated_data.get('is_new'):
             category.is_new = True
             category.save()
