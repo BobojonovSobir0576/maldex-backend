@@ -95,19 +95,16 @@ class ProductFilter(filters.FilterSet):
     price = filters.CharFilter(field_name='price', method='filter_price')
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
     size = filters.CharFilter(field_name='size', method='filter_size')
+    color = filters.CharFilter(method='filter_color')
 
     def filter_material(self, queryset, name, value):
         values = value.split(',')
-        print(f'Filtering by material: {values}')
         filtered_queryset = queryset.filter(material__in=values)
-        print(f'Filtered queryset count: {filtered_queryset.count()}')
         return filtered_queryset
 
     def filter_brand(self, queryset, name, value):
         values = value.split(',')
-        print(f'Filtering by brand: {values}')
         filtered_queryset = queryset.filter(brand__in=values)
-        print(f'Filtered queryset count: {filtered_queryset.count()}')
         return filtered_queryset
 
     def filter_warehouse(self, queryset, name, value):
@@ -117,29 +114,27 @@ class ProductFilter(filters.FilterSet):
             lookup = '__'.join([name, '1', 'quantity', 'gt'])
         else:
             return Products.objects.none()
-        print(f'Filtering by warehouse: {lookup}')
         filtered_queryset = queryset.filter(**{lookup: 0})
-        print(f'Filtered queryset count: {filtered_queryset.count()}')
         return filtered_queryset
 
     def filter_price(self, queryset, name, value):
         if ',' not in value:
             filtered_queryset = queryset.filter(price__gte=value)
-            print(f'Filtering by price >= {value}, count: {filtered_queryset.count()}')
             return filtered_queryset
         start, end = map(int, value.split(','))
         filtered_queryset = queryset.filter(price__gte=start, price__lte=end)
-        print(f'Filtering by price between {start} and {end}, count: {filtered_queryset.count()}')
         return filtered_queryset
 
     def filter_quantity(self, queryset, name, value):
         filtered_queryset = queryset.filter(warehouse__0__quantity__gte=int(value))
-        print(f'Filtering by quantity >= {value}, count: {filtered_queryset.count()}')
         return filtered_queryset
 
     def filter_size(self, queryset, name, value):
         filtered_queryset = queryset.filter(sizes__has_key=value)
-        print(f'Filtered queryset count: {filtered_queryset.count()}')
+        return filtered_queryset
+
+    def filter_color(self, queryset, name, value):
+        filtered_queryset = queryset.filter(images_set__colorID__name=value)
         return filtered_queryset
 
     class Meta:

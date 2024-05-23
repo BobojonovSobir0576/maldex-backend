@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductFilterModel
+from apps.product.models import Products, ProductFilterModel, Colors
 from apps.product.api.serializers import ProductDetailSerializers, \
     ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
@@ -71,14 +71,9 @@ class ProductsListView(APIView, PaginationMethod):
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request):
         queryset = Products.objects.all()
-        print(1, queryset.count())
-        print(request.GET)
         filterset = ProductFilter(request.query_params, queryset=queryset)
-        # print(filterset, filterset.qs.count())
         if filterset.is_valid():
-            print('valid')
             queryset = filterset.qs
-        print(2, queryset.count())
         filter_id = request.query_params.get('filter_id', None)
         filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
         queryset = queryset.filter(filter_products__filter=filter_model) if filter_model else queryset
@@ -143,7 +138,6 @@ class ProductAutoUploaderView(APIView):
                          tags=['Products Auto Uploader'],
                          responses={201: ProductAutoUploaderSerializer(many=False)})
     def post(self, request):
-        # print(request.data)
         product_serializer = ProductAutoUploaderSerializer(data=request.data, context={'request': request})
         if product_serializer.is_valid(raise_exception=True):
             product_serializer.save()
@@ -173,7 +167,7 @@ class BrandList(APIView):
     )
     def get(self, request):
         products = Products.objects.all()
-        brands = products.values('brand').annotate(count=Count('brand')).order_by('-count')
+        brands = products.values('brand').annotate(count=Count('brand')).order_by('-count')[:10]
         count = products.values('brand').distinct().count()
         return success_response({
             'count': count,
@@ -188,10 +182,21 @@ class MaterialList(APIView):
     )
     def get(self, request):
         products = Products.objects.all()
-        materials = products.values('material').annotate(count=Count('material')).order_by('-count')
+        materials = products.values('material').annotate(count=Count('material')).order_by('-count')[:10]
         count = products.values('material').distinct().count()
         return success_response({
             'count': count,
             'materials': materials,
         })
 
+
+class ColorListView(APIView):
+    @swagger_auto_schema(
+        tags=['Product'],
+        responses={200: 'colors-list'}
+    )
+    def get(self, request):
+        colors = Colors.objects.annotate(products_count=Count('images__productID')).order_by('-products_count')[:10]
+        return success_response({
+            'colors': colors.values('name', 'products_count'),
+        })

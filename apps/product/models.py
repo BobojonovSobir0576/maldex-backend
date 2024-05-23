@@ -35,7 +35,6 @@ class ProductCategories(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        print(self.order_top)
         """Override save method to generate ID and order if not provided."""
         if not self.id:
             last_instance = ProductCategories.objects.all().order_by('id').last()
@@ -175,7 +174,7 @@ class ProductImage(models.Model):
                                   related_name='images_set', verbose_name='Код товара')
     image = models.ImageField(upload_to='media/product/', verbose_name="изображения", null=True, blank=True)
     image_url = models.URLField(max_length=1024, null=True, blank=True, verbose_name='URL изображения')
-    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета')
+    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='images')
 
     def __str__(self):
         return self.productID.name if self.productID and hasattr(self.productID, 'name') else str(self.id)
