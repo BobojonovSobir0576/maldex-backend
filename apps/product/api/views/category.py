@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 from apps.product.models import ProductCategories, ExternalCategory, Products
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
-    TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer, CategoryMoveSerializer
+    TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer, CategoryMoveSerializer,
+    HomeCategorySerializer
 )
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
@@ -139,7 +140,7 @@ class HomeCategoryView(APIView):
         Retrieve category or sub categories for home view.
         """
         category = ProductCategories.objects.filter(home=True).first()
-        serializers = CategoryProductsSerializer(category, context={'request': request})
+        serializers = HomeCategorySerializer(category, context={'request': request})
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -151,15 +152,7 @@ class HomeCategoryView(APIView):
         """
         Set a category as the home category.
         """
-        category_id = request.data['id']
-        category = get_object_or_404(ProductCategories, id=category_id)
-        old_category = ProductCategories.objects.filter(home=True, parent=category.parent).first()
-        old_category.home = False
-        old_category.save()
-        category.home = True
-        category.save()
-
-        serializers = CategoryProductsSerializer(category, context={'request': request})
+        serializers = HomeCategorySerializer(data=request.data, context={'request': request})
         return success_response(serializers.data)
 
 

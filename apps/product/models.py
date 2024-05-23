@@ -133,6 +133,7 @@ class Products(models.Model):
     site = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Данные опубликованы')
     updated_at = models.DateTimeField(auto_now=True)
+    home = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """Override save method to generate ID."""
