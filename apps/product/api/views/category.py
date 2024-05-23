@@ -153,7 +153,9 @@ class HomeCategoryView(APIView):
         Set a category as the home category.
         """
         serializers = HomeCategorySerializer(data=request.data, context={'request': request})
-        return success_response(serializers.data)
+        if serializers.is_valid(raise_exception=True):
+            return success_response(serializers.data)
+        return bad_request_response(serializers.errors)
 
 
 category_id_param = openapi.Parameter('category_id', openapi.IN_QUERY,
