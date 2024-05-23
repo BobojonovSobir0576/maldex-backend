@@ -148,7 +148,7 @@ class HomeCategorySerializer(serializers.Serializer):
     category_data = serializers.ListSerializer(child=serializers.IntegerField(), write_only=True)
 
     category = serializers.SerializerMethodField(read_only=True)
-    children = MainCategorySerializer(many=True, read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
     products = serializers.SerializerMethodField(read_only=True)
 
     @staticmethod
