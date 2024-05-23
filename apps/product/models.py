@@ -69,9 +69,9 @@ def pre_save_category(sender, instance, **kwargs):
     old = ProductCategories.objects.filter(pk=instance.pk).first()
     previous = ProductCategories.objects.filter(order_top=instance.order_top).first()
     previous_by_order = ProductCategories.objects.filter(order=instance.order).first()
-    if previous.order_top != old.order_top and previous.order_top is not None:
+    if old and previous and previous.order_top != old.order_top and previous.order_top is not None:
         ProductCategories.objects.filter(pk=previous.pk).update(order_top=old.order_top)
-    if previous_by_order.order != old.order and previous_by_order.order is not None:
+    if old and previous and previous_by_order.order != old.order and previous_by_order.order is not None:
         ProductCategories.objects.filter(pk=previous_by_order.pk).update(order=old.order)
 
 
