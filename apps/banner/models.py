@@ -28,9 +28,6 @@ class Banner(models.Model):
         verbose_name = "Баннер"
         verbose_name_plural = "Баннер"
 
-    def __str__(self):
-        return self.title
-
 
 class BannerProduct(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
@@ -53,7 +50,7 @@ class BannerCarousel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название баннерной карусели'), max_length=155, null=True, blank=True)
     video = models.FileField(upload_to="media/banner/carousel/video/", null=True, blank=True,
-                                           verbose_name='Баннер-карусель Видео')
+                             verbose_name='Баннер-карусель Видео')
     product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 

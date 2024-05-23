@@ -23,7 +23,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = ['id', 'title', 'body', 'tags', 'image', 'pub_date']
 
-    def get_tags(self, obj):
+    @staticmethod
+    def get_tags(obj):
         # Retrieve tags associated with the article
         return [tag['name'] for tag in obj.tags.all().values('name')]
 
@@ -75,7 +76,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             images.append(request.build_absolute_uri(image.image.url))
         return images
 
-    def get_tag_set(self, obj):
+    @staticmethod
+    def get_tag_set(obj):
         # Retrieve tags associated with the project
         return [tag['name'] for tag in obj.tags.all().values('name')]
 
@@ -109,7 +111,8 @@ class LinkCategorySerializer(serializers.ModelSerializer):
         model = LinkTagCategory
         fields = ['id', 'title', 'tags']
 
-    def get_tags(self, obj):
+    @staticmethod
+    def get_tags(obj):
         tags = obj.tags
         return LinkSerializer(tags, many=True).data
 
@@ -124,7 +127,8 @@ class LinkSerializer(serializers.ModelSerializer):
         model = LinkTag
         fields = ['id', 'title', 'link', 'category_id', 'category_name']
         
-    def get_category_name(self, obj):
+    @staticmethod
+    def get_category_name(obj):
         category = obj.category
         return category.title
 

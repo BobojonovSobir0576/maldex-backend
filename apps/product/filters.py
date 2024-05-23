@@ -94,6 +94,7 @@ class ProductFilter(filters.FilterSet):
     warehouse = filters.CharFilter(field_name='warehouse', method='filter_warehouse')
     price = filters.CharFilter(field_name='price', method='filter_price')
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
+    size = filters.CharFilter(field_name='size', method='filter_size')
 
     def filter_material(self, queryset, name, value):
         values = value.split(',')
@@ -134,6 +135,11 @@ class ProductFilter(filters.FilterSet):
     def filter_quantity(self, queryset, name, value):
         filtered_queryset = queryset.filter(warehouse__0__quantity__gte=int(value))
         print(f'Filtering by quantity >= {value}, count: {filtered_queryset.count()}')
+        return filtered_queryset
+
+    def filter_size(self, queryset, name, value):
+        filtered_queryset = queryset.filter(sizes__has_key=value)
+        print(f'Filtered queryset count: {filtered_queryset.count()}')
         return filtered_queryset
 
     class Meta:

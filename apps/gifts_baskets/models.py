@@ -88,7 +88,8 @@ class GiftsBasketImages(models.Model):
 class GiftsBasketProduct(models.Model):
     gift_basket = models.ForeignKey(GiftsBaskets, on_delete=models.CASCADE, related_name='basket_products',
                                     null=True, blank=True, )
-    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True, verbose_name='Наборы продуктов')
+    product_sets = models.ForeignKey(Products, on_delete=models.CASCADE,  null=True, blank=True,
+                                     verbose_name='Наборы продуктов')
     quantity = models.IntegerField(default=0, null=True, blank=True, verbose_name='Количество')
 
     def __str__(self):

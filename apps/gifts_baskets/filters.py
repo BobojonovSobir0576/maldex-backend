@@ -9,7 +9,8 @@ class GiftsBasketCategoryProductFilter(filters.FilterSet):
         model = GiftsBasketCategory
         fields = ['parent']
 
-    def get_sub_catalog(self, queryset, name, value):
+    @staticmethod
+    def get_sub_catalog(queryset, name, value):
         if value:
             return queryset.filter(parent=value)
         return queryset

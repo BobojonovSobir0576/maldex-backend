@@ -153,7 +153,7 @@ class HomeCategoryView(APIView):
         """
         category_id = request.data['id']
         category = get_object_or_404(ProductCategories, id=category_id)
-        old_category = ProductCategories.objects.filter(home=True).first()
+        old_category = ProductCategories.objects.filter(home=True, parent=category.parent).first()
         old_category.home = False
         old_category.save()
         category.home = True

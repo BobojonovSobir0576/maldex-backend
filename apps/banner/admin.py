@@ -10,7 +10,8 @@ class BannerProductInline(admin.TabularInline):
     autocomplete_fields = ['productID']
     readonly_fields = ['product_image',]
 
-    def product_image(self, obj):
+    @staticmethod
+    def product_image(obj):
         if obj and obj.productID and obj.productID.image:
             return format_html('<img src="{}" width="50%" height="50%"/>', obj.productID.image.url)
         return "No image"
