@@ -154,7 +154,7 @@ class HomeCategoryView(APIView):
         """
         serializers = HomeCategorySerializer(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
-            return success_response(serializers.data)
+            return success_response(HomeCategorySerializer(serializers.data))
         return bad_request_response(serializers.errors)
 
 
