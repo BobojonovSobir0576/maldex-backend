@@ -479,16 +479,21 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def fetch_and_save_image(img, product_instance, color_instance):
-        image_url = img['name']
-        response = get_data(image_url)
-        if response and isinstance(response, requests.Response):
-            name = f'{uuid.uuid4()}.jpg'
-            file_path = os.path.join('media', name)
-            with open(file_path, 'wb') as file:
-                file.write(response.content)
-            return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+        is_gifts = 'api2.gifts.ru' in img['name']
+        if is_gifts:
+            image_url = img['name']
+            response = get_data(image_url)
+            if response and isinstance(response, requests.Response):
+                name = f'{uuid.uuid4()}.jpg'
+                file_path = os.path.join('media', name)
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+                return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+            else:
+                print(f"Failed to download image from {image_url}")
+                return None
         else:
-            return None
+            return ProductImage(productID=product_instance, colorID=color_instance, image_url=img['name'])
 
     @staticmethod
     def create_img_into_product(img_set, color_instance, product_instance):
@@ -496,14 +501,14 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         images_to_create = []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance, color_instance) for img in img_set]
+            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance,
+                                       color_instance) for img in img_set]
             for future in as_completed(futures):
                 image = future.result()
                 if image:
                     images_to_create.append(image)
 
         ProductImage.objects.bulk_create(images_to_create)
-        time.sleep(2)
 
         first = time.time() - start
         print(f"6 {int(first) // 60}:{int(first % 60)}")
@@ -524,6 +529,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
             small_header=product.name,
             description=product.description
         )
+        return
 
     @transaction.atomic
     def create(self, validated_data):
