@@ -134,11 +134,12 @@ class MainCategorySerializer(serializers.ModelSerializer):
     @staticmethod
     def get_count(category):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-        descendants_query = Q(categoryId__in=category_ids)
+        children = category.children
+        for category3 in children:
+            category_ids += list(category3.children.values_list('id', flat=True))
 
         # Use aggregation to count products across all levels
-        count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
-
+        count = Products.objects.filter(categoryId__in=category_ids).aggregate(total_count=Count('id'))['total_count'] or 0
         return count
 
 
