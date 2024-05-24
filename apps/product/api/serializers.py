@@ -134,7 +134,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
     @staticmethod
     def get_count(category):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-        children = category.children
+        children = category.children.all()
         for category3 in children:
             category_ids += list(category3.children.values_list('id', flat=True))
 
