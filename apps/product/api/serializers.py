@@ -407,6 +407,7 @@ class CategoryMoveSerializer(serializers.Serializer):
         return MainCategorySerializer(category).data
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 class ProductAutoUploaderSerializer(serializers.ModelSerializer):
     color_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     image_set = serializers.JSONField(required=False)
@@ -423,66 +424,60 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def check_color_exists(color_name):
-        if color_name:
-            color, _ = Colors.objects.get_or_create(name=color_name)
-            return color
-        return None
+        return Colors.objects.get_or_create(name=color_name)[0] if color_name else None
+
+    @staticmethod
+    def fetch_and_save_image(img, product_instance, color_instance):
+        is_gifts = 'api2.gifts.ru' in img['name']
+        if is_gifts:
+            image_url = img['name']
+            response = get_data(image_url)
+            if response and isinstance(response, requests.Response):
+                name = f'{uuid.uuid4()}.jpg'
+                file_path = os.path.join('media', name)
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+                return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+            else:
+                print(f"Failed to download image from {image_url}")
+                return None
+        else:
+            return ProductImage(productID=product_instance, colorID=color_instance, image_url=img['name'])
 
     @staticmethod
     def create_img_into_product(img_set, color_instance, product_instance):
-        count = 0
-        for img in img_set:
-            is_gifts = 'api2.gifts.ru' in img['name']
-            if not is_gifts:
-                ProductImage.objects.create(
-                    productID=product_instance,
-                    colorID=color_instance,
-                    image_url=img['name']
-                )
-            else:
-                count += 1
-                image_url = img['name']
-                response = get_data(image_url)
-                if response and isinstance(response, requests.Response):
-                    name = f'{uuid.uuid4()}.jpg'
-                    file_path = os.path.join('media', name)
-                    with open(file_path, 'wb') as file:
-                        file.write(response.content)
-                    ProductImage.objects.create(
-                        productID=product_instance,
-                        colorID=color_instance,
-                        image=name
-                    )
-                else:
-                    print(f"Failed to download image from {image_url}")
-            if count % 10 == 0:
-                time.sleep(5)
-        time.sleep(2)
+        start = time.time()
+        images_to_create = []
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance,
+                                       color_instance) for img in img_set]
+            for future in as_completed(futures):
+                image = future.result()
+                if image:
+                    images_to_create.append(image)
+
+        ProductImage.objects.bulk_create(images_to_create)
+
+        first = time.time() - start
+        print(f"6 {int(first) // 60}:{int(first % 60)}")
 
     @staticmethod
     def get_category_instance(cate_id):
-        if cate_id is not None:
-            external_category = ExternalCategory.objects.filter(external_id=cate_id).first()
-            if external_category and external_category.category:
-                return external_category.category
-        return None
+        external_category = ExternalCategory.objects.filter(external_id=cate_id).first()
+        return external_category.category if external_category and external_category.category else None
 
     @staticmethod
     def create_sets(product, sets):
         parent_category = product.categoryId.parent.name
         category = product.categoryId.name
-        create_parent_set_category = GiftsBasketCategory.objects.get_or_create(name=parent_category)
-        GiftsBasketCategory.objects.get_or_create(name=category,
-                                                  parent=create_parent_set_category)
+        parent_set_category, _ = GiftsBasketCategory.objects.get_or_create(name=parent_category)
+        GiftsBasketCategory.objects.get_or_create(name=category, parent=parent_set_category)
         GiftsBaskets.objects.get_or_create(
             title=product.name,
             small_header=product.name,
             description=product.description
-
         )
-        # for item in sets:
-        #     check_product = Products.objects.filter(id=item['product_id'])
-
         return
 
     @transaction.atomic
@@ -490,19 +485,15 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         color_name = validated_data.pop('color_name', None)
         image_set = validated_data.pop('image_set', [])
         category_id = validated_data.pop('categoryId', None)
-        # sets = validated_data.pop('sets', [])
 
         color_instance = self.check_color_exists(color_name)
         category_instance = self.get_category_instance(category_id)
 
-        # Since you are only creating a single product instance, unpacking is appropriate
         product_instance, created = Products.objects.get_or_create(**validated_data)
 
         if category_instance:
             product_instance.categoryId = category_instance
             product_instance.save()
-
-        # create_set = self.create_sets(product_instance, sets)
 
         if image_set:
             self.create_img_into_product(image_set, color_instance, product_instance)
