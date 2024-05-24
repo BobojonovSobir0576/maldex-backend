@@ -11,6 +11,7 @@ from rest_framework import serializers
 from apps.gifts_baskets.models import GiftsBasketCategory, GiftsBaskets
 from apps.product.api.access import get_data
 from apps.product.models import *
+from apps.product.models import *
 from apps.product.proxy import *
 
 
@@ -139,6 +140,55 @@ class MainCategorySerializer(serializers.ModelSerializer):
         count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
 
         return count
+
+
+class HomeCategorySerializer(serializers.Serializer):
+    category_id = serializers.IntegerField(write_only=True)
+    product_data = serializers.ListSerializer(child=serializers.CharField(), write_only=True)
+    category_data = serializers.ListSerializer(child=serializers.IntegerField(), write_only=True)
+
+    category = serializers.SerializerMethodField(read_only=True)
+    children = serializers.SerializerMethodField(read_only=True)
+    products = serializers.SerializerMethodField(read_only=True)
+
+    @staticmethod
+    def get_category(category):
+        return category.name
+
+    @staticmethod
+    def get_children(category):
+        children = category.children.all().filter(home=True)
+        return SubCategorySerializer(children, many=True).data
+
+    @staticmethod
+    def get_products(category):
+        products = Products.objects.filter(home=True)
+        return ProductDetailSerializers(products, many=True).data
+
+    def create(self, validated_data):
+        category_id = validated_data.pop('category_id', None)
+        product_data = validated_data.pop('product_data', None)
+        category_data = validated_data.pop('category_data', None)
+
+        category = get_object_or_404(ProductCategories, id=category_id)
+
+        ProductCategories.objects.filter(home=True).update(home=False)
+        Products.objects.filter(home=True).update(home=False)
+
+        category.home = True
+        category.save()
+
+        for product_id in product_data:
+            product = get_object_or_404(Products, id=product_id)
+            product.home = True
+            product.save()
+
+        for categoryId in category_data:
+            categoryy = get_object_or_404(ProductCategories, id=categoryId)
+            categoryy.home = True
+            categoryy.save()
+
+        return category
 
 
 class CategoryProductsSerializer(serializers.ModelSerializer):

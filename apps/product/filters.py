@@ -109,9 +109,9 @@ class ProductFilter(filters.FilterSet):
 
     def filter_warehouse(self, queryset, name, value):
         if value == 'Европа':
-            lookup = '__'.join([name, '0', 'quantity', 'gt'])
-        elif value == 'Москва':
             lookup = '__'.join([name, '1', 'quantity', 'gt'])
+        elif value == 'Москва':
+            lookup = '__'.join([name, '0', 'quantity', 'gt'])
         else:
             return Products.objects.none()
         filtered_queryset = queryset.filter(**{lookup: 0})
