@@ -555,21 +555,21 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
 class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
     price = serializers.FloatField()
     discount_price = serializers.FloatField()
-    quantity = serializers.FloatField()
 
     class Meta:
         model = Products
         fields = [
             'id', 'name', 'code', 'article', 'product_size', 'material', 'description', 'brand', 'price',
             'price_type', 'discount_price', 'weight', 'barcode', 'ondemand', 'moq', 'days', 'pack', 'prints',
-            'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes', 'quantity'
+            'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes'
         ]
 
     def update(self, instance, validated_data):
         # Update the instance fields with new values from validated_data or use existing if not provided
-        instance.quantity = validated_data.get('quantity', instance.quantity)
         instance.price = validated_data.get('price', instance.price)
         instance.discount_price = validated_data.get('discount_price', instance.discount_price)
+        instance.warehouse = validated_data.get('warehouse', instance.warehouse)
+        instance.sizes = validated_data.get('sizes', instance.sizes)
 
         # Save the updated instance
         instance.save()
