@@ -70,15 +70,18 @@ class ProductsListView(APIView, PaginationMethod):
                          tags=['Products'],
                          responses={200: ProductDetailSerializers(many=True)})
     def get(self, request):
-        queryset = Products.objects.all()
+        filter_id = request.query_params.get('filter_id')
+        filter_model = ProductFilterModel.objects.filter(id=filter_id).first() if filter_id else None
+        queryset = Products.objects.filter(
+            filter_products__filter=filter_model) if filter_model else Products.objects.all()
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        filter_id = request.query_params.get('filter_id', None)
-        filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
-        queryset = queryset.filter(filter_products__filter=filter_model) if filter_model else queryset
-
-        serializers = super().page(queryset.order_by('-updated_at'), ProductDetailSerializers, request)
+        queryset = queryset.order_by('-updated_at')
+        serializers = super().page(queryset, ProductDetailSerializers, request)
+        data = serializers.data
+        # each sites product count
+        data['sites_count'] = Products.objects.values('site').annotate(product_count=Count('id')).order_by('-product_count')
         return success_response(serializers.data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,

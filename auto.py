@@ -339,69 +339,80 @@ def process_happygifts_data():
     sizes = {}
     warehouses = {}
     PRODUCTS = {}
-    for product in products:
+    for product_set in products:
         count += 1
-        product_id = get_id_from_xinda(product['URL'])
-        vendor_code = product['Артикул']
-        vendor = '.'.join(vendor_code.split('.')[:2])
-        size = '.'.join(vendor_code.split('.')[2:])
-        sizes[product_id] = {} if size else None
-        for pr in products:
-            if pr['Артикул'] == product['Артикул']:
-                quantity = int(pr['ОстатокСкладЕвропа']) + int(pr['СкладМоскваСвободный'])
-                if size:
-                    sizes[product_id][size] = quantity
-                warehouses[product_id] = {} if product_id not in warehouses else warehouses[product_id]
-                if 'Европа' not in warehouses[product_id]:
-                    warehouses[product_id]['Европа'] = int(pr['ОстатокСкладЕвропа'])
+        sub_item = product_set['SubItems']['SubItem']
+        sub_item = [sub_item] if type(sub_item) != list else sub_item
+        category_id = product_set['GROUP_ID']
+        brand = product_set['BrendName']
+        materials = product_set['MATERIALS']
+        for product in sub_item:
+            product_id = product['ID']
+            vendor_code = product['FullArticle']
+            vendor = vendor_code.split('/')[0]
+            size = vendor_code.split('/')[1] if '/' in vendor_code else product['Size']
+            quantity = product['FreeQuantityCenter']
+            if vendor not in PRODUCTS:
+                PRODUCTS[vendor] = {
+                    'id': product_id,
+                    'categoryId': category_id,
+                    'name': product['NAME'],
+                    'brand': brand,
+                    'article': vendor,
+                    'description': product['Description'],
+                    'material': materials,
+                    'weight': product['UnitWeight'],
+                    'is_new': product['New'],
+                    'color_name': product['Color'],
+                    'image_set': [{"name": f'https://happygifts.ru{url}'} for url in product['Image']] if product['Image'] else [],
+                    'price': product['Price'],
+                    'discount_price': product['PriceDiscount'],
+                    'product_size': size,
+                    'pack': {
+                        'Количество': product['PackagingQuantity'],
+                        'Масса': product['PackagingWeight'],
+                        'Объем': product['PackagingVolume'],
+                        'Материал': product['PackagingMaterial'],
+                        'Тип упаковки': product['PackagingType']
+                    },
+                    'site': 'happy-gifts.ru'
+                }
+
+            if vendor not in sizes:
+                if '/' in vendor_code:
+                    sizes[vendor] = {}
+                    sizes[vendor][size] = quantity
                 else:
-                    warehouses[product_id]['Европа'] += int(pr['ОстатокСкладЕвропа'])
-                if 'Москва' not in warehouses[product_id]:
-                    warehouses[product_id]['Москва'] = int(pr['СкладМоскваСвободный'])
+                    sizes[vendor][None] = quantity
+            else:
+                if '/' in vendor_code:
+                    sizes[vendor][size] = quantity
                 else:
-                    warehouses[product_id]['Москва'] += int(pr['СкладМоскваСвободный'])
-                break
-        categories = product['Разделы']['Ид'] if product['Разделы'] else [None]
-        category_id = categories[-1]
-        prints = product['ТипыНанесения']['ТипНанесения'] if product['ТипыНанесения'] else []
-        if type(prints) == dict:
-            prints = [prints]
-        if product_id not in PRODUCTS:
-            PRODUCTS[product_id] = {
-                'id': product_id,
-                'categoryId': category_id,
-                'name': product['Наименование'],
-                'brand': product['Характеристики']['Бренд'],
-                'article': vendor,
-                'description': product['ОписаниеРус'],
-                'material': product['Характеристики']['Материал'] if 'Материал' in product[
-                    'Характеристики'] else 'No material',
-                'weight': product['Характеристики']['ВесНетто'],
-                'color_name': product['Характеристики']['Цвет'].split(';')[0],
-                'image_set': [{"name": url} for url in product['Фотографии']['Фотография']] if product[
-                    'Фотографии'] else [],
-                'price': product['Цена'],
-                'discount_price': None,
-                'prints': [{"name": prinT['Тип']} for prinT in prints],
-                'product_size': product['Характеристики']['Размер'],
-                'pack': product['Упаковка'],
-                'site': 'Xindaorussia.ru'
-            }
-    for key in PRODUCTS:
+                    sizes[vendor][None] = quantity
+
+            if vendor not in warehouses:
+                warehouses[vendor] = {
+                    'Москва': quantity,
+                    'Европа': 0
+                }
+            else:
+                warehouses[vendor]['Москва'] += quantity
+
+    for vendor in PRODUCTS:
         count += 1
-        product = PRODUCTS[key]
-        product['sizes'] = sizes[key]
-        warehouses = warehouses[key]
+        product = PRODUCTS[vendor]
+        product['sizes'] = sizes[vendor]
+        warehouse = warehouses[vendor]
         product['warehouse'] = [
             {
-                'name': warehouse,
-                'quantity': warehouses[warehouse],
-            } for warehouse in warehouses.keys()
+                'name': city,
+                'quantity': warehouse[city],
+            } for city in warehouse.keys()
         ]
 
-        exists, existing_product_data = check_product_exists(key)
+        exists, existing_product_data = check_product_exists(product['id'])
         if exists:
-            update_product_price(key, product['price'], product['discount_price'], product['sizes'], product['warehouse'])
+            update_product_price(product['id'], product['price'], product['discount_price'], product['sizes'], product['warehouse'])
         else:
             upload_product(product)
         if count % 1000 == 0:
