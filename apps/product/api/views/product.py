@@ -77,7 +77,7 @@ class ProductsListView(APIView, PaginationMethod):
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        queryset = queryset.order_by('-updated_at')
+        queryset = queryset.order_by('-updated_at').distinct()
         serializers = super().page(queryset, ProductDetailSerializers, request)
         data = serializers.data
         # each sites product count
