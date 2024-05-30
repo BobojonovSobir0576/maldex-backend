@@ -199,7 +199,20 @@ class ColorListView(APIView):
         responses={200: 'colors-list'}
     )
     def get(self, request):
-        colors = Colors.objects.annotate(products_count=Count('images__productID')).order_by('-products_count')[:10]
+        colors = Colors.objects.annotate(products_count=Count('images__productID')).values('name', 'products_count')
+        color_counts = {}
+
+        for color in colors:
+            name = color['name'].lower()
+            count = color['products_count']
+            if name in color_counts:
+                color_counts[name] += count
+            else:
+                color_counts[name] = count
+
+        sorted_colors = sorted(color_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        top_colors = [{'name': name, 'products_count': count} for name, count in sorted_colors]
+
         return success_response({
-            'colors': colors.values('name', 'products_count'),
+            'colors': top_colors,
         })
