@@ -564,13 +564,58 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at', 'categoryId', 'warehouse', 'site', 'sizes'
         ]
 
+    @staticmethod
+    def check_color_exists(color_name):
+        return Colors.objects.get_or_create(name=color_name)[0] if color_name else None
+
+    @staticmethod
+    def fetch_and_save_image(img, product_instance, color_instance):
+        is_gifts = 'api2.gifts.ru' in img['name']
+        if is_gifts:
+            image_url = img['name']
+            response = get_data(image_url)
+            if response and isinstance(response, requests.Response):
+                name = f'{uuid.uuid4()}.jpg'
+                file_path = os.path.join('media', name)
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+                return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+            else:
+                print(f"Failed to download image from {image_url}")
+                return None
+        else:
+            return ProductImage(productID=product_instance, colorID=color_instance, image_url=img['name'])
+
+    @staticmethod
+    def create_img_into_product(img_set, color_instance, product_instance):
+        start = time.time()
+        images_to_create = []
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance,
+                                       color_instance) for img in img_set]
+            for future in as_completed(futures):
+                image = future.result()
+                if image:
+                    images_to_create.append(image)
+
+        ProductImage.objects.bulk_create(images_to_create)
+
+        first = time.time() - start
+        print(f"6 {int(first) // 60}:{int(first % 60)}")
+
     def update(self, instance, validated_data):
+        color_name = validated_data.pop('color_name', None)
+        image_set = validated_data.pop('image_set', [])
         # Update the instance fields with new values from validated_data or use existing if not provided
         instance.price = validated_data.get('price', instance.price)
         instance.discount_price = validated_data.get('discount_price', instance.discount_price)
         instance.warehouse = validated_data.get('warehouse', instance.warehouse)
         instance.sizes = validated_data.get('sizes', instance.sizes)
+        color_instance = self.check_color_exists(color_name)
 
+        if image_set:
+            self.create_img_into_product(image_set, color_instance, instance)
         # Save the updated instance
         instance.save()
 
