@@ -134,7 +134,7 @@ class ProductFilter(filters.FilterSet):
         return filtered_queryset
 
     def filter_color(self, queryset, name, value):
-        filtered_queryset = queryset.filter(images_set__colorID__name=value)
+        filtered_queryset = queryset.filter(images_set__colorID__name__icontains=value)
         return filtered_queryset
 
     class Meta:
