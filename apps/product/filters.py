@@ -1,3 +1,4 @@
+from string import punctuation
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
 from django_filters import rest_framework as filters
@@ -84,7 +85,7 @@ class CategoryFilter(filters.NumberFilter):
 class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
     category_id = CategoryFilter(field_name='categoryId_id', lookup_expr='exact')
-    search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    search = filters.CharFilter(field_name='name', method='filter_search')
     material = filters.CharFilter(field_name='material', method='filter_material')
     brand = filters.CharFilter(field_name='brand', method='filter_brand')
     is_new = filters.BooleanFilter(field_name='is_new')
@@ -96,6 +97,12 @@ class ProductFilter(filters.FilterSet):
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
     size = filters.CharFilter(field_name='size', method='filter_size')
     color = filters.CharFilter(method='filter_color')
+
+    def filter_search(self, queryset, name, value):
+        for char in punctuation:
+            value = value.replace(char, '')
+        filtered_queryset = queryset.filter(name__icontains=value)
+        return filtered_queryset
 
     def filter_material(self, queryset, name, value):
         values = value.split(',')
