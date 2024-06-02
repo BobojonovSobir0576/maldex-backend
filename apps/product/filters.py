@@ -83,6 +83,11 @@ class CategoryFilter(filters.NumberFilter):
         return qs
 
 
+class RemovePunctuation(Func):
+    function = "REGEXP_REPLACE"
+    template = "%(function)s(%(expressions)s, '[{}]', '')".format(string.punctuation)
+
+
 class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
     category_id = CategoryFilter(field_name='categoryId_id', lookup_expr='exact')
@@ -107,15 +112,8 @@ class ProductFilter(filters.FilterSet):
     def filter_search(self, queryset, name, value):
         # Remove punctuation from value
         value = self.remove_punctuation(value)
-        
-        # Remove punctuation from the name field in the queryset and filter
-        filtered_queryset = queryset.annotate(
-            name_without_punctuation=Func(
-                F('name'),
-                function='REPLACE',
-                template='%(expressions)s'
-            )
-        ).filter(name_without_punctuation__icontains=value)
+        queryset = queryset.annotate(clean_name=RemovePunctuation(F(name)))
+        filtered_queryset = queryset.filter(clean_name__icontains=value)
         
         return filtered_queryset
 
