@@ -85,7 +85,7 @@ class CategoryFilter(filters.NumberFilter):
 
 class RemovePunctuation(Func):
     function = "REGEXP_REPLACE"
-    template = "%(function)s(%(expressions)s, '[{}]', '')".format(string.punctuation)
+    template = "%(function)s(%(expressions)s, '[{}]', '')".format(punctuation)
 
 
 class ProductFilter(filters.FilterSet):
