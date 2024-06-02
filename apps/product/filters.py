@@ -2,7 +2,8 @@ from string import punctuation
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
 from django_filters import rest_framework as filters
-from django.db.models import F, Func
+from django.db.models import F, Func, Value
+from django.db.models.functions import Replace
 from apps.product.models import ProductCategories, Products
 
 
@@ -84,9 +85,12 @@ class CategoryFilter(filters.NumberFilter):
 
 
 class RemovePunctuation(Func):
-    function = "REGEXP_REPLACE"
-    template = "%(function)s(%(expressions)s, '[{}]', '')".format(punctuation)
-
+    function = 'REPLACE'
+    
+    def __init__(self, expression, **extra):
+        for mark in punctuation:
+            expression = Replace(expression, Value(mark), Value(''))
+        super().__init__(expression, **extra)
 
 class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
@@ -110,11 +114,9 @@ class ProductFilter(filters.FilterSet):
         return text.translate(str.maketrans('', '', punctuation))
 
     def filter_search(self, queryset, name, value):
-        # Remove punctuation from value
         value = self.remove_punctuation(value)
-        queryset = queryset.annotate(clean_name=RemovePunctuation(F(name)))
+        queryset = queryset.annotate(clean_name=RemovePunctuation(F('name')))
         filtered_queryset = queryset.filter(clean_name__icontains=value)
-        
         return filtered_queryset
 
     def filter_material(self, queryset, name, value):
