@@ -207,3 +207,16 @@ class ProductFilterProducts(models.Model):
         db_table = "filter_for_product_products"
         verbose_name = "фильтрует продукты по продукту"
         verbose_name_plural = "фильтрует продукты по продукту"
+
+
+class SiteLogo(models.Model):
+    site = models.CharField(max_length=256)
+    logo = models.ImageField(upload_to='site_logos/')
+
+    class Meta:
+        db_table ='site_logos'
+        verbose_name = 'Site Logo'
+        verbose_name_plural = 'Site Logos'
+
+    def __str__(self):
+        return self.site

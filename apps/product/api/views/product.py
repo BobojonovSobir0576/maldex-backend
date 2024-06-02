@@ -8,9 +8,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductFilterModel, Colors
+from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo
 from apps.product.api.serializers import ProductDetailSerializers, \
-    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
+    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
@@ -216,3 +216,31 @@ class ColorListView(APIView):
         return success_response({
             'colors': top_colors,
         })
+
+
+@swagger_auto_schema(tags=['Products'],
+                     operation_description='Get the number of NEW, HIT, POPULAR products',
+                     method='GET')
+@api_view(['GET'])
+def get_counts(request):
+    new_product_count = Products.objects.filter(is_new=True).count()
+    hit_product_count = Products.objects.filter(is_hit=True).count()
+    popular_product_count = Products.objects.filter(is_popular=True).count()
+    return success_response({
+        'new': new_product_count,
+        'hit': hit_product_count,
+        'popular': popular_product_count
+    })
+
+
+class SiteLogoView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = SiteLogoSerializer
+
+    @swagger_auto_schema(operation_description="Retrieve a list of sites logos",
+                         tags=['Site Logo'],
+                         responses={200: SiteLogoSerializer(many=True)})
+    def get(self, request):
+        queryset = SiteLogo.objects.all()
+        data = SiteLogoSerializer(queryset, many=True, context={'request': request}).data
+        return success_response({item['site']: item['logo'] for item in data})

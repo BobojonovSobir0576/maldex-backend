@@ -6,7 +6,8 @@ from apps.product.models import (
     Products,
     Colors,
     ProductImage,
-    ExternalCategory
+    ExternalCategory,
+    SiteLogo
 )
 from apps.product.proxy import SubCategory, TertiaryCategory
 
@@ -161,6 +162,12 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 class ProductImageAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     pass
+
+
+@admin.register(SiteLogo)
+class SiteLogoAdmin(admin.ModelAdmin):
+    list_display = ['site', 'logo']
+    fields = ['site', 'logo']
 
 
 # Register models with the admin site
