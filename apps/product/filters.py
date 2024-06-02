@@ -98,6 +98,7 @@ class ProductFilter(filters.FilterSet):
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
     size = filters.CharFilter(field_name='size', method='filter_size')
     color = filters.CharFilter(method='filter_color')
+    site = filters.CharFilter(field_name='site', lookup_expr='exact')
 
     @staticmethod
     def remove_punctuation(text):
