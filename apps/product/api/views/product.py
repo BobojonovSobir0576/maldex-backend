@@ -202,10 +202,13 @@ class PrintList(APIView):
     def get(self, request):
         prints = []
         for product in Products.objects.filter(prints__isnull=False):
-            for print_item in product.prints:
-                if print_item.get("@name") == 'Метод нанесения':
-                    prints.append(print_item.get('#text'))
-                    break
+            if type(product.prints) == list:
+                for print_item in product.prints:
+                    if print_item.get("@name") == 'Метод нанесения':
+                        prints.append(print_item.get('#text'))
+                        break
+            else:
+                prints.append(product.prints)
 
         return success_response([prin[0] for prin in Counter(prints).most_common(10)])
 
