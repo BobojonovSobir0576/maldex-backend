@@ -210,6 +210,8 @@ class PrintList(APIView):
             else:
                 prints.append(product.prints)
 
+        print(prints)
+
         return success_response([prin[0] for prin in Counter(prints).most_common(10)])
 
 
