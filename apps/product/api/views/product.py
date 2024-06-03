@@ -1,3 +1,4 @@
+from collections import Counter
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -191,6 +192,22 @@ class MaterialList(APIView):
             'count': count,
             'materials': materials,
         })
+
+
+class PrintList(APIView):
+    @swagger_auto_schema(
+        tags=['Product'],
+        responses={200: 'brand-list'}
+    )
+    def get(self, request):
+        prints = []
+        for product in Products.objects.filter(prints__isnull=False):
+            for print_item in product.prints:
+                if print_item.get("@name") == 'Метод нанесения':
+                    prints.append(print_item.get('#text'))
+                    break
+
+        return success_response([prin[0] for prin in Counter(prints).most_common(10)])
 
 
 class ColorListView(APIView):

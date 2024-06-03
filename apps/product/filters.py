@@ -110,6 +110,7 @@ class ProductFilter(filters.FilterSet):
     size = filters.CharFilter(field_name='size', method='filter_size')
     color = filters.CharFilter(method='filter_color')
     gender = filters.CharFilter(method='filter_gender')
+    print_type = filters.CharFilter(method='filter_print')
     site = filters.CharFilter(field_name='site', lookup_expr='exact')
 
     @staticmethod
@@ -169,6 +170,16 @@ class ProductFilter(filters.FilterSet):
             return queryset.filter(name__icontains='женс')
         else:
             return queryset
+
+    def filter_print(self, queryset, name, value):
+        filtered_ids = []
+        for item in queryset:
+            if item.prints:
+                for print_item in item.prints:
+                    if print_item.get("@name") == 'Метод нанесения' and print_item.get("#text") == value:
+                        filtered_ids.append(item.pk)
+                        break
+        return queryset.filter(pk__in=filtered_ids)
 
     class Meta:
         # model = Products

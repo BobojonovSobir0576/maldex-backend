@@ -3,7 +3,7 @@ from apps.product.api.views import product, category
 from apps.product.api.views import oasis_json
 from apps.product.api.views.category import get_all_subcategories, CategoryMove
 from apps.product.api.views.image import ProductImageView
-from apps.product.api.views.product import SiteLogoView, get_counts, BrandList, MaterialList, ColorListView
+from apps.product.api.views.product import SiteLogoView, get_counts, BrandList, MaterialList, ColorListView, PrintList
 from apps.product.api.views.product_filter import FilterProductDetailView, FilterProductListView, \
     FilterProductsDetailView
 
@@ -39,6 +39,7 @@ urlpatterns = [
     path('materials/', MaterialList.as_view(), name='material-list'),
     path('colors/', ColorListView.as_view(), name='color-list'),
     path('site-logos/', SiteLogoView.as_view(), name='site-logo-list'),
+    path('prints/', PrintList.as_view(), name='site-logo-list'),
 
     # Image URLs
     path('image/<image_id>/', ProductImageView.as_view(), name='image'),  # Endpoint to get image by ID
