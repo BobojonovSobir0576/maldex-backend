@@ -51,7 +51,7 @@ class ProductsListView(APIView, PaginationMethod):
     brand = openapi.Parameter('brand', openapi.IN_QUERY,
                               type=openapi.TYPE_STRING)
     warehouse = openapi.Parameter('warehouse', openapi.IN_QUERY,
-                              type=openapi.TYPE_STRING)
+                                  type=openapi.TYPE_STRING)
     is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
                                description="NEW products",
                                type=openapi.TYPE_BOOLEAN)
@@ -134,7 +134,6 @@ class ProductsDetailView(APIView):
 
 
 class ProductAutoUploaderView(APIView):
-
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(request_body=ProductAutoUploaderSerializer,
@@ -206,7 +205,9 @@ class PrintList(APIView):
                 for print_item in product.prints:
                     if print_item.get("@name") == 'Метод нанесения':
                         prints.append(print_item.get('#text'))
-                        break
+            elif type(product.prints) == dict:
+                if product.prints.get("@name") == 'Метод нанесения':
+                    prints.append(product.prints.get('#text'))
             else:
                 prints.append(product.prints)
 
