@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -200,21 +200,22 @@ class PrintList(APIView):
     )
     def get(self, request):
         products = Products.objects.filter(prints__isnull=False).values_list('prints', flat=True)
-        prints = []
+        prints_dict = defaultdict(int)
 
         for product_prints in products:
             if isinstance(product_prints, list):
-                prints.extend(
-                    print_item.get('#text') for print_item in product_prints
-                    if print_item.get('@name') == 'Метод нанесения'
-                )
+                for print_item in product_prints:
+                    if print_item.get('@name') == 'Метод нанесения':
+                        prints_dict[print_item.get('#text')] += 1
             elif isinstance(product_prints, dict):
                 if product_prints.get('@name') == 'Метод нанесения':
-                    prints.append(product_prints.get('#text'))
+                    prints_dict[product_prints.get('#text')] += 1
             else:
-                prints.append(product_prints)
+                prints_dict[product_prints] += 1
 
-        return success_response([{'name': prin[0], 'count': prin[1]} for prin in Counter(prints).most_common(10)])
+        sorted_prints = sorted(prints_dict.items(), key=lambda item: item[1], reverse=True)[:10]
+
+        response_data = [{'name': prin[0], 'count': prin[1]} for prin in sorted_prints]
 
 
 class ColorListView(APIView):

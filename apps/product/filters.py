@@ -175,10 +175,16 @@ class ProductFilter(filters.FilterSet):
         filtered_ids = []
         for item in queryset:
             if item.prints:
-                for print_item in item.prints:
-                    if print_item.get("@name") == 'Метод нанесения' and print_item.get("#text") == value:
+                if isinstance(item.prints, list):
+                    for print_item in item.prints:
+                        if print_item.get("@name") == 'Метод нанесения' and print_item.get("#text") == value:
+                            filtered_ids.append(item.pk)
+                elif isinstance(item.prints, dict):
+                    if item.prints.get("@name") == 'Метод нанесения' and item.prints.get("#text") == value:
                         filtered_ids.append(item.pk)
-                        break
+                else:
+                    if item.prints == value:
+                        filtered_ids.append(item.pk)
         return queryset.filter(pk__in=filtered_ids)
 
     class Meta:
