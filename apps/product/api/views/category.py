@@ -191,7 +191,8 @@ def get_subcategories(request, category_id):
 def get_all_subcategories(request):
     search = request.GET.get('search')
     response = []
-    subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False, parent__is_available=False)
+    subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False,
+                                                     parent__is_available=False).order_by('name')
     subcategories = subcategories.filter(name__icontains=search) if search else subcategories
     for cat in subcategories:
         ids = [cat.id]

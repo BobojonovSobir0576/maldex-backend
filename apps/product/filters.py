@@ -48,6 +48,7 @@ class ProductCategoryFilter(filters.FilterSet):
     hits_category = filters.BooleanFilter(method='filter_hits_categories', label="Filter by Hits categories")
     is_available = filters.BooleanFilter(field_name='is_available')
     search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    site = filters.CharFilter(field_name='site', lookup_expr='exact')
 
     class Meta:
         model = ProductCategories
