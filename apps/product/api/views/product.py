@@ -199,19 +199,20 @@ class PrintList(APIView):
         responses={200: 'brand-list'}
     )
     def get(self, request):
+        products = Products.objects.filter(prints__isnull=False).values_list('prints', flat=True)
         prints = []
-        for product in Products.objects.filter(prints__isnull=False):
-            if type(product.prints) == list:
-                for print_item in product.prints:
-                    if print_item.get("@name") == 'Метод нанесения':
-                        prints.append(print_item.get('#text'))
-            elif type(product.prints) == dict:
-                if product.prints.get("@name") == 'Метод нанесения':
-                    prints.append(product.prints.get('#text'))
-            else:
-                prints.append(product.prints)
 
-        print(prints)
+        for product_prints in products:
+            if isinstance(product_prints, list):
+                prints.extend(
+                    print_item.get('#text') for print_item in product_prints
+                    if print_item.get('@name') == 'Метод нанесения'
+                )
+            elif isinstance(product_prints, dict):
+                if product_prints.get('@name') == 'Метод нанесения':
+                    prints.append(product_prints.get('#text'))
+            else:
+                prints.append(product_prints)
 
         return success_response([{'name': prin[0], 'count': prin[1]} for prin in Counter(prints).most_common(10)])
 
