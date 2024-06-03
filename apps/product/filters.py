@@ -119,9 +119,10 @@ class ProductFilter(filters.FilterSet):
 
     def filter_search(self, queryset, name, value):
         value = self.remove_punctuation(value)
-        queryset = queryset.annotate(clean_name=RemovePunctuation(F('name')))
-        filtered_queryset = queryset.filter(clean_name__icontains=value)
-        return filtered_queryset
+        queryset = queryset.annotate(
+            name_no_comma=Replace(F('name'), Value(','), Value(''))
+        )
+        return queryset.filter(Q(name_no_comma__icontains=value))
 
     def filter_material(self, queryset, name, value):
         values = value.split(',')
