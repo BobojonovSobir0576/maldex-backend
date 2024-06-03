@@ -194,7 +194,10 @@ def get_all_subcategories(request):
     subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False, parent__is_available=False)
     subcategories = subcategories.filter(name__icontains=search) if search else subcategories
     for cat in subcategories:
-        count = Products.objects.filter(Q(categoryId__id=cat.id) | Q(categoryId__parent__id=cat.id)).count()
+        ids = [cat.categoryId.id]
+        for sub in cat.children.all():
+            ids.append(sub.id)
+        count = Products.objects.filter(id__in=ids).count()
         response.append({'name': cat.name, 'id': cat.id, 'count': count})
     return Response(response)
 
