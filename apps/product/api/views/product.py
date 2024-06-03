@@ -216,6 +216,7 @@ class PrintList(APIView):
         sorted_prints = sorted(prints_dict.items(), key=lambda item: item[1], reverse=True)[:10]
 
         response_data = [{'name': prin[0], 'count': prin[1]} for prin in sorted_prints]
+        return success_response(response_data)
 
 
 class ColorListView(APIView):
