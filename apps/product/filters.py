@@ -164,9 +164,9 @@ class ProductFilter(filters.FilterSet):
 
     def filter_gender(self, queryset, name, value):
         if value == 'male':
-            return queryset.filter(name__iconatains='мужс')
+            return queryset.filter(name__icontains='мужс')
         elif value == 'female':
-            return queryset.filter(name__iconatains='женс')
+            return queryset.filter(name__icontains='женс')
         else:
             return queryset
 
