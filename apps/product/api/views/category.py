@@ -199,7 +199,7 @@ def get_all_subcategories(request):
         for sub in cat.children.all():
             ids.append(sub.id)
         count = Products.objects.filter(categoryId__id__in=ids).count()
-        response.append({'name': cat.name, 'id': cat.id, 'count': count})
+        response.append({'name': cat.name, 'id': cat.id, 'site': cat.site, 'count': count})
     return Response(response)
 
 

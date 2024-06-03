@@ -93,6 +93,7 @@ class RemovePunctuation(Func):
             expression = Replace(expression, Value(mark), Value(''))
         super().__init__(expression, **extra)
 
+
 class ProductFilter(filters.FilterSet):
     """FilterSet for filtering products."""
     category_id = CategoryFilter(field_name='categoryId_id', lookup_expr='exact')
@@ -108,6 +109,7 @@ class ProductFilter(filters.FilterSet):
     quantity = filters.CharFilter(field_name='quantity', method='filter_quantity')
     size = filters.CharFilter(field_name='size', method='filter_size')
     color = filters.CharFilter(method='filter_color')
+    gender = filters.CharFilter(method='filter_gender')
     site = filters.CharFilter(field_name='site', lookup_expr='exact')
 
     @staticmethod
@@ -159,6 +161,14 @@ class ProductFilter(filters.FilterSet):
     def filter_color(self, queryset, name, value):
         filtered_queryset = queryset.filter(images_set__colorID__name__icontains=value)
         return filtered_queryset
+
+    def filter_gender(self, queryset, name, value):
+        if value == 'male':
+            return queryset.filter(name__iconatains='мужс')
+        elif value == 'female':
+            return queryset.filter(name__iconatains='женс')
+        else:
+            return queryset
 
     class Meta:
         # model = Products
