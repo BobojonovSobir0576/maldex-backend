@@ -213,7 +213,7 @@ class PrintList(APIView):
 
         print(prints)
 
-        return success_response([prin[0] for prin in Counter(prints).most_common(10)])
+        return success_response([{'name': prin[0], 'count': prin[1]} for prin in Counter(prints).most_common(10)])
 
 
 class ColorListView(APIView):
