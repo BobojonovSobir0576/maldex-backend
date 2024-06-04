@@ -22,7 +22,7 @@ admin.site.index_title = "Welcome to Maldex Admin Portal"
 @admin.register(ProductCategories)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['icon_image', 'name', 'id', 'order', 'get_externals', 'site']
-    fields = ['name', 'parent', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order', 'order_top']
+    fields = ['name', 'parent', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order', 'order_top', 'order_by_site']
     search_fields = ['name']
     readonly_fields = ['icon_image']
     autocomplete_fields = ['parent']
