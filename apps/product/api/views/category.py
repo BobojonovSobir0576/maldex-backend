@@ -255,4 +255,4 @@ class CategoryMove(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status)
+        return Response(serializer.errors, status=status.HTTP_200_OK)
