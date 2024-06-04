@@ -43,7 +43,7 @@ class CategoryListView(APIView):
         is_popular = bool(request.query_params.get('is_popular', None))
         if is_popular is True:
             queryset = queryset.order_by('order_top')
-        serializers = MainCategorySerializer(queryset, many=True, context={'request': request})
+        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True, context={'request': request})
         return success_response(serializers.data)
 
     @swagger_auto_schema(
