@@ -11,28 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='SiteLogo',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site', models.CharField(max_length=256)),
-                ('logo', models.ImageField(upload_to='site_logos/')),
-            ],
-            options={
-                'verbose_name': 'Site Logo',
-                'verbose_name_plural': 'Site Logos',
-                'db_table': 'site_logos',
-            },
-        ),
-        migrations.AlterModelOptions(
-            name='productcategories',
-            options={'ordering': ('-is_available', 'order', 'order_by_site'), 'verbose_name': 'Категория', 'verbose_name_plural': 'Категория'},
-        ),
-        migrations.AddField(
-            model_name='productcategories',
-            name='order_by_site',
-            field=models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Порядок сайта'),
-        ),
         migrations.AddField(
             model_name='products',
             name='group',
