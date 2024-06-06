@@ -271,10 +271,13 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def create(self, validated_data):
         images = validated_data.pop('images')
         items = validated_data.pop('items', [])
+        discounts = []
+        for item in items:
+            discounts.append({'name': item['name'], 'count': item['count']})
         color = validated_data.pop('color', None)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
-        validated_data['discounts'] = items
+        validated_data['discounts'] = discounts
         product_instance = Products.objects.create(**validated_data, colorID=color_instance)
         for image_data in images:
             image_data['productID'] = product_instance.id
@@ -292,10 +295,13 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         images_data = validated_data.pop('images', [])
         items = validated_data.pop('items', instance.discounts)
+        discounts = []
+        for item in items:
+            discounts.append({'name': item['name'], 'count': item['count']})
         color = validated_data.pop('color', instance.colorID.name)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
-        validated_data['discounts'] = items
+        validated_data['discounts'] = discounts
         validated_data['colorID'] = color_instance
         for image_data in images_data:
             if image_data['image']:
