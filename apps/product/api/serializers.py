@@ -242,7 +242,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     discounts = serializers.JSONField(read_only=True)
 
     class Meta:
-        model = Products  # Make sure to specify your model here
+        model = Products
         fields = '__all__'
 
     @staticmethod
@@ -271,6 +271,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def create(self, validated_data):
         images = validated_data.pop('images')
         items = validated_data.pop('items', [])
+        raise ValueError((items, type(items), type(items[0])))
         discounts = []
         for item in items:
             discounts.append({'name': item['name'], 'count': item['count']})
