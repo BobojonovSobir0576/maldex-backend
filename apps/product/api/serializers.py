@@ -258,8 +258,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     categories = serializers.SerializerMethodField(read_only=True)
-    colorID = ColorSerializer(required=True)
+    colorID = ColorSerializer(read_only=True)
+    color = serializers.CharField(write_only=True)
     colors = serializers.SerializerMethodField(read_only=True)
+    items = serializers.JSONField(write_only=True)
+    discounts = serializers.JSONField(read_only=True)
 
     class Meta:
         model = Products  # Make sure to specify your model here
@@ -290,14 +293,18 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
-        product_instance = Products.objects.create(**validated_data)
+        items = validated_data.pop('items', [])
+        color = validated_data.pop('color', None)
+        color = color.lower() if color else color
+        color_instance, created = Colors.objects.get_or_create(name=color)
+        validated_data['discounts'] = items
+        product_instance = Products.objects.create(**validated_data, colorID=color_instance)
         for image_data in images:
             image_data['productID'] = product_instance.id
             image_data['colorID'] = {
                 'name': image_data['color']
             }
-            image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
-                                                                                'request': self.context['request']})
+            image_serializer = ProductImageSerializer(data=image_data, context={'request': self.context['request']})
             if image_serializer.is_valid():
                 image_serializer.save()
             else:
@@ -307,6 +314,12 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         images_data = validated_data.pop('images', [])
+        items = validated_data.pop('items', instance.discounts)
+        color = validated_data.pop('color', instance.colorID.name)
+        color = color.lower() if color else color
+        color_instance, created = Colors.objects.get_or_create(name=color)
+        validated_data['discounts'] = items
+        validated_data['colorID'] = color_instance
         for image_data in images_data:
             if image_data['image']:
                 image_data['productID'] = instance.id

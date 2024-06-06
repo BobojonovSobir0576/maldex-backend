@@ -152,6 +152,7 @@ class Products(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Данные опубликованы')
     updated_at = models.DateTimeField(auto_now=True)
     home = models.BooleanField(default=False)
+    discounts = models.JSONField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         """Override save method to generate ID."""
