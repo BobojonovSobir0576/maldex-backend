@@ -238,7 +238,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     colorID = ColorSerializer(read_only=True)
     color = serializers.CharField(write_only=True)
     colors = serializers.SerializerMethodField(read_only=True)
-    items = serializers.ListField(write_only=True)
+    items = serializers.ListField(write_only=True, child=serializers.DictField())
     discounts = serializers.JSONField(read_only=True)
 
     class Meta:
