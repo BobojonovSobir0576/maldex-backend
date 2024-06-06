@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -8,9 +9,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductFilterModel, Colors
+from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo
 from apps.product.api.serializers import ProductDetailSerializers, \
-    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer
+    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
@@ -50,7 +51,7 @@ class ProductsListView(APIView, PaginationMethod):
     brand = openapi.Parameter('brand', openapi.IN_QUERY,
                               type=openapi.TYPE_STRING)
     warehouse = openapi.Parameter('warehouse', openapi.IN_QUERY,
-                              type=openapi.TYPE_STRING)
+                                  type=openapi.TYPE_STRING)
     is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
                                description="NEW products",
                                type=openapi.TYPE_BOOLEAN)
@@ -133,7 +134,6 @@ class ProductsDetailView(APIView):
 
 
 class ProductAutoUploaderView(APIView):
-
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(request_body=ProductAutoUploaderSerializer,
@@ -193,6 +193,32 @@ class MaterialList(APIView):
         })
 
 
+class PrintList(APIView):
+    @swagger_auto_schema(
+        tags=['Product'],
+        responses={200: 'brand-list'}
+    )
+    def get(self, request):
+        products = Products.objects.filter(prints__isnull=False).values_list('prints', flat=True)
+        prints_dict = defaultdict(int)
+
+        for product_prints in products:
+            if isinstance(product_prints, list):
+                for print_item in product_prints:
+                    if print_item.get('@name') == 'Метод нанесения':
+                        prints_dict[print_item.get('#text')] += 1
+            elif isinstance(product_prints, dict):
+                if product_prints.get('@name') == 'Метод нанесения':
+                    prints_dict[product_prints.get('#text')] += 1
+            else:
+                prints_dict[product_prints] += 1
+
+        sorted_prints = sorted(prints_dict.items(), key=lambda item: item[1], reverse=True)[:10]
+
+        response_data = [{'name': prin[0], 'count': prin[1]} for prin in sorted_prints]
+        return success_response(response_data)
+
+
 class ColorListView(APIView):
     @swagger_auto_schema(
         tags=['Product'],
@@ -216,3 +242,81 @@ class ColorListView(APIView):
         return success_response({
             'colors': top_colors,
         })
+
+
+@swagger_auto_schema(tags=['Products'],
+                     operation_description='Get the number of NEW, HIT, POPULAR products',
+                     method='GET')
+@api_view(['GET'])
+def get_counts(request):
+    new_product_count = Products.objects.filter(is_new=True).count()
+    hit_product_count = Products.objects.filter(is_hit=True).count()
+    popular_product_count = Products.objects.filter(is_popular=True).count()
+    return success_response({
+        'new': new_product_count,
+        'hit': hit_product_count,
+        'popular': popular_product_count
+    })
+
+
+class SiteLogoView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = SiteLogoSerializer
+
+    @swagger_auto_schema(operation_description="Retrieve a list of sites logos",
+                         tags=['Site Logo'],
+                         responses={200: SiteLogoSerializer(many=True)})
+    def get(self, request):
+        queryset = SiteLogo.objects.all()
+        data = SiteLogoSerializer(queryset, many=True, context={'request': request}).data
+        return success_response({item['site']: item['logo'] for item in data})
+
+
+class SiteCountsView(APIView, PaginationMethod):
+    permission_classes = [AllowAny]
+    serializer_class = ProductDetailSerializers
+    pagination_class = StandardResultsSetPagination
+
+    category_id = openapi.Parameter('category_id', openapi.IN_QUERY,
+                                    description="Filter by category ID",
+                                    type=openapi.TYPE_STRING)
+    filter_id = openapi.Parameter('filter_id', openapi.IN_QUERY,
+                                  description="Filter by Filter ID",
+                                  type=openapi.FORMAT_UUID)
+    search = openapi.Parameter('search', openapi.IN_QUERY,
+                               description="Searching ...",
+                               type=openapi.TYPE_STRING)
+    material = openapi.Parameter('material', openapi.IN_QUERY,
+                                 type=openapi.TYPE_STRING)
+    brand = openapi.Parameter('brand', openapi.IN_QUERY,
+                              type=openapi.TYPE_STRING)
+    warehouse = openapi.Parameter('warehouse', openapi.IN_QUERY,
+                                  type=openapi.TYPE_STRING)
+    is_new = openapi.Parameter('is_new', openapi.IN_QUERY,
+                               description="NEW products",
+                               type=openapi.TYPE_BOOLEAN)
+    is_hit = openapi.Parameter('is_hit', openapi.IN_QUERY,
+                               description="HIT products",
+                               type=openapi.TYPE_BOOLEAN)
+    is_popular = openapi.Parameter('is_popular', openapi.IN_QUERY,
+                                   description="POPULAR products",
+                                   type=openapi.TYPE_BOOLEAN)
+    is_available = openapi.Parameter('is_available', openapi.IN_QUERY,
+                                     description="AVAILABLE products",
+                                     type=openapi.TYPE_BOOLEAN)
+
+    @swagger_auto_schema(operation_description="Retrieve a list of products",
+                         manual_parameters=[category_id, search, is_new, is_hit, is_popular,
+                                            is_available, material, brand, warehouse],
+                         tags=['Products'],
+                         responses={200: ProductDetailSerializers(many=True)})
+    def get(self, request):
+        filter_id = request.query_params.get('filter_id')
+        filter_model = ProductFilterModel.objects.filter(id=filter_id).first() if filter_id else None
+        queryset = Products.objects.filter(
+            filter_products__filter=filter_model) if filter_model else Products.objects.all()
+        filterset = ProductFilter(request.query_params, queryset=queryset)
+        if filterset.is_valid():
+            queryset = filterset.qs
+        queryset = queryset.order_by('-updated_at').distinct()
+        return success_response(queryset.values('site').annotate(product_count=Count('id')).order_by('-product_count'))

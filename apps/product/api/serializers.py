@@ -666,4 +666,8 @@ class FilterProductSerializer(serializers.ModelSerializer):
         return data.data
 
 
+class SiteLogoSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = SiteLogo
+        fields = ('site', 'logo')

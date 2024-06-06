@@ -12,6 +12,7 @@ class ProductCategories(models.Model):
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     order_top = models.PositiveSmallIntegerField(null=True, blank=True)
+    order_by_site = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Порядок сайта')
     name = models.CharField(max_length=150, verbose_name="Название категории")
     title = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -59,7 +60,7 @@ class ProductCategories(models.Model):
 
     class Meta:
         db_table = "product_category"
-        ordering = ('-is_available', 'order')
+        ordering = ('-is_available', 'order', 'order_by_site')
         verbose_name = "Категория"
         verbose_name_plural = "Категория"
 
@@ -209,3 +210,16 @@ class ProductFilterProducts(models.Model):
         db_table = "filter_for_product_products"
         verbose_name = "фильтрует продукты по продукту"
         verbose_name_plural = "фильтрует продукты по продукту"
+
+
+class SiteLogo(models.Model):
+    site = models.CharField(max_length=256)
+    logo = models.ImageField(upload_to='site_logos/')
+
+    class Meta:
+        db_table ='site_logos'
+        verbose_name = 'Site Logo'
+        verbose_name_plural = 'Site Logos'
+
+    def __str__(self):
+        return self.site

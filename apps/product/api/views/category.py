@@ -43,7 +43,7 @@ class CategoryListView(APIView):
         is_popular = bool(request.query_params.get('is_popular', None))
         if is_popular is True:
             queryset = queryset.order_by('order_top')
-        serializers = MainCategorySerializer(queryset, many=True, context={'request': request})
+        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True, context={'request': request})
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -191,11 +191,15 @@ def get_subcategories(request, category_id):
 def get_all_subcategories(request):
     search = request.GET.get('search')
     response = []
-    subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False, parent__is_available=False)
+    subcategories = ProductCategories.objects.filter(parent__parent=None, parent__isnull=False,
+                                                     parent__is_available=False).order_by('name')
     subcategories = subcategories.filter(name__icontains=search) if search else subcategories
     for cat in subcategories:
-        count = Products.objects.filter(Q(categoryId__id=cat.id) | Q(categoryId__parent__id=cat.id)).count()
-        response.append({'name': cat.name, 'id': cat.id, 'count': count})
+        ids = [cat.id]
+        for sub in cat.children.all():
+            ids.append(sub.id)
+        count = Products.objects.filter(categoryId__id__in=ids).count()
+        response.append({'name': cat.name, 'id': cat.id, 'site': cat.site, 'count': count})
     return Response(response)
 
 
@@ -247,8 +251,12 @@ class CategoryMove(APIView):
         request_body=CategoryMoveSerializer()
     )
     def post(self, request):
+        categories_data = request.data.pop('categories_data')
+        categories_data = [categories_data] if not isinstance(categories_data, list) else categories_data
+        request.data['categories_data'] = categories_data
         serializer = CategoryMoveSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status)
+        return Response(serializer.errors, status=status.HTTP_200_OK)
