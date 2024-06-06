@@ -118,12 +118,14 @@ class ProductFilter(filters.FilterSet):
 
     @staticmethod
     def remove_punctuation(text):
-        return text.translate(str.maketrans('', '', punctuation))
+        return text.translate(str.maketrans('', '', '-,/'))
 
     def filter_search(self, queryset, name, value):
         value = self.remove_punctuation(value)
         queryset = queryset.annotate(
-            name_no_comma=Replace(F('name'), Value(','), Value(''))
+            name_no_comma=Replace(
+                Replace(Replace(F('name'), Value('-'), Value('')), Value(','), Value('')), Value('/'), Value('')
+            )
         )
         return queryset.filter(Q(name_no_comma__icontains=value))
 
