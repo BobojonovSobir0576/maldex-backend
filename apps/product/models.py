@@ -107,7 +107,7 @@ class Colors(models.Model):
     """Model to represent colors."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название цвета'), max_length=50)
-    image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
+    hex = models.CharField(max_length=16, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -143,7 +143,7 @@ class Products(models.Model):
     pack = models.JSONField(null=True, blank=True)
     prints = models.JSONField(null=True, blank=True)
     warehouse = models.JSONField(null=True, blank=True)
-    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='images')
+    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='products')
     sizes = models.JSONField(null=True, blank=True)
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?", null=True, blank=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)

@@ -11,7 +11,7 @@ from drf_yasg import openapi
 from apps.product.filters import ProductFilter
 from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo
 from apps.product.api.serializers import ProductDetailSerializers, \
-    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer
+    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer, ProductListSerializers
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
@@ -34,7 +34,7 @@ def get_counts(request):
 class ProductsListView(APIView, PaginationMethod):
     permission_classes = [AllowAny]
     parser_class = (FileUploadParser, MultiPartParser, FormParser)
-    serializer_class = ProductDetailSerializers
+    serializer_class = ProductListSerializers
     pagination_class = StandardResultsSetPagination
 
     category_id = openapi.Parameter('category_id', openapi.IN_QUERY,
@@ -69,7 +69,7 @@ class ProductsListView(APIView, PaginationMethod):
                          manual_parameters=[category_id, search, is_new, is_hit, is_popular,
                                             is_available, material, brand, warehouse],
                          tags=['Products'],
-                         responses={200: ProductDetailSerializers(many=True)})
+                         responses={200: ProductListSerializers(many=True)})
     def get(self, request):
         filter_id = request.query_params.get('filter_id')
         filter_model = ProductFilterModel.objects.filter(id=filter_id).first() if filter_id else None
@@ -79,7 +79,7 @@ class ProductsListView(APIView, PaginationMethod):
         if filterset.is_valid():
             queryset = filterset.qs
         queryset = queryset.order_by('-updated_at').distinct()
-        serializers = super().page(queryset, ProductDetailSerializers, request)
+        serializers = super().page(queryset, ProductListSerializers, request)
         data = serializers.data
         # each sites product count
         data['sites_count'] = queryset.values('site').annotate(product_count=Count('id')).order_by('-product_count')
@@ -225,22 +225,9 @@ class ColorListView(APIView):
         responses={200: 'colors-list'}
     )
     def get(self, request):
-        colors = Colors.objects.annotate(products_count=Count('images__productID')).values('name', 'products_count')
-        color_counts = {}
-
-        for color in colors:
-            name = color['name'].lower()
-            count = color['products_count']
-            if name in color_counts:
-                color_counts[name] += count
-            else:
-                color_counts[name] = count
-
-        sorted_colors = sorted(color_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-        top_colors = [{'name': name, 'products_count': count} for name, count in sorted_colors]
-
+        colors = Colors.objects.annotate(products_count=Count('products')).order_by('-products_count').values('name', 'products_count')
         return success_response({
-            'colors': top_colors,
+            'colors': colors[:10],
         })
 
 

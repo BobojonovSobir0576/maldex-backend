@@ -173,7 +173,7 @@ class ProductFilter(filters.FilterSet):
 
     @staticmethod
     def filter_color(queryset, name, value):
-        filtered_queryset = queryset.filter(images_set__colorID__name__icontains=value)
+        filtered_queryset = queryset.filter(colorID__name__icontains=value)
         return filtered_queryset
 
     @staticmethod

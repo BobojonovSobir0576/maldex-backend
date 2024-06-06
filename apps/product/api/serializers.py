@@ -18,7 +18,7 @@ from apps.product.proxy import *
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Colors
-        fields = ['name', 'image']
+        fields = ['name', 'hex']
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -226,29 +226,6 @@ class CategoryOrderSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class ProductListSerializers(serializers.ModelSerializer):
-    images_set = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = Products
-        fields = ['id', 'name', 'price', 'discount_price', 'images_set']
-
-    def get_images_set(self, obj):
-        images = obj.images_set.all()
-        return [{
-            'id': image.id,
-            'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
-            'image_url': image.image_url,
-            'color': image.colorID.name
-        } for image in images]
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
-
-
 class ProductDetailSerializers(serializers.ModelSerializer):
     """ Product details """
     images_set = serializers.SerializerMethodField(read_only=True)
@@ -267,13 +244,13 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     @staticmethod
     def get_colors(product):
-        colo_name = product.colorID.name.lower()
+        color_name = product.colorID.name.lower()
         product_name = product.name
-        without_color_name = product_name[:product_name.index(colo_name)]
+        without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
         space_index = without_color_name[::-1].find(' ')
         common_name = product_name[:- space_index - 1]
-        similar_products = Products.objects.filter(name__icontains=common_name)
-        colors = {product.colorID.name: product.id for product in similar_products}
+        similar_products = Products.objects.filter(name__icontains=common_name).exclude(id=product.id)
+        colors = [{'color': product.colorID.name, 'id': product.id, 'hex': product.colorID.dex} for product in similar_products]
         return colors
 
     @staticmethod
@@ -294,7 +271,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         for image_data in images:
             image_data['productID'] = product_instance.id
             image_data['colorID'] = {
-                'name': image_data['color']
+                'name': image_data['color'].lower()
             }
             image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
                                                                                 'request': self.context['request']})
@@ -311,7 +288,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             if image_data['image']:
                 image_data['productID'] = instance.id
                 image_data['colorID'] = {
-                    'name': image_data['color']
+                    'name': image_data['color'].lower()
                 }
                 image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
                                                                                     'request': self.context['request']})
@@ -347,6 +324,13 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
             'image_url': image.image_url,
         } for image in images]
+
+
+class ProductListSerializers(ProductDetailSerializers):
+    class Meta:
+        model = Products
+        fields = ['id', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId']
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
