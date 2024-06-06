@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='products',
             name='colorID',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='images', to='product.colors', verbose_name='Цвета'),
+            field=models.ForeignKey(default='fbf0fc9a-c116-44d3-a285-6b6f257f8c57', on_delete=django.db.models.deletion.CASCADE, related_name='images', to='product.colors', verbose_name='Цвета'),
             preserve_default=False,
         ),
     ]
