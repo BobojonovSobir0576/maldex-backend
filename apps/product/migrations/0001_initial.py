@@ -125,7 +125,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('home', models.BooleanField(default=False)),
                 ('categoryId', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='products', to='product.productcategories', verbose_name='Категория продукта')),
-                ('colorID', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='product.colors', verbose_name='Цвета')),
             ],
             options={
                 'verbose_name': 'Продукт',
