@@ -9,13 +9,67 @@ from apps.product.models import (
     ExternalCategory
 )
 from apps.product.proxy import SubCategory, TertiaryCategory
-
+from django.contrib.admin import SimpleListFilter
+from django.db.models import Q
 
 # Set the admin site titles
 admin.site.site_header = "Maldex Administration"
 admin.site.site_title = "Maldex Admin Portal"
 admin.site.index_title = "Welcome to Maldex Admin Portal"
 
+
+class HasSizesFilter(SimpleListFilter):
+    title = 'Has Sizes'
+    parameter_name = 'has_sizes'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        print(self.value())
+        if self.value() == 'Yes':
+            return queryset.filter(~Q(sizes='') & ~Q(sizes=None))
+        elif self.value() == 'No':
+            return queryset.filter(Q(sizes='') | Q(sizes=None))
+        return queryset
+
+class HasWarehouseFilter(SimpleListFilter):
+    title = 'Has Warehouse'
+    parameter_name = 'has_warehouse'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(~Q(warehouse='') & ~Q(warehouse=None))
+        elif self.value() == 'no':
+            return queryset.filter(Q(warehouse='') | Q(warehouse=None))
+        return queryset
+
+
+class HasImageFilter(SimpleListFilter):
+    title = 'Has Image'
+    parameter_name = 'has_image'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('Yes', 'Yes'),
+            ('No', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'Yes':
+            return queryset.filter(images_set__image__isnull=False) | queryset.filter(images_set__image_url__isnull=False)
+        elif self.value() == 'No':
+            return queryset.exclude(images_set__image__isnull=False).exclude(images_set__image_url__isnull=False)
+        return queryset
 
 # Admin configuration for Product Categories
 @admin.register(ProductCategories)
@@ -113,7 +167,7 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     inlines = [ColorInline]
-    fields = ('_image', 'image', 'image_url', 'colorID')
+    fields = ('_image', 'image', 'image_url')
     readonly_fields = ('_image',)
 
     def _image(self, obj):
@@ -126,16 +180,17 @@ class ProductImageInline(admin.TabularInline):
 
 # Admin configuration for Products
 class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'id', 'price', 'site', 'category_hierarchy']
+    list_display = ['name', 'id', 'article', 'price', 'site', 'category_hierarchy', 'has_image', 'has_sizes', 'has_warehouse',
+                    'colorID']
     search_fields = ['id', 'name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
     fields = [
         'name', 'categoryId', 'code', 'article', 'product_size', 'material', 'description',
         'brand', 'price', 'price_type', 'discount_price', 'weight', 'barcode', 'ondemand',
-        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes'
+        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'colorID'
     ]
     inlines = [ProductImageInline]
-    list_filter = ['is_new', 'is_popular', 'is_hit', 'site']
+    list_filter = ['is_new', 'is_popular', 'is_hit', 'site', HasImageFilter, HasSizesFilter, HasWarehouseFilter]
     list_per_page = 500
     ordering = ('-created_at',)
 
@@ -158,6 +213,29 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     product_image.short_description = 'Product Image'
 
+    def has_image(self, obj):
+        # Check if the product has an image or image URL
+        if obj.images_set.exists():
+            for image in obj.images_set.all():
+                if image.image or image.image_url:
+                    return "Yes"
+        return "No"
+
+    has_image.short_description = 'Has Image'
+
+    def has_sizes(self, obj):
+        if obj.sizes:
+            return 'Yes'
+        return 'No'
+
+    has_sizes.short_description = 'Has sizes'
+
+    def has_warehouse(self, obj):
+        if obj.warehouse:
+            return 'Yes'
+        return 'No'
+
+    has_warehouse.short_description = 'Has warehouse'
 
 class ProductImageAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     pass

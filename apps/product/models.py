@@ -102,11 +102,27 @@ class ExternalCategory(models.Model):
         verbose_name_plural = "Категории сайта"
 
 
+class Colors(models.Model):
+    """Model to represent colors."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
+    name = models.CharField(_('Название цвета'), max_length=50)
+    image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "product_color"
+        verbose_name = "Цвет"
+        verbose_name_plural = "Цвет"
+
+
 class Products(models.Model):
     """Model to represent products."""
     id = models.BigIntegerField(primary_key=True, unique=True, blank=True, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название продукта'), max_length=512, null=True, blank=True)
     code = models.IntegerField(default=0, null=True, blank=True)
+    group = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
     article = models.CharField(_('Артикул'), max_length=512, null=True, blank=True)
     product_size = models.CharField(_('Размер товара'), max_length=256, null=True, blank=True)
     material = models.CharField(_('Материал'), max_length=512, default="S-XXL", null=True, blank=True)
@@ -126,6 +142,7 @@ class Products(models.Model):
     pack = models.JSONField(null=True, blank=True)
     prints = models.JSONField(null=True, blank=True)
     warehouse = models.JSONField(null=True, blank=True)
+    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='images')
     sizes = models.JSONField(null=True, blank=True)
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?", null=True, blank=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)
@@ -153,21 +170,6 @@ class Products(models.Model):
         verbose_name_plural = "Продукт"
 
 
-class Colors(models.Model):
-    """Model to represent colors."""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название цвета'), max_length=50)
-    image = models.ImageField(upload_to='colors/', null=True, blank=True, verbose_name='Изображение')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "product_color"
-        verbose_name = "Цвет"
-        verbose_name_plural = "Цвет"
-
-
 class ProductImage(models.Model):
     """Model to represent product images."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
@@ -175,7 +177,7 @@ class ProductImage(models.Model):
                                   related_name='images_set', verbose_name='Код товара')
     image = models.ImageField(upload_to='media/product/', verbose_name="изображения", null=True, blank=True)
     image_url = models.URLField(max_length=1024, null=True, blank=True, verbose_name='URL изображения')
-    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='images')
+
 
     def __str__(self):
         return self.productID.name if self.productID and hasattr(self.productID, 'name') else str(self.id)

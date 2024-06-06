@@ -22,19 +22,14 @@ class ColorSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
-    colorID = ColorSerializer(required=False)
 
     class Meta:
         model = ProductImage
         fields = '__all__'
 
     def create(self, validated_data):
-        print(validated_data, self.context)
         if not ('image' not in validated_data or validated_data['image']):
             raise ValidationError({"image": "not found"})
-        color_name = self.context.pop('color', None)
-        color_instance, created = Colors.objects.get_or_create(name=color_name)
-        validated_data['colorID'] = color_instance
         return super().create(validated_data)
 
 
@@ -281,12 +276,8 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
-        print(validated_data)
         product_instance = Products.objects.create(**validated_data)
-        print(product_instance)
-
         for image_data in images:
-            print(image_data)
             image_data['productID'] = product_instance.id
             image_data['colorID'] = {
                 'name': image_data['color']
@@ -323,12 +314,10 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         instance.discount_price = discount_price if discount_price else instance.discount_price
         categoryId = validated_data.pop('categoryId', instance.categoryId)
         categoryId = categoryId or instance.categoryId
-        print(categoryId, instance.categoryId)
         instance.categoryId = categoryId
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
-        print(category)
         if validated_data.get('is_new'):
             category.is_new = True
             category.save()
@@ -343,7 +332,6 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             'id': image.id,
             'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
             'image_url': image.image_url,
-            'color': image.colorID.name
         } for image in images]
 
 
@@ -459,6 +447,8 @@ class CategoryMoveSerializer(serializers.Serializer):
 
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 class ProductAutoUploaderSerializer(serializers.ModelSerializer):
     color_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     image_set = serializers.JSONField(required=False)
@@ -478,7 +468,7 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         return Colors.objects.get_or_create(name=color_name)[0] if color_name else None
 
     @staticmethod
-    def fetch_and_save_image(img, product_instance, color_instance):
+    def fetch_and_save_image(img, product_instance):
         is_gifts = 'api2.gifts.ru' in img['name']
         if is_gifts:
             image_url = img['name']
@@ -488,21 +478,20 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
                 file_path = os.path.join('media', name)
                 with open(file_path, 'wb') as file:
                     file.write(response.content)
-                return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+                return ProductImage(productID=product_instance, image=name)
             else:
                 print(f"Failed to download image from {image_url}")
                 return None
         else:
-            return ProductImage(productID=product_instance, colorID=color_instance, image_url=img['name'])
+            return ProductImage(productID=product_instance, image_url=img['name'])
 
     @staticmethod
-    def create_img_into_product(img_set, color_instance, product_instance):
+    def create_img_into_product(img_set, product_instance):
         start = time.time()
         images_to_create = []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance,
-                                       color_instance) for img in img_set]
+            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance, ) for img in img_set]
             for future in as_completed(futures):
                 image = future.result()
                 if image:
@@ -540,14 +529,14 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         color_instance = self.check_color_exists(color_name)
         category_instance = self.get_category_instance(category_id)
 
-        product_instance, created = Products.objects.get_or_create(**validated_data)
+        product_instance, created = Products.objects.get_or_create(**validated_data, colorID=color_instance)
 
         if category_instance:
             product_instance.categoryId = category_instance
             product_instance.save()
 
         if image_set:
-            self.create_img_into_product(image_set, color_instance, product_instance)
+            self.create_img_into_product(image_set, product_instance)
 
         return product_instance
 
@@ -569,7 +558,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         return Colors.objects.get_or_create(name=color_name)[0] if color_name else None
 
     @staticmethod
-    def fetch_and_save_image(img, product_instance, color_instance):
+    def fetch_and_save_image(img, product_instance):
         is_gifts = 'api2.gifts.ru' in img['name']
         if is_gifts:
             image_url = img['name']
@@ -579,12 +568,12 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
                 file_path = os.path.join('media', name)
                 with open(file_path, 'wb') as file:
                     file.write(response.content)
-                return ProductImage(productID=product_instance, colorID=color_instance, image=name)
+                return ProductImage(productID=product_instance, image=name)
             else:
                 print(f"Failed to download image from {image_url}")
                 return None
         else:
-            return ProductImage(productID=product_instance, colorID=color_instance, image_url=img['name'])
+            return ProductImage(productID=product_instance, image_url=img['name'])
 
     @staticmethod
     def create_img_into_product(img_set, color_instance, product_instance):
@@ -593,7 +582,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance,
-                                       color_instance) for img in img_set]
+                                       ) for img in img_set]
             for future in as_completed(futures):
                 image = future.result()
                 if image:
@@ -613,10 +602,10 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
         instance.warehouse = validated_data.get('warehouse', instance.warehouse)
         instance.sizes = validated_data.get('sizes', instance.sizes)
         color_instance = self.check_color_exists(color_name)
-
+        if color_instance:
+            instance.colorID = color_instance
         if image_set:
-            self.create_img_into_product(image_set, color_instance, instance)
-        # Save the updated instance
+            self.create_img_into_product(image_set, instance)
         instance.save()
 
         return instance

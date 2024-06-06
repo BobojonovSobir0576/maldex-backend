@@ -6,8 +6,6 @@ import os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from django.db import transaction
-from rest_framework import serializers
 from requests.exceptions import RequestException
 
 URL_ACCESS = 'https://api2.gifts.ru/export/v2/access'
@@ -25,8 +23,8 @@ def fetch_data(url, auth=None, max_retries=5):
                 response = session.get(url)
                 response.raise_for_status()
                 return response
-        except requests.RequestException as e:
-            if response.status_code == 429:
+        except RequestException as e:
+            if response is not None and response.status_code == 429:
                 retry_count += 1
                 wait_time = 2 ** retry_count  # Exponential backoff
                 print(f"Rate limit exceeded. Retrying in {wait_time} seconds...")
@@ -38,8 +36,7 @@ def fetch_data(url, auth=None, max_retries=5):
     return None
 
 def extract_ip_address(html_content):
-    ip_regex = r'\b\d{1,3}(?:\.\d{1,3}){3}\b'
-    match = re.search(ip_regex, html_content)
+    match = re.search(r'\b\d{1,3}(?:\.\d{1,3}){3}\b', html_content)
     return match.group(0) if match else None
 
 def update_ip_address(ip_address):
@@ -79,3 +76,4 @@ def get_data(url):
         time.sleep(2)
         return data
     return None
+
