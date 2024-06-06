@@ -274,6 +274,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         discounts = []
         for item in items:
             item = dict(item)
+            raise ValueError(item)
             discounts.append({'name': item['name'], 'count': item['count']})
         color = validated_data.pop('color', None)
         color = color.lower() if color else color
