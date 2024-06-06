@@ -7,10 +7,10 @@ from django.db.models import Q, Count
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from apps.gifts_baskets.models import GiftsBasketCategory, GiftsBaskets
 from apps.product.api.access import get_data
-from apps.product.models import *
 from apps.product.models import *
 from apps.product.proxy import *
 
@@ -134,7 +134,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
             category_ids += list(category3.children.values_list('id', flat=True))
 
         # Use aggregation to count products across all levels
-        count = Products.objects.filter(categoryId__in=category_ids).aggregate(total_count=Count('id'))['total_count'] or 0
+        count = Products.objects.filter(categoryId__in=category_ids).aggregate(
+            total_count=Count('id'))['total_count'] or 0
         return count
 
 
@@ -195,7 +196,8 @@ class CategoryProductsSerializer(serializers.ModelSerializer):
         model = ProductCategories
         fields = ['id', 'name', 'children', 'products']
 
-    def get_products(self, category):
+    @staticmethod
+    def get_products(category):
         products = Products.objects.filter(
             Q(categoryId=category) |
             Q(categoryId__parent=category) |
@@ -256,14 +258,26 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     categories = serializers.SerializerMethodField(read_only=True)
-
-    # categoryId = serializers.IntegerField(required=False)
+    colorID = ColorSerializer(required=True)
+    colors = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Products  # Make sure to specify your model here
         fields = '__all__'
 
-    def get_categories(self, product):
+    @staticmethod
+    def get_colors(product):
+        colo_name = product.colorID.name.lower()
+        product_name = product.name
+        without_color_name = product_name[:product_name.index(colo_name)]
+        space_index = without_color_name[::-1].find(' ')
+        common_name = product_name[:- space_index - 1]
+        similar_products = Products.objects.filter(name__icontains=common_name)
+        colors = {product.colorID.name: product.id for product in similar_products}
+        return colors
+
+    @staticmethod
+    def get_categories(product):
         categories = []
         category = product.categoryId
         if category:
@@ -403,7 +417,6 @@ class CategoryAutoUploaderSerializer(serializers.ModelSerializer):
             try:
                 is_4_level = parent_category.parent.parent is not None
             except:
-
                 is_4_level = False
             if not is_4_level:
                 new_category = ProductCategories.objects.create(name=name, parent=parent_category,
@@ -442,11 +455,9 @@ class CategoryMoveSerializer(serializers.Serializer):
 
         return category
 
-    def get_data(self, category):
+    @staticmethod
+    def get_data(category):
         return MainCategorySerializer(category).data
-
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class ProductAutoUploaderSerializer(serializers.ModelSerializer):
