@@ -273,9 +273,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         items = validated_data.pop('items', [])
         discounts = []
         for item in items:
-            item = dict(item)
-            raise ValueError(item)
-            discounts.append({'name': item['name'], 'count': item['count']})
+            discounts.append({'name': item.get('name'), 'count': item.get('count')})
         color = validated_data.pop('color', None)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
@@ -299,9 +297,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         items = validated_data.pop('items', instance.discounts)
         discounts = []
         for item in items:
-            item = dict(item)
-            raise ValueError(item)
-            discounts.append({'name': item['name'], 'count': item['count']})
+            discounts.append({'name': item.get('name'), 'count': item.get('count')})
         color = validated_data.pop('color', instance.colorID.name)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
