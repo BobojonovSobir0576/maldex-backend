@@ -7,14 +7,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0001_initial'),
+        ('product', '0005_sitelogo_alter_productcategories_options_and_more'),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='colors',
-            name='image',
-        ),
         migrations.AddField(
             model_name='colors',
             name='hex',
