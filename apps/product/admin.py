@@ -189,9 +189,7 @@ class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         'name', 'categoryId', 'code', 'article', 'product_size', 'material', 'description',
         'brand', 'price', 'price_type', 'discount_price', 'weight', 'barcode', 'ondemand',
 
-        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'colorID'
-
-        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'prints'
+        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'colorID', 'prints'
 
     ]
     inlines = [ProductImageInline]
