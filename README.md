@@ -1,4 +1,4 @@
-<img src="https://scontent.fbhk1-4.fna.fbcdn.net/v/t39.30808-6/302140289_158113903479675_1561558905551763144_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=5f2048&_nc_ohc=77oi7ShGpn4Q7kNvgFDqYe7&_nc_ht=scontent.fbhk1-4.fna&oh=00_AYCKo3GrdaXodGMXpd0jG4XpoqhlZLamHCOuG3KUDtSKmA&oe=66685E08" height="150px" width="100%" style="object-fit: cover">
+<img src="https://scontent.fbhk1-4.fna.fbcdn.net/v/t39.30808-6/302140289_158113903479675_1561558905551763144_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=5f2048&_nc_ohc=77oi7ShGpn4Q7kNvgFDqYe7&_nc_ht=scontent.fbhk1-4.fna&oh=00_AYCKo3GrdaXodGMXpd0jG4XpoqhlZLamHCOuG3KUDtSKmA&oe=66685E08" width="100%">
 
 # Maldex
 
