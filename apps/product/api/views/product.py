@@ -78,10 +78,9 @@ class ProductsListView(APIView, PaginationMethod):
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        queryset = queryset.order_by('-updated_at').distinct()
+        queryset = queryset.order_by('-updated_at').distinct('common_name')
         serializers = super().page(queryset, ProductListSerializers, request)
         data = serializers.data
-        # each sites product count
         data['sites_count'] = queryset.values('site').annotate(product_count=Count('id')).order_by('-product_count')
         return success_response(serializers.data)
 

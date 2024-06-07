@@ -154,6 +154,15 @@ class Products(models.Model):
     home = models.BooleanField(default=False)
     discounts = models.JSONField(null=True, blank=True)
 
+    @property
+    def common_name(self):
+        color_name = self.colorID.name.lower()
+        product_name = self.name
+        without_color_name = product_name[
+                             :product_name.index(color_name)] if color_name in product_name else product_name
+        space_index = without_color_name[::-1].find(' ')
+        return without_color_name[:- space_index - 1]
+
     def save(self, *args, **kwargs):
         """Override save method to generate ID."""
         if not self.id:
