@@ -153,18 +153,15 @@ class Products(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     home = models.BooleanField(default=False)
     discounts = models.JSONField(null=True, blank=True)
-
-    @property
-    def common_name(self):
-        color_name = self.colorID.name.lower()
-        product_name = self.name
-        without_color_name = product_name[
-                             :product_name.index(color_name)] if color_name in product_name else product_name
-        space_index = without_color_name[::-1].find(' ')
-        return without_color_name[:- space_index - 1]
+    common_name = models.CharField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        """Override save method to generate ID."""
+        color_name = self.colorID.name.lower()
+        product_name = self.name
+        without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
+        space_index = without_color_name[::-1].find(' ')
+        self.common_name = without_color_name[:- space_index - 1]
+
         if not self.id:
             last_instance = Products.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1

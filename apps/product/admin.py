@@ -36,6 +36,7 @@ class HasSizesFilter(SimpleListFilter):
             return queryset.filter(Q(sizes='') | Q(sizes=None))
         return queryset
 
+
 class HasWarehouseFilter(SimpleListFilter):
     title = 'Has Warehouse'
     parameter_name = 'has_warehouse'
