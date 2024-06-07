@@ -252,7 +252,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
         space_index = without_color_name[::-1].find(' ')
         common_name = without_color_name[:- space_index - 1]
-        similar_products = Products.objects.filter(name__icontains=common_name).exclude(id=product.id)
+        similar_products = Products.objects.filter(name__icontains=common_name)
         colors = [{'color': product.colorID.name, 'id': product.id, 'hex': product.colorID.hex} for product in similar_products]
         return colors
 
