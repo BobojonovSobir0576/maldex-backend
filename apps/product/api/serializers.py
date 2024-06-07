@@ -22,10 +22,14 @@ class ColorSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductImage
         fields = '__all__'
+
+    def get_image_url(self, obj):
+        return obj.image_url if obj.image_url else self.context['request'].build_absolute_uri(obj.image.url)
 
     def create(self, validated_data):
         if not ('image' not in validated_data or validated_data['image']):
