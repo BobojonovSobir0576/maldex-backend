@@ -245,8 +245,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         model = Products
         fields = '__all__'
 
-    @staticmethod
-    def get_colors(product):
+    def get_colors(self, product):
         color_name = product.colorID.name.lower()
         product_name = product.name
         without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
@@ -256,7 +255,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         colors = [{
                       'color': product.colorID.name,
                       'hex': product.colorID.hex,
-                      'product': ProductListSerializers(product).data
+                      'product': ProductListSerializers(product, context=self.context).data
                   } if product.colorID else
                   {'color': None, 'product': ProductListSerializers(product).data, 'hex': '#ffffff'} for product in similar_products]
         return colors
