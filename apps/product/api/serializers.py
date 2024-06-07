@@ -253,8 +253,12 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         space_index = without_color_name[::-1].find(' ')
         common_name = without_color_name[:- space_index - 1]
         similar_products = Products.objects.filter(name__icontains=common_name)
-        colors = [{'color': product.colorID.name, 'id': product.id, 'hex': product.colorID.hex} if product.colorID else
-                  {'color': None, 'id': product.id, 'hex': '#ffffff'} for product in similar_products]
+        colors = [{
+                      'color': product.colorID.name,
+                      'hex': product.colorID.hex,
+                      'product': ProductListSerializers(product).data
+                  } if product.colorID else
+                  {'color': None, 'product': ProductListSerializers(product).data, 'hex': '#ffffff'} for product in similar_products]
         return colors
 
     @staticmethod
@@ -351,7 +355,7 @@ class ProductListSerializers(ProductDetailSerializers):
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
-                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors']
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse']
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
