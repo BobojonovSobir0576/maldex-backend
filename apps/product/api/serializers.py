@@ -255,9 +255,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         colors = [{
                       'color': product.colorID.name,
                       'hex': product.colorID.hex,
-                      'product': ProductListSerializers(product, context=self.context).data
+                      'product': ColorProductSerializers(product, context=self.context).data
                   } if product.colorID else
-                  {'color': None, 'product': ProductListSerializers(product).data, 'hex': '#ffffff'} for product in similar_products]
+                  {'color': None, 'product': ColorProductSerializers(product).data, 'hex': '#ffffff'} for product in similar_products]
         return colors
 
     @staticmethod
@@ -355,6 +355,13 @@ class ProductListSerializers(ProductDetailSerializers):
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
                   'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse']
+        
+        
+class ColorProductSerializers(ProductDetailSerializers):
+
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'images_set', 'article', 'colorID',  'warehouse']
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
