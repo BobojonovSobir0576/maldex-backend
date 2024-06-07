@@ -79,10 +79,7 @@ class ProductsListView(APIView, PaginationMethod):
         if filterset.is_valid():
             queryset = filterset.qs
         queryset = queryset.order_by('common_name', '-updated_at').distinct('common_name')
-        ids = queryset.values_list('id', flat=True)
         serializers = super().page(queryset, ProductListSerializers, request)
-        data = serializers.data
-        data['sites_count'] = Products.objects.filter(id__in=ids).values('site').annotate(product_count=Count('id')).order_by('-product_count')
         return success_response(serializers.data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
