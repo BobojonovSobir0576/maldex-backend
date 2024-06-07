@@ -1,5 +1,5 @@
 from collections import Counter, defaultdict
-from django.db.models import Count
+from django.db.models import Count, Subquery, OuterRef
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -78,11 +78,20 @@ class ProductsListView(APIView, PaginationMethod):
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        queryset = queryset.annotate(product_count=Count('id')).order_by('common_name', '-updated_at').distinct('common_name')
+        distinct_common_names = queryset.order_by('common_name', '-updated_at').distinct('common_name').values(
+            'common_name', 'updated_at')
+
+        subquery = queryset.filter(common_name=OuterRef('common_name'), updated_at=OuterRef('updated_at'))
+        queryset = queryset.filter(
+            id__in=Subquery(subquery.values('id'))
+        ).annotate(
+            product_count=Count('id')
+        ).order_by('common_name', '-updated_at')
         serializers = super().page(queryset, ProductListSerializers, request)
         data = serializers.data
-        data['sites_count'] = queryset.values('site', 'product_count').order_by('-product_count')
-        return success_response(serializers.data)
+        data['sites_count'] = queryset.values('site').annotate(product_count=Count('id')).order_by('-product_count')
+
+        return success_response(data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
                          operation_description="Products create",
