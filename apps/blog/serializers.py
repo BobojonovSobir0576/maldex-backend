@@ -44,7 +44,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Create a new project with associated images and products
-        print(validated_data)
         images = validated_data.pop('images')
         product_ids = validated_data.pop('product_ids')
         tags = list(map(int, validated_data.pop('tags')[0].split(',')))

@@ -30,7 +30,6 @@ class HasSizesFilter(SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        print(self.value())
         if self.value() == 'Yes':
             return queryset.filter(~Q(sizes='') & ~Q(sizes=None))
         elif self.value() == 'No':

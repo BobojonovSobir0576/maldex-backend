@@ -130,7 +130,6 @@ class TagDetailView(APIView):
         queryset = get_object_or_404(Tag, pk=pk)
         serializer = TagSerializer(instance=queryset, data=request.data,
                                                context={'request': request})
-        print(request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)
