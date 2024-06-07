@@ -157,7 +157,7 @@ class Products(models.Model):
 
     def save(self, *args, **kwargs):
         color_name = self.colorID.name.lower()
-        product_name = self.name
+        product_name = self.name.replace('\xa0', ' ')
         without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
         space_index = without_color_name[::-1].find(' ')
         self.common_name = without_color_name[:- space_index - 1] if len(self.name.split()) > 1 and color_name in product_name else product_name
