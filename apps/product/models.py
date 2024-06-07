@@ -143,7 +143,7 @@ class Products(models.Model):
     pack = models.JSONField(null=True, blank=True)
     prints = models.JSONField(null=True, blank=True)
     warehouse = models.JSONField(null=True, blank=True)
-    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='products')
+    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='products', null=True)
     sizes = models.JSONField(null=True, blank=True)
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?", null=True, blank=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)
