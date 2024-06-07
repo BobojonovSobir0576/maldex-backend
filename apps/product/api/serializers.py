@@ -344,7 +344,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         return [{
             'id': image.id,
             'image': self.context['request'].build_absolute_uri(image.image.url) if image.image else None,
-            'image_url': image.image_url,
+            'image_url': image.image_url if image.image_url else self.context['request'].build_absolute_uri(image.image.url),
         } for image in images]
 
 
