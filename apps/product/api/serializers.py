@@ -242,7 +242,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     colorID = ColorSerializer(read_only=True)
     color = serializers.CharField(write_only=True)
     colors = serializers.SerializerMethodField(read_only=True)
-    items = serializers.ListField(write_only=True)
+    items = serializers.JSONField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
 
     class Meta:
@@ -273,7 +273,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
-        items = validated_data.pop('items', [])
+        items = validated_data.pop('items', []) or []
         discounts = []
         for item in items:
             discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
