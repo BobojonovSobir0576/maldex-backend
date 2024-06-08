@@ -242,7 +242,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     colorID = ColorSerializer(read_only=True)
     color = serializers.CharField(write_only=True)
     colors = serializers.SerializerMethodField(read_only=True)
-    items = serializers.JSONField(write_only=True, required=False)
+    items = serializers.ListField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
 
     class Meta:
@@ -273,9 +273,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = validated_data.pop('images')
-        items = validated_data.pop('items', []) or []
+        items = validated_data.pop('items', [])
         discounts = []
-        if items:
+        if items and items not in ['[]', '', ' ', [''], ['[]']]:
             for item in items:
                 discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
         color = validated_data.pop('color', None)
@@ -298,9 +298,10 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         images_data = validated_data.pop('images', [])
+        print(validated_data.get('items'))
         items = validated_data.pop('items', instance.discounts)
         discounts = []
-        if items:
+        if items and items not in ['[]', '', ' ', [''], ['[]']]:
             for item in items:
                 discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
         color = validated_data.pop('color', instance.colorID.name)
