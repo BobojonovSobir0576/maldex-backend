@@ -275,8 +275,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         images = validated_data.pop('images')
         items = validated_data.pop('items', []) or []
         discounts = []
-        for item in items:
-            discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        if items:
+            for item in items:
+                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
         color = validated_data.pop('color', None)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
@@ -299,8 +300,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         images_data = validated_data.pop('images', [])
         items = validated_data.pop('items', instance.discounts)
         discounts = []
-        for item in items:
-            discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        if items:
+            for item in items:
+                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
         color = validated_data.pop('color', instance.colorID.name)
         color = color.lower() if color else color
         color_instance, created = Colors.objects.get_or_create(name=color)
