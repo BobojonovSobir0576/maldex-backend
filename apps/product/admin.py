@@ -159,8 +159,15 @@ class ColorInline(admin.TabularInline):
 # Admin configuration for Colors
 class ColorAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     model = Colors
-    list_display = ['name', 'id']
+    list_display = ['color', 'hex']
     search_fields = ['name']
+    readonly_fields = ['color']
+
+    def color(self, obj):
+        html = mark_safe(f'<span style="color: {obj.hex}; font-weight: bold">{obj.name}</span>')
+        return html
+
+    color.short_description = ''
 
 
 # Inline admin configuration for Product Images
