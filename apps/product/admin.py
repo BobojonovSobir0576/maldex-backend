@@ -164,7 +164,8 @@ class ColorAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     readonly_fields = ['color']
 
     def color(self, obj):
-        html = mark_safe(f'<span style="color: {obj.hex}; font-weight: bold">{obj.name}</span>')
+        html = mark_safe(f'<span style="color: {obj.hex}; font-weight: bold;'
+                          ' -webkit-text-stroke-width: 0.5px; -webkit-text-stroke-color: black;">{obj.name}</span>')
         return html
 
     color.short_description = ''
