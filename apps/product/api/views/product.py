@@ -78,7 +78,7 @@ class ProductsListView(APIView, PaginationMethod):
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        queryset = queryset.order_by('common_name', '-updated_at').distinct('common_name').distinct()
+        queryset = queryset.order_by('common_name', 'name', '-updated_at').distinct('common_name', 'name')
         serializers = super().page(queryset, ProductListSerializers, request)
         return success_response(serializers.data)
 
