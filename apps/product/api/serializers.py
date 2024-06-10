@@ -123,8 +123,10 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available',
-                  'order', 'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site']
+        fields = [
+            'id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order',
+            'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description'
+        ]
 
     @staticmethod
     def get_category_products_count(category):
