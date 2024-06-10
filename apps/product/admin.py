@@ -72,11 +72,12 @@ class HasImageFilter(SimpleListFilter):
             return queryset.exclude(images_set__image__isnull=False).exclude(images_set__image_url__isnull=False)
         return queryset
 
+
 # Admin configuration for Product Categories
 @admin.register(ProductCategories)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['icon_image', 'name', 'id', 'order', 'get_externals', 'site']
-    fields = ['name', 'parent', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order', 'order_top', 'order_by_site']
+    fields = ['name', 'parent', 'seo_title', 'seo_description', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order_top', 'order_by_site']
     search_fields = ['name']
     readonly_fields = ['icon_image']
     autocomplete_fields = ['parent']
@@ -109,7 +110,7 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(SubCategory)
 class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
     list_display = ['name', 'id', 'parent', 'get_externals', 'site']
-    fields = ['name', 'parent']
+    fields = ['name', 'parent', 'seo_title', 'seo_description',]
     search_fields = ['name']
     list_filter = ['parent']
 

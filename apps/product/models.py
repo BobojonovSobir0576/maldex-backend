@@ -25,6 +25,8 @@ class ProductCategories(models.Model):
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
     site = models.CharField(max_length=255, null=True, blank=True)
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name='SEO Заголовок')
+    seo_description = models.TextField(null=True, blank=True, verbose_name='SEO Описание')
     home = models.BooleanField(default=False,)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
