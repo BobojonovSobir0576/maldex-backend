@@ -153,7 +153,7 @@ class Products(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     home = models.BooleanField(default=False)
     discounts = models.JSONField(null=True, blank=True)
-    common_name = models.CharField(max_length=255, null=True, blank=True)
+    common_name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
     def save(self, *args, **kwargs):
         if not self.common_name:

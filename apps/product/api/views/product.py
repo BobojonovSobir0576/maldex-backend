@@ -1,5 +1,7 @@
 from collections import Counter, defaultdict
-from django.db.models import Count
+
+from django.core.cache import cache
+from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -9,7 +11,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo
+from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo, ProductImage
 from apps.product.api.serializers import ProductDetailSerializers, \
     ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer, ProductListSerializers
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
@@ -72,15 +74,42 @@ class ProductsListView(APIView, PaginationMethod):
                          responses={200: ProductListSerializers(many=True)})
     def get(self, request):
         filter_id = request.query_params.get('filter_id')
+        cache_key = f'products_list_{filter_id}_{request.query_params}'
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            return success_response(cached_data)
+
         filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
-        queryset = Products.objects.filter(
-            filter_products__filter=filter_model) if filter_model else Products.objects.all()
+
+        queryset = Products.objects.all()
+        if filter_model:
+            queryset = queryset.filter(filter_products__filter=filter_model)
+
+        queryset = queryset.select_related('categoryId', 'colorID').prefetch_related(
+            Prefetch('images_set', queryset=ProductImage.objects.only('id', 'image', 'image_url'))
+        ).only(
+            'id', 'name', 'common_name', 'article', 'colorID', 'brand', 'price', 'price_type',
+            'discount_price', 'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'warehouse', 'updated_at'
+        )
+
         filterset = ProductFilter(request.query_params, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        queryset = queryset.order_by('common_name', '-updated_at').distinct('common_name')
-        serializers = super().page(queryset, ProductListSerializers, request)
-        return success_response(serializers.data)
+
+        queryset = queryset.order_by('common_name', '-updated_at')
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ProductListSerializers(page, many=True, context={'request': request})
+            data = self.get_paginated_response(serializer.data).data
+            cache.set(cache_key, data, timeout=60)  # Cache for 1 minutes
+            return success_response(data)
+
+        serializer = ProductListSerializers(queryset, many=True, context={'request': request})
+        data = serializer.data
+        cache.set(cache_key, data, timeout=60)  # Cache for 1 minutes
+        return success_response(data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
                          operation_description="Products create",

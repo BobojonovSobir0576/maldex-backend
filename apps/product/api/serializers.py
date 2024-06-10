@@ -2,6 +2,7 @@ import os
 import time
 
 import requests
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q, Count
 from django.forms import ValidationError
@@ -26,7 +27,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductImage
-        fields = '__all__'
+        fields = ['image_url']
 
     def get_image_url(self, obj):
         return obj.image_url if obj.image_url else self.context['request'].build_absolute_uri(obj.image.url)
@@ -70,15 +71,11 @@ class CategoryListSerializers(serializers.ModelSerializer):
 
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
-    count = serializers.SerializerMethodField()
+    count = serializers.IntegerField(source='products_count', read_only=True)
 
     class Meta:
         model = TertiaryCategory
         fields = ['id', 'name', 'count', 'site']
-
-    @staticmethod
-    def get_count(category):
-        return category.products.all().count()
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -95,7 +92,6 @@ class SubCategorySerializer(serializers.ModelSerializer):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
         descendants_query = Q(categoryId__in=category_ids)
         count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
-
         return count
 
 
@@ -131,16 +127,21 @@ class MainCategorySerializer(serializers.ModelSerializer):
                   'order', 'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site']
 
     @staticmethod
-    def get_count(category):
-        category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-        children = category.children.all()
-        for category3 in children:
-            category_ids += list(category3.children.values_list('id', flat=True))
-
-        # Use aggregation to count products across all levels
-        count = Products.objects.filter(categoryId__in=category_ids).aggregate(
-            total_count=Count('id'))['total_count'] or 0
+    def get_category_products_count(category):
+        cache_key = f"category_products_count_{category.id}"
+        count = cache.get(cache_key)
+        if count is None:
+            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+            children = category.children.all()
+            for category3 in children:
+                category_ids += list(category3.children.values_list('id', flat=True))
+            count = Products.objects.filter(categoryId__in=category_ids).aggregate(
+                total_count=Count('id'))['total_count'] or 0
+            cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
+
+    def get_count(self, category):
+        return self.get_category_products_count(category)
 
 
 class HomeCategorySerializer(serializers.Serializer):
@@ -313,16 +314,16 @@ class ProductDetailSerializers(serializers.ModelSerializer):
                 image_serializer = ProductImageSerializer(data=image_data, context=self.context)
                 image_serializer.is_valid(raise_exception=True)
                 image_serializer.save()
-        
+
         code = validated_data.pop('code', instance.code)
         price = validated_data.pop('price', instance.price)
         discount_price = validated_data.pop('discount_price', instance.discount_price)
         instance.code = code if code and code > 0 else instance.code
         instance.price = price if price and price > 0 else instance.price
         instance.discount_price = discount_price if discount_price else instance.discount_price
-        categoryId = validated_data.pop('categoryId', instance.categoryId)
-        categoryId = categoryId or instance.categoryId
-        instance.categoryId = categoryId
+        category_id = validated_data.pop('categoryId', instance.categoryId)
+        category_id = category_id or instance.categoryId
+        instance.categoryId = category_id
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
@@ -349,13 +350,13 @@ class ProductListSerializers(ProductDetailSerializers):
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
                   'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse']
-        
-        
+
+
 class ColorProductSerializers(ProductDetailSerializers):
 
     class Meta:
         model = Products
-        fields = ['id', 'name', 'images_set', 'article', 'colorID',  'warehouse']
+        fields = ['id', 'name', 'images_set', 'article',  'warehouse']
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
@@ -368,7 +369,8 @@ class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'brand', 'article', 'price', 'price_type',
             'categoryId', 'description', 'discount_price',
-            'is_popular', 'is_hit', 'is_new', 'created_at', 'images', 'category_name', 'images_set', 'warehouse', 'site', 'sizes'
+            'is_popular', 'is_hit', 'is_new', 'created_at', 'images',
+            'category_name', 'images_set', 'warehouse', 'site', 'sizes'
         ]
 
     def create(self, validated_data):
