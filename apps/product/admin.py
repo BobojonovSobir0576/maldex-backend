@@ -24,15 +24,12 @@ class HasSizesFilter(SimpleListFilter):
     parameter_name = 'has_sizes'
 
     def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        )
+        return ('yes', 'Yes'), ('no', 'No')
 
     def queryset(self, request, queryset):
-        if self.value() == 'Yes':
-            return queryset.filter(~Q(sizes='') & ~Q(sizes=None))
-        elif self.value() == 'No':
+        if self.value() == 'yes':
+            return queryset.exclude(Q(sizes='') | Q(sizes=None))
+        elif self.value() == 'no':
             return queryset.filter(Q(sizes='') | Q(sizes=None))
         return queryset
 
@@ -42,14 +39,11 @@ class HasWarehouseFilter(SimpleListFilter):
     parameter_name = 'has_warehouse'
 
     def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        )
+        return ('yes', 'Yes'), ('no', 'No')
 
     def queryset(self, request, queryset):
         if self.value() == 'yes':
-            return queryset.filter(~Q(warehouse='') & ~Q(warehouse=None))
+            return queryset.exclude(Q(warehouse='') | Q(warehouse=None))
         elif self.value() == 'no':
             return queryset.filter(Q(warehouse='') | Q(warehouse=None))
         return queryset
@@ -60,93 +54,82 @@ class HasImageFilter(SimpleListFilter):
     parameter_name = 'has_image'
 
     def lookups(self, request, model_admin):
-        return (
-            ('Yes', 'Yes'),
-            ('No', 'No'),
-        )
+        return ('yes', 'Yes'), ('no', 'No')
 
     def queryset(self, request, queryset):
-        if self.value() == 'Yes':
-            return queryset.filter(images_set__image__isnull=False) | queryset.filter(images_set__image_url__isnull=False)
-        elif self.value() == 'No':
-            return queryset.exclude(images_set__image__isnull=False).exclude(images_set__image_url__isnull=False)
+        if self.value() == 'yes':
+            return queryset.filter(Q(images_set__image__isnull=False) | Q(images_set__image_url__isnull=False))
+        elif self.value() == 'no':
+            return queryset.exclude(Q(images_set__image__isnull=False) & Q(images_set__image_url__isnull=False))
         return queryset
 
 
-# Admin configuration for Product Categories
-@admin.register(ProductCategories)
-class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['icon_image', 'name', 'id', 'order', 'get_externals', 'site']
-    fields = ['name', 'parent', 'seo_title', 'seo_description', 'is_popular', 'is_hit', 'is_new', 'is_available', 'home', 'icon', 'logo', 'order_top', 'order_by_site']
+# Base Category Admin Configuration
+class BaseCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ['name']
     readonly_fields = ['icon_image']
     autocomplete_fields = ['parent']
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request).filter(parent=None)
-        return qs
-
     def get_externals(self, obj):
-        # Display associated external IDs
-        externals = obj.external_categories.all()
-        ids = []
-
-        for ex in externals:
-            ids.append(ex.external_id)
-
-        return ', '.join(ids)
+        return ', '.join(external.external_id for external in obj.external_categories.all())
 
     def icon_image(self, obj):
-        # Display icon image
-        if obj and obj.icon:
+        if obj.icon:
             return mark_safe(f'<img src="{obj.icon.url}" width="30" height="30"/>')
         return "No image"
 
-    icon_image.short_description = 'Product Image'
+    icon_image.short_description = 'Icon'
     get_externals.short_description = 'External IDs'
+
+
+# Admin configuration for Product Categories
+@admin.register(ProductCategories)
+class CategoryAdmin(BaseCategoryAdmin):
+    list_display = ['icon_image', 'name', 'id', 'order', 'get_externals', 'site']
+    fields = [
+        'name', 'parent', 'seo_title', 'seo_description', 'is_popular', 'is_hit',
+        'is_new', 'is_available', 'home', 'icon', 'logo', 'order_top', 'order_by_site'
+    ]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(parent=None)
 
 
 # Admin configuration for Subcategories
 @admin.register(SubCategory)
-class SubCategoryAdmin(CategoryAdmin, ImportExportModelAdmin):
+class SubCategoryAdmin(BaseCategoryAdmin):
     list_display = ['name', 'id', 'parent', 'get_externals', 'site']
-    fields = ['name', 'parent', 'seo_title', 'seo_description',]
-    search_fields = ['name']
+    fields = ['name', 'parent', 'seo_title', 'seo_description']
     list_filter = ['parent']
 
     def get_queryset(self, request):
-        qs = SubCategory.objects.all()
-        return qs
+        return SubCategory.objects.all()
 
     def get_form(self, request, obj=None, **kwargs):
-        # Make parent field required
         form = super().get_form(request, obj, **kwargs)
         form.base_fields['parent'].required = True
         return form
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # Limit parent field queryset to main categories
         if db_field.name == 'parent':
             kwargs['queryset'] = ProductCategories.objects.filter(parent=None)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-# Admin configuration for Tertiary Categories
 @admin.register(TertiaryCategory)
-class TertiaryCategoryAdmin(SubCategoryAdmin, ImportExportModelAdmin):
+class TertiaryCategoryAdmin(SubCategoryAdmin):
 
     def get_queryset(self, request):
-        qs = TertiaryCategory.objects.all()
-        return qs
+        return TertiaryCategory.objects.all()
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # Limit parent field queryset to subcategories
         if db_field.name == 'parent':
             kwargs['queryset'] = SubCategory.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 # Admin configuration for External Categories
+@admin.register(ExternalCategory)
 class ExternalCategoriesAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ['external_id', 'category']
     autocomplete_fields = ['category']
@@ -158,18 +141,17 @@ class ColorInline(admin.TabularInline):
 
 
 # Admin configuration for Colors
-class ColorAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    model = Colors
-    list_display = ['color', 'hex']
+@admin.register(Colors)
+class ColorAdmin(ImportExportModelAdmin):
+    list_display = ['display_color', 'hex']
     search_fields = ['name']
-    readonly_fields = ['color']
+    readonly_fields = ['display_color']
 
-    def color(self, obj):
-        html = mark_safe(f'<span style="color: {obj.hex}; font-weight: bold;'
-                         f' -webkit-text-stroke-width: 0.5px; -webkit-text-stroke-color: black;">{obj.name}</span>')
-        return html
+    def display_color(self, obj):
+        return mark_safe(f'<span style="color: {obj.hex}; font-weight: bold;'
+                         f'-webkit-text-stroke-width: 0.5px; -webkit-text-stroke-color: black;">{obj.name}</span>')
 
-    color.short_description = ''
+    display_color.short_description = 'Color'
 
 
 # Inline admin configuration for Product Images
@@ -189,65 +171,56 @@ class ProductImageInline(admin.TabularInline):
 
 
 # Admin configuration for Products
-class ProductsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'id', 'article', 'price', 'site', 'category_hierarchy', 'has_image', 'has_sizes', 'has_warehouse',
-                    'colorID']
+@admin.register(Products)
+class ProductsAdmin(ImportExportModelAdmin):
+    list_display = [
+        'name', 'id', 'article', 'price', 'site', 'category_hierarchy',
+        'has_image', 'has_sizes', 'has_warehouse', 'colorID'
+    ]
     search_fields = ['id', 'name', 'categoryId__name']
     autocomplete_fields = ['categoryId']
     fields = [
-        'name', 'categoryId', 'code', 'article', 'product_size', 'material', 'description',
-        'brand', 'price', 'price_type', 'discount_price', 'weight', 'barcode', 'ondemand',
-        'moq', 'days', 'is_popular', 'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'colorID', 'prints'
+        'name', 'categoryId', 'code', 'article', 'product_size', 'material',
+        'description', 'brand', 'price', 'price_type', 'discount_price',
+        'weight', 'barcode', 'ondemand', 'moq', 'days', 'is_popular',
+        'is_hit', 'is_new', 'pack', 'warehouse', 'site', 'sizes', 'colorID', 'prints'
     ]
     inlines = [ProductImageInline]
-    list_filter = ['is_new', 'is_popular', 'is_hit', 'site', HasImageFilter, HasSizesFilter, HasWarehouseFilter]
+    list_filter = [
+        'is_new', 'is_popular', 'is_hit', 'site', HasImageFilter,
+        HasSizesFilter, HasWarehouseFilter
+    ]
     list_per_page = 500
     ordering = ('-created_at',)
 
     def category_hierarchy(self, obj):
-        # Display hierarchy of categories
-        names = []
+        categories = []
         category = obj.categoryId
-        while category is not None:
-            names.append(category.name)
+        while category:
+            categories.append(category.name)
             category = category.parent
-        return " > ".join(names[::-1])
+        return " > ".join(reversed(categories))
 
     category_hierarchy.short_description = 'Category Hierarchy'
 
-    def product_image(self, obj):
-        # Display product image
-        if obj and obj.productID and obj.productID.image:
-            return mark_safe(f'<img src="{obj.productID.image.url}" width="100"/>')
-        return "No image"
-
-    product_image.short_description = 'Product Image'
-
     def has_image(self, obj):
-        # Check if the product has an image or image URL
-        if obj.images_set.exists():
-            for image in obj.images_set.all():
-                if image.image or image.image_url:
-                    return "Yes"
-        return "No"
+        return "Yes" if obj.images_set.filter(Q(image__isnull=False) | Q(image_url__isnull=False)).exists() else "No"
 
     has_image.short_description = 'Has Image'
 
     def has_sizes(self, obj):
-        if obj.sizes:
-            return 'Yes'
-        return 'No'
+        return 'Yes' if obj.sizes else 'No'
 
-    has_sizes.short_description = 'Has sizes'
+    has_sizes.short_description = 'Has Sizes'
 
     def has_warehouse(self, obj):
-        if obj.warehouse:
-            return 'Yes'
-        return 'No'
+        return 'Yes' if obj.warehouse else 'No'
 
-    has_warehouse.short_description = 'Has warehouse'
+    has_warehouse.short_description = 'Has Warehouse'
 
-class ProductImageAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+
+@admin.register(ProductImage)
+class ProductImageAdmin(ImportExportModelAdmin):
     pass
 
 
@@ -255,10 +228,3 @@ class ProductImageAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 class SiteLogoAdmin(admin.ModelAdmin):
     list_display = ['site', 'logo']
     fields = ['site', 'logo']
-
-
-# Register models with the admin site
-admin.site.register(Products, ProductsAdmin)
-admin.site.register(Colors, ColorAdmin)
-admin.site.register(ProductImage, ProductImageAdmin)
-admin.site.register(ExternalCategory, ExternalCategoriesAdmin)

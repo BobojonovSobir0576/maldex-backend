@@ -13,12 +13,10 @@ class SubCategoryListFilter(SimpleListFilter):
     parameter_name = 'subcategory'
 
     def lookups(self, request, model_admin):
-        """Return a list of tuples for the filter options."""
         subcategories = ProductCategories.objects.filter(parent__isnull=False, parent__parent__isnull=True)
         return [(subcategory.id, subcategory.name) for subcategory in subcategories]
 
     def queryset(self, request, queryset):
-        """Return the filtered queryset based on the selected subcategory."""
         if self.value():
             return queryset.filter(parent_id=self.value())
         return queryset
@@ -30,12 +28,10 @@ class MainCategoryListFilter(SimpleListFilter):
     parameter_name = 'main_category'
 
     def lookups(self, request, model_admin):
-        """Return a list of tuples for the filter options."""
         main_categories = ProductCategories.objects.filter(parent__isnull=True)
         return [(cat.id, cat.name) for cat in main_categories]
 
     def queryset(self, request, queryset):
-        """Return the filtered queryset based on the selected main category."""
         if self.value():
             return queryset.filter(parent__id=self.value())
         return queryset
@@ -43,9 +39,9 @@ class MainCategoryListFilter(SimpleListFilter):
 
 class ProductCategoryFilter(filters.FilterSet):
     """FilterSet for filtering product categories."""
-    popular_category = filters.BooleanFilter(method='filter_popular_categories', label="Filter by Popular categories")
-    new_category = filters.BooleanFilter(method='filter_new_categories', label="Filter by New categories")
-    hits_category = filters.BooleanFilter(method='filter_hits_categories', label="Filter by Hits categories")
+    popular_category = filters.BooleanFilter(method='filter_popular_categories', label="Popular categories")
+    new_category = filters.BooleanFilter(method='filter_new_categories', label="New categories")
+    hits_category = filters.BooleanFilter(method='filter_hits_categories', label="Hits categories")
     is_available = filters.BooleanFilter(field_name='is_available')
     search = filters.CharFilter(field_name='name', lookup_expr='icontains')
     site = filters.CharFilter(field_name='site', lookup_expr='exact')
@@ -55,22 +51,19 @@ class ProductCategoryFilter(filters.FilterSet):
         fields = ['is_popular', 'is_new', 'is_hit', 'is_available', 'search']
 
     @staticmethod
-    def filter_popular_categories(queryset, name, value):
-        """Filter queryset for popular categories."""
+    def filter_popular_categories(queryset, _, value):
         if value:
             return queryset.filter(is_popular=True)[:15]
         return queryset
 
     @staticmethod
-    def filter_new_categories(queryset, name, value):
-        """Filter queryset for new categories."""
+    def filter_new_categories(queryset, _, value):
         if value:
             return queryset.filter(is_new=True)[:15]
         return queryset
 
     @staticmethod
-    def filter_hits_categories(queryset, name, value):
-        """Filter queryset for hit categories."""
+    def filter_hits_categories(queryset, _, value):
         if value:
             return queryset.filter(is_hit=True)[:15]
         return queryset
@@ -79,18 +72,18 @@ class ProductCategoryFilter(filters.FilterSet):
 class CategoryFilter(filters.NumberFilter):
     """Filter for product categories."""
     def filter(self, qs, value):
-        """Filter queryset based on the selected category."""
-        qs = qs.filter(
-            Q(categoryId__id=value) |
-            Q(categoryId__parent__id=value) |
-            Q(categoryId__parent__parent__id=value)
-        ) if value else qs
+        if value:
+            subcategories = ProductCategories.objects.filter(
+                Q(parent_id=value) | Q(parent__parent_id=value)
+            ).values_list('id', flat=True)
+            category_ids = list(subcategories) + [value]
+            return qs.filter(categoryId__in=category_ids)
         return qs
 
 
 class RemovePunctuation(Func):
     function = 'REPLACE'
-    
+
     def __init__(self, expression, **extra):
         for mark in punctuation:
             expression = Replace(expression, Value(mark), Value(''))
@@ -120,7 +113,7 @@ class ProductFilter(filters.FilterSet):
     def remove_punctuation(text):
         return text.translate(str.maketrans('', '', '-,/'))
 
-    def filter_search(self, queryset, name, value):
+    def filter_search(self, queryset, _, value):
         value = self.remove_punctuation(value)
         queryset = queryset.annotate(
             name_no_comma=Replace(
@@ -130,79 +123,60 @@ class ProductFilter(filters.FilterSet):
         return queryset.filter(Q(name_no_comma__icontains=value))
 
     @staticmethod
-    def filter_material(queryset, name, value):
+    def filter_material(queryset, _, value):
         values = value.split(',')
-        filtered_queryset = queryset.filter(material__in=values)
-        return filtered_queryset
+        return queryset.filter(material__in=values)
 
     @staticmethod
-    def filter_brand(queryset, name, value):
+    def filter_brand(queryset, _, value):
         values = value.split(',')
-        filtered_queryset = queryset.filter(brand__in=values)
-        return filtered_queryset
+        return queryset.filter(brand__in=values)
 
     @staticmethod
-    def filter_warehouse(queryset, name, value):
+    def filter_warehouse(queryset, _, value):
         if value == 'Европа':
-            lookup = '__'.join([name, '1', 'quantity', 'gt'])
+            return queryset.filter(warehouse__1__quantity__gt=0)
         elif value == 'Москва':
-            lookup = '__'.join([name, '0', 'quantity', 'gt'])
-        else:
-            return Products.objects.none()
-        filtered_queryset = queryset.filter(**{lookup: 0})
-        return filtered_queryset
+            return queryset.filter(warehouse__0__quantity__gt=0)
+        return Products.objects.none()
 
     @staticmethod
-    def filter_price(queryset, name, value):
-        if ',' not in value:
-            filtered_queryset = queryset.filter(price__gte=value)
-            return filtered_queryset
-        start, end = map(int, value.split(','))
-        filtered_queryset = queryset.filter(price__gte=start, price__lte=end)
-        return filtered_queryset
+    def filter_price(queryset, _, value):
+        if ',' in value:
+            start, end = map(int, value.split(','))
+            return queryset.filter(price__gte=start, price__lte=end)
+        return queryset.filter(price__gte=value)
 
     @staticmethod
-    def filter_quantity(queryset, name, value):
-        filtered_queryset = queryset.filter(warehouse__0__quantity__gte=int(value))
-        return filtered_queryset
+    def filter_quantity(queryset, _, value):
+        return queryset.filter(warehouse__0__quantity__gte=int(value))
 
     @staticmethod
-    def filter_size(queryset, name, value):
-        filtered_queryset = queryset.filter(sizes__has_key=value)
-        return filtered_queryset
+    def filter_size(queryset, _, value):
+        return queryset.filter(sizes__has_key=value)
 
     @staticmethod
-    def filter_color(queryset, name, value):
-        filtered_queryset = queryset.filter(colorID__name__icontains=value)
-        return filtered_queryset
+    def filter_color(queryset, _, value):
+        return queryset.filter(colorID__name__icontains=value)
 
     @staticmethod
-    def filter_gender(queryset, name, value):
+    def filter_gender(queryset, _, value):
         if value == 'male':
             return queryset.filter(name__icontains='мужс')
         elif value == 'female':
             return queryset.filter(name__icontains='женс')
-        else:
-            return queryset
+        return queryset
 
     @staticmethod
-    def filter_print(queryset, name, value):
-        filtered_ids = []
-        for item in queryset:
-            if item.prints:
-                if isinstance(item.prints, list):
-                    for print_item in item.prints:
-                        if print_item.get("@name") == 'Метод нанесения' and print_item.get("#text") == value:
-                            filtered_ids.append(item.pk)
-                elif isinstance(item.prints, dict):
-                    if item.prints.get("@name") == 'Метод нанесения' and item.prints.get("#text") == value:
-                        filtered_ids.append(item.pk)
-                else:
-                    if item.prints == value:
-                        filtered_ids.append(item.pk)
+    def filter_print(queryset, _, value):
+        filtered_ids = [
+            item.pk for item in queryset if any(
+                print_item.get("@name") == 'Метод нанесения' and print_item.get("#text") == value
+                for print_item in (item.prints if isinstance(item.prints, list) else [item.prints])
+            )
+        ]
         return queryset.filter(pk__in=filtered_ids)
 
     class Meta:
-        # model = Products
+        model = Products
         fields = []
-        # fields = ['category_id', 'search', 'brand', 'material', 'warehouse', 'is_new', 'is_hit', 'is_popular', 'is_available']

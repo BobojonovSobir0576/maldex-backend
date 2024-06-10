@@ -10,24 +10,28 @@ from apps.product.managers import AllCategoryManager
 class ProductCategories(models.Model):
     """Model to represent product categories."""
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
-    order = models.PositiveSmallIntegerField(null=True, blank=True)
-    order_top = models.PositiveSmallIntegerField(null=True, blank=True)
-    order_by_site = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Порядок сайта')
     name = models.CharField(max_length=150, verbose_name="Название категории")
     title = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+
     slug = models.SlugField(max_length=255, null=True, blank=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
+
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
     is_hit = models.BooleanField(default=False, verbose_name="Хит?")
     is_new = models.BooleanField(default=False, verbose_name="Новый?")
     is_available = models.BooleanField(default=False, verbose_name="Доступен на сайте?")
+
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
     site = models.CharField(max_length=255, null=True, blank=True)
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name='SEO Заголовок')
     seo_description = models.TextField(null=True, blank=True, verbose_name='SEO Описание')
-    home = models.BooleanField(default=False,)
+
+    order = models.PositiveSmallIntegerField(null=True, blank=True)
+    order_top = models.PositiveSmallIntegerField(null=True, blank=True)
+    order_by_site = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='Порядок сайта')
+    home = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
 
@@ -41,22 +45,16 @@ class ProductCategories(models.Model):
         """Override save method to generate ID and order if not provided."""
         if not self.id:
             last_instance = ProductCategories.objects.all().order_by('id').last()
-            next_id = 1 if not last_instance else int(last_instance.id) + 1
-            self.id = f"{next_id:010d}"
+            next_id = 1 if not last_instance else last_instance.id + 1
+            self.id = next_id
 
         if not self.order and self.is_available and self.parent is None:
             popular_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
-            if popular_categories.exists():
-                self.order = popular_categories.last().order + 1
-            else:
-                self.order = 1
+            self.order = (popular_categories.last().order + 1) if popular_categories.exists() else 1
 
         if not self.order_top and self.is_available and self.is_popular and self.parent is None:
             popular_categories = ProductCategories.objects.filter(is_popular=True, is_available=True, parent=None).order_by('order_top')
-            if popular_categories.exists():
-                self.order_top = popular_categories.last().order_top + 1
-            else:
-                self.order_top = 1
+            self.order_top = (popular_categories.last().order_top + 1) if popular_categories.exists() else 1
 
         super().save(*args, **kwargs)
 
