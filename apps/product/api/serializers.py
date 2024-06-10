@@ -250,13 +250,14 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_colors(self, product):
-        similar_products = Products.objects.filter(common_name=product.common_name)
-        colors = [{
-                      'color': product.colorID.name,
-                      'hex': product.colorID.hex,
-                      'product': ColorProductSerializers(product, context=self.context).data
-                  } if product.colorID else
-                  {'color': None, 'product': ColorProductSerializers(product).data, 'hex': '#ffffff'} for product in similar_products]
+        similar_products = Products.objects.filter(common_name=product.common_name).select_related('colorID')
+        colors = [
+            {
+                'color': product.colorID.name if product.colorID else None,
+                'hex': product.colorID.hex if product.colorID else '#ffffff',
+                'product': ColorProductSerializers(product, context=self.context).data
+            } for product in similar_products
+        ]
         return colors
 
     @staticmethod
@@ -285,14 +286,10 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         product_instance = Products.objects.create(**validated_data, colorID=color_instance)
         for image_data in images:
             image_data['productID'] = product_instance.id
-            image_data['colorID'] = {
-                'name': image_data['color'].lower()
-            }
-            image_serializer = ProductImageSerializer(data=image_data, context={'request': self.context['request']})
-            if image_serializer.is_valid():
-                image_serializer.save()
-            else:
-                raise ValueError(image_serializer.errors)
+            image_data['colorID'] = {'name': image_data['color'].lower()}
+            image_serializer = ProductImageSerializer(data=image_data, context=self.context)
+            image_serializer.is_valid(raise_exception=True)
+            image_serializer.save()
 
         return product_instance
 
@@ -312,15 +309,10 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         for image_data in images_data:
             if image_data['image']:
                 image_data['productID'] = instance.id
-                image_data['colorID'] = {
-                    'name': image_data['color'].lower()
-                }
-                image_serializer = ProductImageSerializer(data=image_data, context={'color': image_data['color'],
-                                                                                    'request': self.context['request']})
-                if image_serializer.is_valid():
-                    image_serializer.save()
-                else:
-                    raise ValueError(image_serializer.errors)
+                image_data['colorID'] = {'name': image_data['color'].lower()}
+                image_serializer = ProductImageSerializer(data=image_data, context=self.context)
+                image_serializer.is_valid(raise_exception=True)
+                image_serializer.save()
         
         code = validated_data.pop('code', instance.code)
         price = validated_data.pop('price', instance.price)
