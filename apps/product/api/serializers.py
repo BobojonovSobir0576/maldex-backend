@@ -338,6 +338,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     def get_images_set(self, obj):
         images = obj.images_set.all()
         return [{
+            'id': image.id,
             'image_url': image.image_url if image.image_url else
             self.context['request'].build_absolute_uri(image.image.url),
         } for image in images]
