@@ -6,6 +6,13 @@ from apps.banner.utils import create_banner_products, update_banner_products, \
 from apps.product.api.serializers import ProductDetailSerializers
 
 
+class BannerProductSerializers(ProductDetailSerializers):
+
+    class Meta:
+        model = Products
+        fields = ['id', 'name', 'images_set', 'site']
+
+
 class BannerProductListSerializer(serializers.ModelSerializer):
     productID = serializers.SerializerMethodField()
     product_id = serializers.IntegerField(write_only=True)
@@ -21,7 +28,7 @@ class BannerProductListSerializer(serializers.ModelSerializer):
         return instance
 
     def get_productID(self, obj):
-        data = ProductDetailSerializers(obj.productID, context=self.context)
+        data = BannerProductSerializers(obj.productID, context=self.context)
         return data.data
 
 
