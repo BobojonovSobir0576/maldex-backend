@@ -253,7 +253,8 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_colors(self, product):
-        similar_products = Products.objects.filter(common_name=product.common_name).select_related('colorID').distinct('article')
+        similar_products = Products.objects.filter(
+            common_name=product.common_name).select_related('colorID').order_by('article').distinct('article')
         colors = [
             {
                 'color': product.colorID.name if product.colorID else None,
