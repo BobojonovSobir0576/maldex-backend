@@ -81,12 +81,12 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 class SubCategorySerializer(serializers.ModelSerializer):
     children = TertiaryCategorySerializer(read_only=True, many=True)
     count = serializers.SerializerMethodField()
-    new_count = serializers.SerializerMethodField()
+    # new_count = serializers.SerializerMethodField()
     """ Sub Category details """
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'count', 'new_count', 'children', 'site']
+        fields = ['id', 'name', 'count', 'children', 'site']
 
     @staticmethod
     def get_count(subcategory):
