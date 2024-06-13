@@ -72,15 +72,10 @@ class CategoryListSerializers(serializers.ModelSerializer):
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
     count = serializers.IntegerField(source='products_count', read_only=True)
-    new_count = serializers.SerializerMethodField()
 
     class Meta:
         model = TertiaryCategory
         fields = ['id', 'name', 'count', 'new_count', 'site']
-
-    @staticmethod
-    def get_new_count(category):
-        return category.products.filter(added_recently=True).count()
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -94,18 +89,16 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'new_count', 'children', 'site']
 
     @staticmethod
-    def get_count(category):
-        category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-        descendants_query = Q(categoryId__in=category_ids)
-        count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
-        return count
+    def get_count(subcategory):
+        return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
+            Q(categoryId=subcategory) | Q(categoryId__parent=subcategory)
+        ).aggregate(total=Count('id'))['total'] or 0
 
     @staticmethod
-    def get_new_count(category):
-        category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-        descendants_query = Q(categoryId__in=category_ids)
-        count = Products.objects.filter(descendants_query, added_recently=True).aggregate(total_count=Count('id'))['total_count'] or 0
-        return count
+    def get_new_count(subcategory):
+        return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
+            Q(categoryId=subcategory) | Q(categoryId__parent=subcategory), added_recently=True
+        ).aggregate(total=Count('id'))['total'] or 0
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -147,12 +140,10 @@ class MainCategorySerializer(serializers.ModelSerializer):
         cache_key = f"category_products_count_{category.id}"
         count = cache.get(cache_key)
         if count is None:
-            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-            children = category.children.all()
-            for category3 in children:
-                category_ids += list(category3.children.values_list('id', flat=True))
-            count = Products.objects.filter(categoryId__in=category_ids).aggregate(
-                total_count=Count('id'))['total_count'] or 0
+            count = 0
+            count += Products.objects.filter(categoryId=category).count()
+            count += Products.objects.filter(categoryId__parent=category).count()
+            count += Products.objects.filter(categoryId__parent__parent=category).count()
             cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
 
@@ -161,12 +152,10 @@ class MainCategorySerializer(serializers.ModelSerializer):
         cache_key = f"category__new_products_count_{category.id}"
         count = cache.get(cache_key)
         if count is None:
-            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
-            children = category.children.all()
-            for category3 in children:
-                category_ids += list(category3.children.values_list('id', flat=True))
-            count = Products.objects.filter(categoryId__in=category_ids, added_recently=True).aggregate(
-                total_count=Count('id'))['total_count'] or 0
+            count = 0
+            count += Products.objects.filter(categoryId=category, added_recently=True).count()
+            count += Products.objects.filter(categoryId__parent=category, added_recently=True).count()
+            count += Products.objects.filter(categoryId__parent__parent=category, added_recently=True).count()
             cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
 
