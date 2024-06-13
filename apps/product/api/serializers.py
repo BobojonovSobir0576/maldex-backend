@@ -75,7 +75,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TertiaryCategory
-        fields = ['id', 'name', 'count', 'new_count', 'site']
+        fields = ['id', 'name', 'count', 'site']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
