@@ -80,7 +80,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_new_count(category):
-        category.products.filter(added_recently=True).count()
+        return category.products.filter(added_recently=True).count()
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
