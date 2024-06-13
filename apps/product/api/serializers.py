@@ -96,9 +96,10 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_new_count(subcategory):
-        return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
-            Q(categoryId=subcategory) | Q(categoryId__parent=subcategory), added_recently=True
-        ).aggregate(total=Count('id'))['total'] or 0
+        count = 0
+        count += Products.objects.filter(categoryId=subcategory, added_recently=True).count()
+        count += Products.objects.filter(categoryId__parent=subcategory, added_recently=True).count()
+        return count
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
