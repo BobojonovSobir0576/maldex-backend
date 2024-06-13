@@ -28,6 +28,7 @@ urlpatterns = [
     path('categories/', category.CategoryListView.as_view()),  # List view for all categories
     path('categories/move/', CategoryMove.as_view()),  # List view for all categories
     path('category/<int:pk>/', category.CategoryDetailView.as_view()),  # Detail view for a specific category
+    path('category/<int:pk>/seen/', category.CategorySeenView.as_view()),  # Detail view for a specific category
     path('home-category/', category.HomeCategoryView.as_view()),  # View to get home category
 
     # Product Filters

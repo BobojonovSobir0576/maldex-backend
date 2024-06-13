@@ -260,3 +260,11 @@ class CategoryMove(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_200_OK)
+
+
+class CategorySeenView(APIView):
+
+    def post(self, request, pk):
+        category = get_object_or_404(ProductCategories, pk=pk)
+        category.products.update(added_recently=False)
+        return success_response('OK')

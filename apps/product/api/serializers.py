@@ -72,15 +72,21 @@ class CategoryListSerializers(serializers.ModelSerializer):
 class TertiaryCategorySerializer(serializers.ModelSerializer):
     """ Tertiary Category details """
     count = serializers.IntegerField(source='products_count', read_only=True)
+    new_count = serializers.SerializerMethodField()
 
     class Meta:
         model = TertiaryCategory
         fields = ['id', 'name', 'count', 'site']
 
+    @staticmethod
+    def get_new_count(category):
+        category.products.filter(added_recently=True).count()
+
 
 class SubCategorySerializer(serializers.ModelSerializer):
     children = TertiaryCategorySerializer(read_only=True, many=True)
     count = serializers.SerializerMethodField()
+    new_count = serializers.SerializerMethodField()
     """ Sub Category details """
 
     class Meta:
@@ -92,6 +98,13 @@ class SubCategorySerializer(serializers.ModelSerializer):
         category_ids = [category.id] + list(category.children.values_list('id', flat=True))
         descendants_query = Q(categoryId__in=category_ids)
         count = Products.objects.filter(descendants_query).aggregate(total_count=Count('id'))['total_count'] or 0
+        return count
+
+    @staticmethod
+    def get_new_count(category):
+        category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+        descendants_query = Q(categoryId__in=category_ids)
+        count = Products.objects.filter(descendants_query, added_recently=True).aggregate(total_count=Count('id'))['total_count'] or 0
         return count
 
 
@@ -115,6 +128,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField(read_only=True)
     name = serializers.CharField(required=False)
     count = serializers.SerializerMethodField()
+    new_count = serializers.SerializerMethodField()
 
     @staticmethod
     def get_children(category):
@@ -142,8 +156,25 @@ class MainCategorySerializer(serializers.ModelSerializer):
             cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
 
+    @staticmethod
+    def get_new_products_count(category):
+        cache_key = f"category__new_products_count_{category.id}"
+        count = cache.get(cache_key)
+        if count is None:
+            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+            children = category.children.all()
+            for category3 in children:
+                category_ids += list(category3.children.values_list('id', flat=True))
+            count = Products.objects.filter(categoryId__in=category_ids, added_recently=True).aggregate(
+                total_count=Count('id'))['total_count'] or 0
+            cache.set(cache_key, count, timeout=60)  # Cache for 1 min
+        return count
+
     def get_count(self, category):
         return self.get_category_products_count(category)
+
+    def get_new_count(self, category):
+        return self.get_new_products_count(category)
 
 
 class HomeCategorySerializer(serializers.Serializer):

@@ -155,6 +155,8 @@ class Products(models.Model):
     discounts = models.JSONField(null=True, blank=True)
     common_name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
+    added_recently = models.BooleanField(default=True)
+
     def save(self, *args, **kwargs):
         if not self.common_name:
             color_name = self.colorID.name.lower()
