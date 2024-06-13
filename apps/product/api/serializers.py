@@ -189,10 +189,9 @@ class HomeCategorySerializer(serializers.Serializer):
         children = category.children.all().filter(home=True)
         return SubCategorySerializer(children, many=True).data
 
-    @staticmethod
-    def get_products(category):
+    def get_products(self, category):
         products = Products.objects.filter(home=True)
-        return ProductDetailSerializers(products, many=True).data
+        return ProductDetailSerializers(products, many=True, context=self.context).data
 
     def create(self, validated_data):
         category_id = validated_data.pop('category_id', None)
