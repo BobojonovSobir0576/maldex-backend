@@ -243,7 +243,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     categories = serializers.SerializerMethodField(read_only=True)
     colorID = ColorSerializer(read_only=True)
-    color = serializers.CharField(write_only=True)
+    color = serializers.CharField(write_only=True, required=False)
     colors = serializers.SerializerMethodField(read_only=True)
     items = serializers.ListField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
@@ -299,7 +299,6 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         images_data = validated_data.pop('images', [])
-        print(validated_data.get('items'))
         items = validated_data.pop('items', instance.discounts)
         discounts = []
         if items and items not in ['[]', '', ' ', [''], ['[]']]:
