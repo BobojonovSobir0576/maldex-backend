@@ -326,6 +326,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         category_id = validated_data.pop('categoryId', instance.categoryId)
         category_id = category_id or instance.categoryId
         instance.categoryId = category_id
+        Products.objects.filter(common_name=instance.common_name).update(categoryId=category_id)
         category = instance.categoryId
         while category and category.parent:
             category = category.parent
