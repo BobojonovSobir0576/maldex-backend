@@ -97,7 +97,10 @@ class ProductsListView(APIView, PaginationMethod):
         if filterset.is_valid():
             queryset = filterset.qs
 
-        queryset = queryset.order_by('common_name', '-updated_at').distinct('common_name')
+        if not request.query_params.get('search'):
+            queryset = queryset.order_by('common_name', '-updated_at').distinct('common_name')
+        else:
+            queryset = queryset.order_by('common_name', '-updated_at')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
