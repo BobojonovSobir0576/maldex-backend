@@ -90,16 +90,16 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_count(subcategory):
-        return Products.objects.prefetch_related('categoryId').select_related('categoryId').filter(
-            Q(categoryId=subcategory) | Q(categoryId__parent=subcategory)
-        ).aggregate(total=Count('id'))['total'] or 0
+        return Products.objects.filter(
+                Q(categoryId=subcategory) | Q(categoryId__parent=subcategory)
+            ).count()
 
     @staticmethod
     def get_new_count(subcategory):
-        count = 0
-        count += Products.objects.filter(categoryId=subcategory, added_recently=True).count()
-        count += Products.objects.filter(categoryId__parent=subcategory, added_recently=True).count()
-        return count
+        return Products.objects.filter(
+                Q(categoryId=subcategory, added_recently=True) |
+                Q(categoryId__parent=subcategory, added_recently=True)
+            ).count()
 
 
 class SubCategoryWithCountSerializer(serializers.ModelSerializer):
@@ -141,10 +141,12 @@ class MainCategorySerializer(serializers.ModelSerializer):
         cache_key = f"category_products_count_{category.id}"
         count = cache.get(cache_key)
         if count is None:
-            count = 0
-            count += Products.objects.filter(categoryId=category).count()
-            count += Products.objects.filter(categoryId__parent=category).count()
-            count += Products.objects.filter(categoryId__parent__parent=category).count()
+            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+            children = category.children.all()
+            for category3 in children:
+                category_ids += list(category3.children.values_list('id', flat=True))
+            count = Products.objects.filter(categoryId__in=category_ids).aggregate(
+                total_count=Count('id'))['total_count'] or 0
             cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
 
@@ -153,10 +155,12 @@ class MainCategorySerializer(serializers.ModelSerializer):
         cache_key = f"category__new_products_count_{category.id}"
         count = cache.get(cache_key)
         if count is None:
-            count = 0
-            count += Products.objects.filter(categoryId=category, added_recently=True).count()
-            count += Products.objects.filter(categoryId__parent=category, added_recently=True).count()
-            count += Products.objects.filter(categoryId__parent__parent=category, added_recently=True).count()
+            category_ids = [category.id] + list(category.children.values_list('id', flat=True))
+            children = category.children.all()
+            for category3 in children:
+                category_ids += list(category3.children.values_list('id', flat=True))
+            count = Products.objects.filter(categoryId__in=category_ids, added_recently=True).aggregate(
+                total_count=Count('id'))['total_count'] or 0
             cache.set(cache_key, count, timeout=60)  # Cache for 1 min
         return count
 

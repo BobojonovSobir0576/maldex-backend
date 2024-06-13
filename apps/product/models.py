@@ -179,6 +179,10 @@ class Products(models.Model):
         ordering = ('-updated_at',)
         verbose_name = "Продукт"
         verbose_name_plural = "Продукт"
+        #
+        indexes = [
+
+        ]
 
 
 class ProductImage(models.Model):
@@ -188,7 +192,6 @@ class ProductImage(models.Model):
                                   related_name='images_set', verbose_name='Код товара')
     image = models.ImageField(upload_to='media/product/', verbose_name="изображения", null=True, blank=True)
     image_url = models.URLField(max_length=1024, null=True, blank=True, verbose_name='URL изображения')
-
 
     def __str__(self):
         return self.productID.name if self.productID and hasattr(self.productID, 'name') else str(self.id)
