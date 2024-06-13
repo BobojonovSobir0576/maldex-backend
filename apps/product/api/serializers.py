@@ -76,7 +76,7 @@ class TertiaryCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TertiaryCategory
-        fields = ['id', 'name', 'count', 'site']
+        fields = ['id', 'name', 'count', 'new_count', 'site']
 
     @staticmethod
     def get_new_count(category):
@@ -91,7 +91,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'name', 'count', 'children', 'site']
+        fields = ['id', 'name', 'count', 'new_count', 'children', 'site']
 
     @staticmethod
     def get_count(category):
@@ -138,7 +138,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategories
         fields = [
-            'id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order',
+            'id', 'parent', 'name', 'count', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order', 'new_count',
             'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description'
         ]
 
