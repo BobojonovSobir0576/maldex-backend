@@ -10,19 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='SiteLogo',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site', models.CharField(max_length=256)),
-                ('logo', models.ImageField(upload_to='site_logos/')),
-            ],
-            options={
-                'verbose_name': 'Site Logo',
-                'verbose_name_plural': 'Site Logos',
-                'db_table': 'site_logos',
-            },
-        ),
         migrations.AddField(
             model_name='productcategories',
             name='products_count',
