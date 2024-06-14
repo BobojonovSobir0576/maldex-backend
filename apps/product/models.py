@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -34,6 +36,8 @@ class ProductCategories(models.Model):
     home = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+    products_count = models.IntegerField(default=0)
+    recently_products_count = models.IntegerField(default=0)
 
     objects = AllCategoryManager()
     all_levels = AllCategoryManager()
@@ -169,6 +173,19 @@ class Products(models.Model):
             last_instance = Products.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else int(last_instance.id) + 1
             self.id = f"{next_id:010d}"
+
+        category = self.categoryId
+        while category:
+            category.products_count = Products.objects.filter(
+                Q(categoryId=category) | Q(categoryId__parent=category) |
+                Q(categoryId__parent__parent=category)
+            ).count()
+            category.recently_products_count = Products.objects.filter(
+                Q(categoryId=category) | Q(categoryId__parent=category) |
+                Q(categoryId__parent__parent=category), added_recently=True
+            ).count()
+            category.save()
+            category = category.parent
         super(Products, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -179,10 +196,6 @@ class Products(models.Model):
         ordering = ('-updated_at',)
         verbose_name = "Продукт"
         verbose_name_plural = "Продукт"
-        #
-        indexes = [
-
-        ]
 
 
 class ProductImage(models.Model):
