@@ -16,6 +16,20 @@ from apps.product.models import *
 from apps.product.proxy import *
 
 
+def recounting(category):
+    while category:
+        category.products_count = Products.objects.filter(
+            Q(categoryId=category) | Q(categoryId__parent=category) |
+            Q(categoryId__parent__parent=category)
+        ).count()
+        category.recently_products_count = Products.objects.filter(
+            Q(categoryId=category) | Q(categoryId__parent=category) |
+            Q(categoryId__parent__parent=category), added_recently=True
+        ).count()
+        category.save()
+        category = category.parent
+
+
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Colors
@@ -107,7 +121,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_children(category):
-        children = category.children
+        children = category.childrena.all()
         return SubCategorySerializer(children, many=True).data
 
     class Meta:
@@ -437,7 +451,10 @@ class CategoryMoveSerializer(serializers.Serializer):
             for sub in cat.children.all():
                 new_sub = ProductCategories.objects.create(name=sub.name, parent=category)
                 sub.products.update(categoryId=new_sub)
+                recounting(sub)
+            recounting(cat)
 
+        recounting(category)
         return category
 
     @staticmethod
