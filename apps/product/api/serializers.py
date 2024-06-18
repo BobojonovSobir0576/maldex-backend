@@ -279,10 +279,11 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             image_serializer = ProductImageSerializer(data=image_data, context=self.context)
             image_serializer.is_valid(raise_exception=True)
             image_serializer.save()
-
+        recounting(product_instance.categoryId)
         return product_instance
 
     def update(self, instance, validated_data):
+        recounting(instance.categoryId)
         images_data = validated_data.pop('images', [])
         items = validated_data.pop('items', instance.discounts)
         discounts = []
@@ -311,6 +312,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         category_id = validated_data.pop('categoryId', instance.categoryId)
         category_id = category_id or instance.categoryId
         instance.categoryId = category_id
+        recounting(category_id)
         Products.objects.filter(common_name=instance.common_name).update(categoryId=category_id)
         category = instance.categoryId
         while category and category.parent:
