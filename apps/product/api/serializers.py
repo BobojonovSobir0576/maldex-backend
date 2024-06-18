@@ -121,7 +121,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_children(category):
-        children = category.childrena.all()
+        children = category.children.all()
         return SubCategorySerializer(children, many=True).data
 
     class Meta:
