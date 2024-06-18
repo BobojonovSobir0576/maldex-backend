@@ -283,7 +283,6 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         return product_instance
 
     def update(self, instance, validated_data):
-        recounting(instance.categoryId)
         images_data = validated_data.pop('images', [])
         items = validated_data.pop('items', instance.discounts)
         discounts = []
@@ -311,8 +310,8 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         instance.discount_price = discount_price if discount_price else instance.discount_price
         category_id = validated_data.pop('categoryId', instance.categoryId)
         category_id = category_id or instance.categoryId
+        old_category = instance.categoryId
         instance.categoryId = category_id
-        recounting(category_id)
         Products.objects.filter(common_name=instance.common_name).update(categoryId=category_id)
         category = instance.categoryId
         while category and category.parent:
@@ -323,7 +322,9 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         if validated_data.get('is_hit'):
             category.is_hit = True
             category.save()
-        return super().update(instance, validated_data)
+        super().update(instance, validated_data)
+        recounting(category_id)
+        recounting(old_category)
 
     def get_images_set(self, obj):
         images = obj.images_set.all()
