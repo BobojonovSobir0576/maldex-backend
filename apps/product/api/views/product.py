@@ -1,6 +1,5 @@
 from collections import Counter, defaultdict
 
-from django.core.cache import cache
 from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -74,12 +73,6 @@ class ProductsListView(APIView, PaginationMethod):
                          responses={200: ProductListSerializers(many=True)})
     def get(self, request):
         filter_id = request.query_params.get('filter_id')
-        cache_key = f'products_list_{filter_id}_{request.query_params}'
-        cached_data = cache.get(cache_key)
-
-        if cached_data:
-            return success_response(cached_data)
-
         filter_model = get_object_or_404(ProductFilterModel, id=filter_id) if filter_id else None
 
         queryset = Products.objects.all()
@@ -106,12 +99,10 @@ class ProductsListView(APIView, PaginationMethod):
         if page is not None:
             serializer = ProductListSerializers(page, many=True, context={'request': request})
             data = self.get_paginated_response(serializer.data).data
-            cache.set(cache_key, data, timeout=60)  # Cache for 1 minutes
             return success_response(data)
 
         serializer = ProductListSerializers(queryset, many=True, context={'request': request})
         data = serializer.data
-        cache.set(cache_key, data, timeout=60)  # Cache for 1 minutes
         return success_response(data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
