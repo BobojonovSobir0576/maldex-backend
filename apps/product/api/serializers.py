@@ -325,6 +325,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
         super().update(instance, validated_data)
         recounting(category_id)
         recounting(old_category)
+        return instance
 
     def get_images_set(self, obj):
         images = obj.images_set.all()
