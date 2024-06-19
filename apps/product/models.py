@@ -12,11 +12,11 @@ from apps.product.managers import AllCategoryManager
 class ProductCategories(models.Model):
     """Model to represent product categories."""
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
-    name = models.CharField(max_length=150, verbose_name="Название категории")
-    title = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=550, verbose_name="Название категории")
+    title = models.CharField(max_length=500, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    slug = models.SlugField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(max_length=500, null=True, blank=True)
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
 
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?")
@@ -26,8 +26,8 @@ class ProductCategories(models.Model):
 
     icon = models.FileField(upload_to='icon/', null=True, blank=True, verbose_name='Категория значка')
     logo = models.FileField(upload_to='logo/', null=True, blank=True, verbose_name='Категория логотипа')
-    site = models.CharField(max_length=255, null=True, blank=True)
-    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name='SEO Заголовок')
+    site = models.CharField(max_length=500, null=True, blank=True)
+    seo_title = models.CharField(max_length=500, null=True, blank=True, verbose_name='SEO Заголовок')
     seo_description = models.TextField(null=True, blank=True, verbose_name='SEO Описание')
 
     order = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -96,7 +96,7 @@ def post_save_category(sender, instance, **kwargs):
 
 class ExternalCategory(models.Model):
     """Model to represent external categories."""
-    external_id = models.CharField(max_length=255, verbose_name='внешний идентификатор')
+    external_id = models.CharField(max_length=500, verbose_name='внешний идентификатор')
     category = models.ForeignKey(ProductCategories, on_delete=models.CASCADE, related_name='external_categories',
                                  verbose_name='категория')
 
@@ -110,7 +110,7 @@ class ExternalCategory(models.Model):
 class Colors(models.Model):
     """Model to represent colors."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
-    name = models.CharField(_('Название цвета'), max_length=50)
+    name = models.CharField(_('Название цвета'), max_length=500)
     hex = models.CharField(max_length=16, null=True, blank=True)
 
     def __str__(self):
@@ -119,6 +119,7 @@ class Colors(models.Model):
     class Meta:
         db_table = "product_color"
         verbose_name = "Цвет"
+        verbose_name_plural = "Цвет"
         verbose_name_plural = "Цвет"
 
 
@@ -132,7 +133,7 @@ class Products(models.Model):
     product_size = models.CharField(_('Размер товара'), max_length=256, null=True, blank=True)
     material = models.CharField(_('Материал'), max_length=512, default="S-XXL", null=True, blank=True)
     description = models.TextField(verbose_name='Описания', null=True, blank=True)
-    brand = models.CharField(_('Бренд'), max_length=128, null=True, blank=True)
+    brand = models.CharField(_('Бренд'), max_length=500, null=True, blank=True)
     price = models.FloatField(_('Цена'), default=0, null=True, blank=True)
     price_type = models.CharField(_('Цена валюта'), max_length=10,
                                   choices=[('RUB', 'RUB'), ('USD', 'USD')], default='RUB', null=True, blank=True)
@@ -152,12 +153,12 @@ class Products(models.Model):
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?", null=True, blank=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)
     is_new = models.BooleanField(default=False, verbose_name="Новый?", null=True, blank=True)
-    site = models.CharField(max_length=255, null=True, blank=True)
+    site = models.CharField(max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Данные опубликованы')
     updated_at = models.DateTimeField(auto_now=True)
     home = models.BooleanField(default=False)
     discounts = models.JSONField(null=True, blank=True)
-    common_name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    common_name = models.CharField(max_length=500, null=True, blank=True, db_index=True)
 
     added_recently = models.BooleanField(default=True)
 
