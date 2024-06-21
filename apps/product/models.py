@@ -38,6 +38,7 @@ class ProductCategories(models.Model):
     updated_at = models.DateField(auto_now=True)
     products_count = models.IntegerField(default=0)
     recently_products_count = models.IntegerField(default=0)
+    discounts = models.JSONField(null=True, blank=True)
 
     objects = AllCategoryManager()
     all_levels = AllCategoryManager()

@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Q, Count
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
+from django.utils.datastructures import MultiValueDict
 from rest_framework import serializers
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -55,11 +56,13 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class CategoryListSerializers(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     is_available = serializers.BooleanField(required=False)
+    items = serializers.ListField(write_only=True, required=False)
+    discounts = serializers.JSONField(read_only=True)
     """ Category create update and details """
 
     class Meta:
         model = ProductCategories
-        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular',
+        fields = ['id', 'name', 'parent', 'icon', 'logo', 'is_available', 'is_popular', 'items', 'discounts',
                   'is_hit', 'is_new', 'order', 'order_top', 'created_at', 'updated_at', 'site']
 
     def create(self, validated_data):
@@ -78,6 +81,15 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
+        items = validated_data.pop('items', instance.discounts)
+        print(items and items not in ['[]', '', ' ', [''], ['[]']])
+        discounts = []
+        if items and items not in ['[]', '', ' ', [''], ['[]']]:
+            for item in items:
+                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        instance.discounts = discounts
+        if discounts:
+            Products.objects.filter(categoryId=instance).update(discounts=discounts)
 
         instance.save()
         return instance
@@ -118,6 +130,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     count = serializers.IntegerField(source='products_count', read_only=True)
     new_count = serializers.IntegerField(source='recently_products_count', read_only=True)
+    items = serializers.ListField(write_only=True, required=False)
+    discounts = serializers.JSONField(read_only=True)
 
     @staticmethod
     def get_children(category):
@@ -128,8 +142,21 @@ class MainCategorySerializer(serializers.ModelSerializer):
         model = ProductCategories
         fields = [
             'id', 'parent', 'name', 'count', 'new_count', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order',
-            'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description'
+            'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description',
+            'items', 'discounts'
         ]
+
+    def create(self, validated_data):
+        items = validated_data.pop('items', None)
+        discounts = []
+        if items and items not in ['[]', '', ' ', [''], ['[]']]:
+            for item in items:
+                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        validated_data['discounts'] = discounts
+        category = super().create(validated_data)
+        if discounts:
+            Products.objects.filter(categoryId=category).update(discounts=discounts)
+        return category
 
 
 class HomeCategorySerializer(serializers.Serializer):

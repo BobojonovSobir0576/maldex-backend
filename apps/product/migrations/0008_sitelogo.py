@@ -9,5 +9,4 @@ class Migration(migrations.Migration):
         ('product', '0007_sitelogo_productcategories_products_count_and_more'),
     ]
 
-    operations = [
-    ]
+    operations = []
