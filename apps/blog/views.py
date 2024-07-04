@@ -6,9 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, LinkTag, LinkTagCategory
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, LinkTag, LinkTagCategory, Gallery
 from apps.blog.serializers import ArticleSerializer, ProjectSerializer, FAQSerializer, PrintCategorySerializer, \
-    LinkSerializer, LinkCategorySerializer
+    LinkSerializer, LinkCategorySerializer, GallerySerializer
 from utils.responses import success_response, success_created_response, bad_request_response, success_deleted_response
 
 
@@ -570,27 +570,27 @@ class GalleryList(APIView):
     @swagger_auto_schema(
         operation_description="List all gallery data",
         tags=['Gallery'],
-        responses={200: LinkCategorySerializer(many=True)}
+        responses={200: GallerySerializer(many=True)}
     )
     def get(self, request):
         """
         Get all print link tags.
         """
-        categories = LinkTagCategory.objects.all()
-        serializer = LinkCategorySerializer(categories, many=True, context={'request': request})
+        categories = Gallery.objects.all()
+        serializer = GallerySerializer(categories, many=True, context={'request': request})
         return success_response(serializer.data)
 
     @swagger_auto_schema(
-        request_body=LinkCategorySerializer,
+        request_body=GallerySerializer,
         operation_description="Create a gallery data",
         tags=['Gallery'],
-        responses={201: LinkCategorySerializer()}
+        responses={201: GallerySerializer()}
     )
     def post(self, request):
         """
         Create a new link tag.
         """
-        serializer = LinkCategorySerializer(data=request.data, context={'request': request})
+        serializer = GallerySerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_created_response(serializer.data)
@@ -606,28 +606,28 @@ class GalleryDetail(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve a gallery data",
         tags=['Gallery'],
-        responses={200: LinkCategorySerializer()}
+        responses={200: GallerySerializer()}
     )
     def get(self, request, gallery_id, **kwargs):
         """
         Retrieve a specific print category.
         """
-        category = get_object_or_404(LinkTagCategory, id=gallery_id)
-        serializer = LinkCategorySerializer(category, context={'request': request})
+        category = get_object_or_404(Gallery, id=gallery_id)
+        serializer = GallerySerializer(category, context={'request': request})
         return success_response(serializer.data)
 
     @swagger_auto_schema(
-        request_body=LinkCategorySerializer,
+        request_body=GallerySerializer,
         operation_description="Update a gallery data",
         tags=['Gallery'],
-        responses={200: LinkCategorySerializer()}
+        responses={200: GallerySerializer()}
     )
     def put(self, request, gallery_id, **kwargs):
         """
         Update a specific print category.
         """
-        category = get_object_or_404(LinkTagCategory, id=gallery_id)
-        serializer = LinkCategorySerializer(category, data=request.data, context={'request': request})
+        gallery = get_object_or_404(Gallery, id=gallery_id)
+        serializer = GallerySerializer(gallery, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)
@@ -642,4 +642,6 @@ class GalleryDetail(APIView):
         """
         Delete a specific print category.
         """
-        category = get_object_or_404(LinkTagCategory, id=gallery_id)
+        gallery = get_object_or_404(Gallery, id=gallery_id)
+        gallery.delete()
+        return success_deleted_response('deleted')
