@@ -10,9 +10,10 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from apps.product.filters import ProductFilter
-from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo, ProductImage
+from apps.product.models import Products, ProductFilterModel, Colors, SiteLogo, ProductImage, ProductBanner
 from apps.product.api.serializers import ProductDetailSerializers, \
-    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer, ProductListSerializers
+    ProductAutoUploaderSerializer, ProductAutoUploaderDetailSerializer, SiteLogoSerializer, ProductListSerializers, \
+    ProductBannerSerializer
 from utils.responses import bad_request_response, success_response, success_deleted_response, success_created_response
 from utils.pagination import PaginationMethod, StandardResultsSetPagination
 
@@ -98,7 +99,13 @@ class ProductsListView(APIView, PaginationMethod):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = ProductListSerializers(page, many=True, context={'request': request})
-            data = self.get_paginated_response(serializer.data).data
+            banner_serializer = ProductBannerSerializer(ProductBanner.objects.all(), many=True, context={'request': request})
+            serializer_data: list = serializer.data
+            banner_serializer_data: list = banner_serializer.data
+            print(banner_serializer_data)
+            for i in range(len(banner_serializer_data)):
+                serializer_data.insert(10 * (i + 1) + i, banner_serializer_data[i])
+            data = self.get_paginated_response(serializer_data).data
             return success_response(data)
 
         serializer = ProductListSerializers(queryset, many=True, context={'request': request})
@@ -127,7 +134,9 @@ class ProductsDetailView(APIView):
     def get(self, request, pk):
         queryset = get_object_or_404(Products, pk=pk)
         serializers = ProductDetailSerializers(instance=queryset, context={'request': request}, many=False)
-        return success_response(serializers.data)
+        data: list = serializers.data
+
+        return success_response(data)
 
     @swagger_auto_schema(request_body=ProductDetailSerializers,
                          operation_description="Products update",

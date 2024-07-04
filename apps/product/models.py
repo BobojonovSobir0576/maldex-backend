@@ -246,9 +246,25 @@ class SiteLogo(models.Model):
     logo = models.ImageField(upload_to='site_logos/')
 
     class Meta:
-        db_table ='site_logos'
+        db_table = 'site_logos'
         verbose_name = 'Site Logo'
         verbose_name_plural = 'Site Logos'
 
     def __str__(self):
         return self.site
+
+
+class ProductBanner(models.Model):
+    title = models.CharField(max_length=512)
+    subtitle = models.CharField(max_length=1024)
+    image = models.ImageField(upload_to='product-banners/')
+    button_title = models.CharField(max_length=128)
+    button_url = models.URLField()
+
+    class Meta:
+        db_table = 'product_banners'
+        verbose_name = 'product banner'
+        verbose_name_plural = 'product banners'
+
+    def __str__(self):
+        return self.title

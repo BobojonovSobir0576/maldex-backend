@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
@@ -163,3 +165,16 @@ class LinkTag(models.Model):
             self.order = order
         super().save(*args, **kwargs)
 
+
+class Gallery(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
+    data = models.JSONField(verbose_name='Данные')
+
+    class Meta:
+        db_table = "gallery"
+        verbose_name = "Галерея"
+        verbose_name_plural = "Галерея"
+
+    def __str__(self):
+        return str(self.data)

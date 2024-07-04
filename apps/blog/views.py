@@ -559,3 +559,87 @@ class LinkCategoryDetail(APIView):
         category = get_object_or_404(LinkTagCategory, id=cat_id)
         category.delete()
         return success_deleted_response('deleted')
+
+
+class GalleryList(APIView):
+    """
+    API endpoint to list and create link tags.
+    """
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(
+        operation_description="List all gallery data",
+        tags=['Gallery'],
+        responses={200: LinkCategorySerializer(many=True)}
+    )
+    def get(self, request):
+        """
+        Get all print link tags.
+        """
+        categories = LinkTagCategory.objects.all()
+        serializer = LinkCategorySerializer(categories, many=True, context={'request': request})
+        return success_response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=LinkCategorySerializer,
+        operation_description="Create a gallery data",
+        tags=['Gallery'],
+        responses={201: LinkCategorySerializer()}
+    )
+    def post(self, request):
+        """
+        Create a new link tag.
+        """
+        serializer = LinkCategorySerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_created_response(serializer.data)
+        return bad_request_response(serializer.errors)
+
+
+class GalleryDetail(APIView):
+    """
+    API endpoint to retrieve, update, and delete a specific print category.
+    """
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a gallery data",
+        tags=['Gallery'],
+        responses={200: LinkCategorySerializer()}
+    )
+    def get(self, request, gallery_id, **kwargs):
+        """
+        Retrieve a specific print category.
+        """
+        category = get_object_or_404(LinkTagCategory, id=gallery_id)
+        serializer = LinkCategorySerializer(category, context={'request': request})
+        return success_response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=LinkCategorySerializer,
+        operation_description="Update a gallery data",
+        tags=['Gallery'],
+        responses={200: LinkCategorySerializer()}
+    )
+    def put(self, request, gallery_id, **kwargs):
+        """
+        Update a specific print category.
+        """
+        category = get_object_or_404(LinkTagCategory, id=gallery_id)
+        serializer = LinkCategorySerializer(category, data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
+
+    @swagger_auto_schema(
+        operation_description="Delete a gallery data",
+        tags=['Gallery'],
+        responses={204: 'No content'}
+    )
+    def delete(self, request, gallery_id, **kwargs):
+        """
+        Delete a specific print category.
+        """
+        category = get_object_or_404(LinkTagCategory, id=gallery_id)

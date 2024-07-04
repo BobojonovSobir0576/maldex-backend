@@ -715,3 +715,10 @@ class SiteLogoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteLogo
         fields = ('site', 'logo')
+
+
+class ProductBannerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductBanner
+        fields = '__all__'

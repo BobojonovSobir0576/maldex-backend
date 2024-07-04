@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
-from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, LinkTag
+from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, LinkTag, Gallery
 
 
 # Customizing the admin interface for FAQs
@@ -41,6 +41,13 @@ class LinkAdmin(admin.ModelAdmin):
     search_fields = ['title']
     fields = ['title', 'category', 'link', 'order']
     readonly_fields = ('order',)
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    list_display = ['id', 'data']
+    search_fields = ['id']
+    readonly_fields = ('data',)
 
 
 # Registering models with their respective customized admin interfaces

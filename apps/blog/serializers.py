@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, ProjectProduct, LinkTag, \
-    LinkTagCategory
+    LinkTagCategory, Gallery
 from apps.product.api.serializers import ProductListSerializers
 from apps.product.models import Products
 
@@ -140,3 +140,10 @@ class LinkSerializer(serializers.ModelSerializer):
         instance.category.id = category_id
         instance.save()
         return instance
+
+
+class GallerySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Gallery
+        fields = '__all__'

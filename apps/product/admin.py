@@ -7,7 +7,7 @@ from apps.product.models import (
     Colors,
     ProductImage,
     ExternalCategory,
-    SiteLogo
+    SiteLogo, ProductBanner
 )
 from apps.product.proxy import SubCategory, TertiaryCategory
 from django.contrib.admin import SimpleListFilter
@@ -228,3 +228,8 @@ class ProductImageAdmin(ImportExportModelAdmin):
 class SiteLogoAdmin(admin.ModelAdmin):
     list_display = ['site', 'logo']
     fields = ['site', 'logo']
+
+
+@admin.register(ProductBanner)
+class ProductBannerAdmin(admin.ModelAdmin):
+    list_display = ['title', 'subtitle']
