@@ -3,12 +3,12 @@ from apps.gifts_baskets.models import *
 from import_export.admin import ImportExportModelAdmin
 
 
-class GiftsBasketImageAdmin(admin.TabularInline):
+class GiftsBasketImageInline(admin.TabularInline):
     model = GiftsBasketImages
     extra = 1
 
 
-class GiftsBasketProductAdmin(admin.TabularInline):
+class GiftsBasketProductInline(admin.TabularInline):
     model = GiftsBasketProduct
     extra = 1
 
@@ -20,7 +20,7 @@ class GiftBasketCategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 class GiftBasketAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['title', 'id']
-    inlines = [GiftsBasketImageAdmin, GiftsBasketProductAdmin]
+    inlines = [GiftsBasketImageInline, GiftsBasketProductInline]
     filter_horizontal = ('tags',)
 
 
