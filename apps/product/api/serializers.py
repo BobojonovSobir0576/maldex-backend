@@ -259,6 +259,7 @@ class ProductDetailSerializers(serializers.ModelSerializer):
     colors = serializers.SerializerMethodField(read_only=True)
     items = serializers.ListField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Products
@@ -362,13 +363,19 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             self.context['request'].build_absolute_uri(image.image.url),
         } for image in images]
 
+    def get_is_liked(self, obj):
+        user = self.context['request'].user
+        if not user.is_authenticated:
+            return False
+        return Like.objects.filter(user=user, product=obj).exists()
+
 
 class ProductListSerializers(ProductDetailSerializers):
 
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
-                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse']
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse', 'is_liked']
 
 
 class ColorProductSerializers(ProductDetailSerializers):
