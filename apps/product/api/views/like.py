@@ -40,6 +40,6 @@ class LikedProductsView(APIView):
                          responses={200: None})
     def get(self, request):
         user = request.user
-        liked_products = Products.objects.filter(like__user=user)
+        liked_products = Products.objects.filter(likes__user=user)
         serializer = ProductListSerializers(liked_products, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
