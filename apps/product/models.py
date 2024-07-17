@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 import uuid
 
@@ -7,6 +8,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from apps.product.managers import AllCategoryManager
+
+User = get_user_model()
 
 
 class ProductCategories(models.Model):
@@ -268,3 +271,13 @@ class ProductBanner(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='likes')
+
+    class Meta:
+        db_table = 'likes'
+        verbose_name = 'Like'
+        verbose_name_plural = 'Likes'
