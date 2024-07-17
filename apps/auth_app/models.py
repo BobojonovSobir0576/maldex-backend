@@ -1,51 +1,26 @@
 import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-from apps.auth_app.managers.user_managers import CustomUserManager
-from django.utils.translation import gettext_lazy as _
+
+from apps.auth_app.managers.user_managers import UserManager
 
 
 class CustomUser(AbstractUser):
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    first_name = models.CharField(max_length=64, null=False)
+    last_name = models.CharField(max_length=64, null=False)
+    email = models.EmailField('email', unique=True)
+    image = models.ImageField(upload_to="user/")
+    phone_number = models.CharField(max_length=128, null=True)
 
-    class AuthType(models.TextChoices):
-        LOGIN_PASSWORD_AUTH = "login_password_auth", _("Email and Password Authentication")
-        GOOGLE_AUTH = "google_auth", _("Google Authentication")
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
-    class GenderType(models.TextChoices):
-        MALE = 'male', _('Male')
-        FEMALE = 'female', _('Female')
-
-    class Text:
-        WRONG_PASSWORD_OR_LOGIN_ENTERED = "Wrong login or password"
-        USER_WITH_SUCH_EMAIL_ALREADY_EXISTS = "A user with this email already exists"
-        USER_WITH_SUCH_EMAIL_DOES_NOT_EXIST = "A user with this email already exists"
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone = models.CharField(_('Phone'), max_length=18)
-    email = models.EmailField(_('Email'), max_length=255, unique=True)
-    username = models.CharField(_('Username'), max_length=255, null=False, blank=False, unique=True)
-    photo = models.ImageField(_('Avatar'), upload_to="path/")
-    about = models.TextField(_('About yourself'), default="", null=True, blank=True)
-    date_of_birth = models.DateField(_('Date of Birth'), null=True, blank=True)
-    gender = models.CharField(_('Gender'), max_length=10, null=True, blank=True, choices=GenderType.choices)
-    is_active = models.BooleanField(_('Is activate'), default=True)
-    is_staff = models.BooleanField(_('Is staff'), default=False)
-    date_joined = models.DateTimeField(_('Data created'), default=timezone.now)
-
-    objects = CustomUserManager()
-
-    USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
-
-    def __str__(self):
-        return self.phone
-
-    class Meta:
-        db_table = "user_table"
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
+    objects = UserManager()
 
 
 class UserLastLogin(models.Model):

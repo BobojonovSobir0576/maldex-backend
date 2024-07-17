@@ -8,28 +8,28 @@ from apps.auth_app.models import CustomUser, UserLastLogin
 
 class NewUser(ImportExportModelAdmin, UserAdmin):
     model = CustomUser
-    list_display = ['email', 'phone', 'username', 'is_active', 'is_staff', 'id']
-    search_fields = ['email', 'phone', 'groups', 'username']
-    ordering = ['email', 'username']
+    list_display = ['email', 'is_active', 'is_staff', 'id']
+    search_fields = ['email', 'groups',]
+    ordering = ['email']
     fieldsets = (
-        (None, {'fields': ('first_name', 'last_name', 'email', 'phone', 'password')}),
+        (None, {'fields': ('first_name', 'last_name', 'email', 'password')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
                                     'groups')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Personal Information',
-         {'fields': ('date_of_birth', 'photo', 'about', 'gender')}),
+         {'fields': ('date_of_birth', 'photo', 'about')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2'),
+            'fields': ('email', 'password1', 'password2'),
         }),
     )
 
 
 class UserLastLoginAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['user', 'login_time', 'id']
-    search_fields = ['user__username']
+    search_fields = ['user__email']
 
 
 admin.site.register(CustomUser, NewUser)

@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'import_export',
     'django_ckeditor_5',
 
-    "apps.auth_app",
+    "apps.auth_app.apps.AuthAppConfig",
     "apps.product",
     "apps.banner",
     'apps.blog',

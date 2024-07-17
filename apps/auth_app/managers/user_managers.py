@@ -1,17 +1,29 @@
+from django.utils import timezone
 from django.contrib.auth.base_user import BaseUserManager
 
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, username, password=None, email=None, **extra_fields):
-        if not username:
-            raise ValueError("The username field must be set")
-        username = self.normalize_email(username)
-        user = self.model(username=username, email=email, **extra_fields)
+class UserManager(BaseUserManager):
+
+    def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
+        if not email:
+            raise ValueError('User must have an email address')
+        now = timezone.now()
+        email = self.normalize_email(email)
+        user = self.model(
+            email=email,
+            is_staff=is_staff,
+            is_active=True,
+            is_superuser=is_superuser,
+            last_login=now,
+            date_joined=now,
+            **extra_fields
+        )
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        return self.create_user(username, password, **extra_fields)
+    def create_user(self, email, password, **extra_fields):
+        return self._create_user(email, password, False, False, **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        return self._create_user(email, password, True, True, **extra_fields)
