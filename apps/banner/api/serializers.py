@@ -68,7 +68,8 @@ class BannerListSerializer(serializers.ModelSerializer):
 
 class BannerCarouselListSerializer(serializers.ModelSerializer):
     product = ProductDetailSerializers(read_only=True)
-    product_id = serializers.CharField(write_only=True, required=False)
+    product_id = serializers.CharField(write_only=True, required=True)
+    media_type = serializers.CharField(read_only=True)
     buttons = ButtonSerializer(many=True, read_only=True)
     title1 = serializers.CharField(write_only=True, required=False)
     url1 = serializers.CharField(write_only=True, required=False)
@@ -77,11 +78,14 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BannerCarousel
-        fields = ['id', 'name', 'video', 'product', 'product_id', 'buttons', 'title1', 'url1', 'title2', 'url2']
+        fields = ['id', 'name', 'media', 'media_type', 'product', 'product_id', 'buttons', 'title1', 'url1', 'title2', 'url2']
 
     def create(self, validated_data):
         product_id = validated_data.pop('product_id', None)
         product = get_object_or_404(Products, id=product_id) if product_id else None
+        media = validated_data.get('media')
+        media_type = media.content_type.split('/')[0]
+        validated_data['media_type'] = media_type
         buttons_data = []
         title1 = validated_data.pop('title1', None)
         url1 = validated_data.pop('url1', None)
@@ -95,3 +99,9 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+    def validate_media(self, media):
+        media_type = media.content_type.split('/')[0]
+        if media_type not in ['image', 'video']:
+            raise serializers.ValidationError('Invalid media type')
+        return media

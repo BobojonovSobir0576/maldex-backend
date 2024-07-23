@@ -125,8 +125,7 @@ class BannerCarouselListView(APIView):
                          tags=['Banner Carousel'],
                          responses={201: BannerCarouselListSerializer(many=False)})
     def post(self, request):
-        print(request.data)
-        valid_fields = {'name', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2'}
+        valid_fields = {'name', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2', 'media'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
