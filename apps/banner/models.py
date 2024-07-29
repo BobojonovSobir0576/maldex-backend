@@ -30,7 +30,6 @@ class Banner(models.Model):
 
 
 class BannerProduct(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     bannerID = models.ForeignKey(Banner, on_delete=models.CASCADE, null=True, blank=True, related_name='bannerID',
                                  verbose_name='Идентификатор баннера')
     productID = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,
@@ -44,6 +43,7 @@ class BannerProduct(models.Model):
         db_table = "banner_product"
         verbose_name = "Продукт Баннера"
         verbose_name_plural = "Продукт Баннера"
+        ordering = 'id',
 
 
 class BannerCarousel(models.Model):
