@@ -375,14 +375,17 @@ class ProductListSerializers(ProductDetailSerializers):
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
-                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse', 'is_liked']
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse', 'is_liked',
+                  'material', 'weight', 'description']
 
 
 class ColorProductSerializers(ProductDetailSerializers):
 
     class Meta:
         model = Products
-        fields = ['id', 'name', 'images_set', 'article',  'warehouse']
+        fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse', 'is_liked',
+                  'material', 'weight', 'description']
 
 
 class ProductJsonFileUploadCreateSerializer(serializers.ModelSerializer):
