@@ -144,7 +144,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
         fields = [
             'id', 'parent', 'name', 'count', 'new_count', 'is_popular', 'is_hit', 'is_new', 'is_available', 'order',
             'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description',
-            'items', 'discounts'
+            'items', 'discounts', 'products'
         ]
 
     def create(self, validated_data):
