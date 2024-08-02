@@ -160,7 +160,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
         return category
 
     def get_products(self, category):
-        products = Products.objects.filter(Q(categoryId=category) | Q(categoryId__parent=category) | Q(categoryId__parent__parent=category))[:4]
+        products = Products.objects.filter(Q(categoryId__parent=category) | Q(categoryId__parent__parent=category))[:4]
         return ProductListSerializers(products, many=True, context=self.context).data
 
 
