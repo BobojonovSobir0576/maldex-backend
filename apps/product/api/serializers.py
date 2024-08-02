@@ -132,6 +132,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
     new_count = serializers.IntegerField(source='recently_products_count', read_only=True)
     items = serializers.ListField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
+    products = serializers.SerializerMethodField(read_only=True)
 
     @staticmethod
     def get_children(category):
@@ -157,6 +158,10 @@ class MainCategorySerializer(serializers.ModelSerializer):
         if discounts:
             Products.objects.filter(categoryId=category).update(discounts=discounts)
         return category
+
+    def get_products(self, category):
+        products = Products.objects.filter(categoryId=category)[:4]
+        return ProductListSerializers(products, many=True, context=self.context).data
 
 
 class HomeCategorySerializer(serializers.Serializer):
