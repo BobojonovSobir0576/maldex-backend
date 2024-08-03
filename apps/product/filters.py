@@ -117,7 +117,14 @@ class ProductFilter(filters.FilterSet):
         value = self.remove_punctuation(value)
         queryset = queryset.annotate(
             name_no_comma=Replace(
-                Replace(Replace(Replace(Replace(F('name'), Value(' '), Value('')), Value('"'), Value('')), Value('-'), Value('')), Value(','), Value('')), Value('/'), Value('')
+                Replace(
+                    Replace(
+                        Replace(
+                            Replace(F('name'), Value(' '), Value('')),
+                            Value('"'), Value('')
+                        ), Value('-'), Value('')
+                    ), Value(','), Value('')
+                ), Value('/'), Value('')
             )
         )
         return queryset.filter(Q(name_no_comma__icontains=value))

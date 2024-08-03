@@ -1,4 +1,4 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404

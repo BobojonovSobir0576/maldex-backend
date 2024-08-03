@@ -2,12 +2,9 @@ import os
 import time
 
 import requests
-from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Q, Count
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
-from django.utils.datastructures import MultiValueDict
 from rest_framework import serializers
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -376,20 +373,18 @@ class ProductDetailSerializers(serializers.ModelSerializer):
 
 
 class ProductListSerializers(ProductDetailSerializers):
-
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
-                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors',  'warehouse', 'is_liked',
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'colors', 'warehouse', 'is_liked',
                   'material', 'weight', 'description']
 
 
 class ColorProductSerializers(ProductDetailSerializers):
-
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'article', 'colorID', 'brand', 'price', 'price_type', 'discount_price',
-                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId',  'warehouse', 'is_liked',
+                  'is_popular', 'is_hit', 'is_new', 'site', 'categoryId', 'warehouse', 'is_liked',
                   'material', 'weight', 'description']
 
 
@@ -550,7 +545,8 @@ class ProductAutoUploaderSerializer(serializers.ModelSerializer):
         images_to_create = []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance, ) for img in img_set]
+            futures = [executor.submit(ProductAutoUploaderSerializer.fetch_and_save_image, img, product_instance, ) for
+                       img in img_set]
             for future in as_completed(futures):
                 image = future.result()
                 if image:
@@ -635,7 +631,7 @@ class ProductAutoUploaderDetailSerializer(serializers.ModelSerializer):
             return ProductImage(productID=product_instance, image_url=img['name'])
 
     @staticmethod
-    def create_img_into_product(img_set, color_instance, product_instance):
+    def create_img_into_product(img_set, color_instance, product_instance=None):
         start = time.time()
         images_to_create = []
 
@@ -726,14 +722,12 @@ class FilterProductSerializer(serializers.ModelSerializer):
 
 
 class SiteLogoSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = SiteLogo
         fields = ('site', 'logo')
 
 
 class ProductBannerSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ProductBanner
         fields = '__all__'

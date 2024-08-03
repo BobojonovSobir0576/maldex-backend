@@ -61,7 +61,8 @@ class ProductCategories(models.Model):
             self.order = (popular_categories.last().order + 1) if popular_categories.exists() else 1
 
         if not self.order_top and self.is_available and self.is_popular and self.parent is None:
-            popular_categories = ProductCategories.objects.filter(is_popular=True, is_available=True, parent=None).order_by('order_top')
+            popular_categories = ProductCategories.objects.filter(
+                is_popular=True, is_available=True, parent=None).order_by('order_top')
             self.order_top = (popular_categories.last().order_top + 1) if popular_categories.exists() else 1
 
         super().save(*args, **kwargs)
@@ -123,7 +124,6 @@ class Colors(models.Model):
     class Meta:
         db_table = "product_color"
         verbose_name = "Цвет"
-        verbose_name_plural = "Цвет"
         verbose_name_plural = "Цвет"
 
 
@@ -192,7 +192,6 @@ class Products(models.Model):
             category.save()
             category = category.parent
         super(Products, self).save(*args, **kwargs)
-
 
     def __str__(self):
         return self.name

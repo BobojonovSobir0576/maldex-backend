@@ -1,17 +1,15 @@
 import requests
 import re
 import time
-import uuid
-import os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 
 URL_ACCESS = 'https://api2.gifts.ru/export/v2/access'
 URL_MANAGE_IP = "https://api2.gifts.ru/export/v2/manageip"
 USERNAME = "20033_xmlexport"
 PASSWORD = "O2NyQRLZ"
+
 
 def fetch_data(url, auth=None, max_retries=5):
     retry_count = 0
@@ -35,9 +33,11 @@ def fetch_data(url, auth=None, max_retries=5):
     print("Max retries reached. Exiting.")
     return None
 
+
 def extract_ip_address(html_content):
     match = re.search(r'\b\d{1,3}(?:\.\d{1,3}){3}\b', html_content)
     return match.group(0) if match else None
+
 
 def update_ip_address(ip_address):
     with requests.Session() as session:
@@ -62,9 +62,11 @@ def update_ip_address(ip_address):
         else:
             print("Failed to update IP address.")
 
+
 def get_data(url):
     count = 0
     response = fetch_data(URL_ACCESS, auth=(USERNAME, PASSWORD))
+    data = None
     if response:
         ip_address = extract_ip_address(response.text)
         if ip_address:
@@ -76,4 +78,3 @@ def get_data(url):
         time.sleep(2)
         return data
     return None
-
