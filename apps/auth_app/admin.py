@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportModelAdmin
 from django.contrib.auth.models import Group
 
-from apps.auth_app.models import CustomUser, UserLastLogin
+from apps.auth_app.models import CustomUser
 
 
 class NewUser(ImportExportModelAdmin, UserAdmin):

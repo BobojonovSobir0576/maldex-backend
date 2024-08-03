@@ -5,6 +5,7 @@ from apps.product.models import Products
 
 
 def create_banner_products(product_data, create_banner):
+    create_banner_product = None
     for item in product_data:
         product_instance = get_object_or_404(Products, id=item)
         create_banner_product = BannerProduct.objects.create(

@@ -32,7 +32,7 @@ class LoginSerializer(serializers.Serializer):
         update_last_login(None, user)
         return data
 
-    def get_token(self, user):
+    def get_token(self, user) -> RefreshToken:
         return RefreshToken.for_user(user)
 
 

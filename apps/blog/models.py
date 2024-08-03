@@ -30,8 +30,6 @@ class Article(models.Model):
     tags = models.ManyToManyField(Tag, verbose_name=_('теги статей'), related_name='articles')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name=_('дата публикации'))
     image = models.ImageField(upload_to='articles/', verbose_name=_('изображение'))
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date published'))
-    image = models.ImageField(upload_to='articles/', verbose_name=_('image'), null=False)
 
     def __str__(self):
         return self.title

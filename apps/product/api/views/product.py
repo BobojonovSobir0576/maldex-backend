@@ -99,7 +99,10 @@ class ProductsListView(APIView, PaginationMethod):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = ProductListSerializers(page, many=True, context={'request': request})
-            banner_serializer = ProductBannerSerializer(ProductBanner.objects.all(), many=True, context={'request': request})
+            banner_serializer = ProductBannerSerializer(
+                ProductBanner.objects.all(), many=True,
+                context={'request': request}
+            )
             serializer_data: list = serializer.data
             banner_serializer_data: list = banner_serializer.data
             print(banner_serializer_data)
@@ -254,25 +257,12 @@ class ColorListView(APIView):
         responses={200: 'colors-list'}
     )
     def get(self, request):
-        colors = Colors.objects.annotate(products_count=Count('products')).order_by('-products_count').values('name', 'products_count')
+        colors = Colors.objects.annotate(
+            products_count=Count('products')
+        ).order_by('-products_count').values('name', 'products_count')
         return success_response({
             'colors': colors[:10],
         })
-
-
-@swagger_auto_schema(tags=['Products'],
-                     operation_description='Get the number of NEW, HIT, POPULAR products',
-                     method='GET')
-@api_view(['GET'])
-def get_counts(request):
-    new_product_count = Products.objects.filter(is_new=True).count()
-    hit_product_count = Products.objects.filter(is_hit=True).count()
-    popular_product_count = Products.objects.filter(is_popular=True).count()
-    return success_response({
-        'new': new_product_count,
-        'hit': hit_product_count,
-        'popular': popular_product_count
-    })
 
 
 class SiteLogoView(APIView):
