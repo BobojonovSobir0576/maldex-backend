@@ -79,7 +79,6 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.is_available = validated_data.get('is_available', instance.is_available)
         items = validated_data.pop('items', instance.discounts)
-        print(items and items not in ['[]', '', ' ', [''], ['[]']])
         discounts = []
         if items and items not in ['[]', '', ' ', [''], ['[]']]:
             for item in items:

@@ -121,6 +121,7 @@ class PrintCategory(models.Model):
     image = models.ImageField(upload_to='print-categories/', null=True, blank=True, verbose_name=_('изображение'))
     content = CKEditor5Field(config_name='extends', null=True, blank=True, verbose_name=_('содержание'))
     requirement = CKEditor5Field(config_name='extends', null=True, blank=True, verbose_name=_('требование'))
+    discounts = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return self.title

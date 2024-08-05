@@ -96,10 +96,22 @@ class FAQSerializer(serializers.ModelSerializer):
 
 # Serializer for Print Categories
 class PrintCategorySerializer(serializers.ModelSerializer):
-
+    items = serializers.ListField(write_only=True, required=False)
+    discounts = serializers.JSONField(read_only=True)
+    
     class Meta:
         model = PrintCategory
         fields = '__all__'
+
+    def update(self, instance, validated_data):
+        items = validated_data.pop('items', instance.discounts)
+        discounts = []
+        if items and items not in ['[]', '', ' ', [''], ['[]']]:
+            for item in items:
+                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        instance.discounts = discounts
+        if discounts:
+            Products.objects.filter(categoryId=instance).update(discounts=discounts)
 
 
 class LinkCategorySerializer(serializers.ModelSerializer):

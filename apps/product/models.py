@@ -163,7 +163,6 @@ class Products(models.Model):
     home = models.BooleanField(default=False)
     discounts = models.JSONField(null=True, blank=True)
     common_name = models.CharField(max_length=500, null=True, blank=True, db_index=True)
-
     added_recently = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
