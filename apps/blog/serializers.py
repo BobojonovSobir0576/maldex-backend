@@ -98,6 +98,7 @@ class FAQSerializer(serializers.ModelSerializer):
 class PrintCategorySerializer(serializers.ModelSerializer):
     items = serializers.ListField(write_only=True, required=False)
     discounts = serializers.JSONField(read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = PrintCategory
@@ -112,6 +113,13 @@ class PrintCategorySerializer(serializers.ModelSerializer):
         instance.discounts = discounts
         if discounts:
             Products.objects.filter(categoryId=instance).update(discounts=discounts)
+
+    def get_images(self, obj):
+        images = []
+        request = self.context['request']
+        for image in obj.images.all():
+            images.append(request.build_absolute_uri(image.image.url))
+        return images
 
 
 class LinkCategorySerializer(serializers.ModelSerializer):

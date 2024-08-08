@@ -118,7 +118,6 @@ class PrintCategory(models.Model):
     title = models.CharField(max_length=200, verbose_name=_('заголовок'))
     parent = models.ForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE,
                                verbose_name=_('родительская категория'))
-    image = models.ImageField(upload_to='print-categories/', null=True, blank=True, verbose_name=_('изображение'))
     content = CKEditor5Field(config_name='extends', null=True, blank=True, verbose_name=_('содержание'))
     requirement = CKEditor5Field(config_name='extends', null=True, blank=True, verbose_name=_('требование'))
     discounts = models.JSONField(null=True, blank=True)
@@ -131,6 +130,20 @@ class PrintCategory(models.Model):
         ordering = ('title',)
         verbose_name = _('Категория печати')
         verbose_name_plural = _('Категории печати')
+
+
+class PrintCategoryImage(models.Model):
+    category = models.ForeignKey(PrintCategory, on_delete=models.CASCADE, related_name='images', verbose_name=_('категория'))
+    image = models.ImageField(upload_to='print-categories/', verbose_name=_('изображение'))
+
+    def __str__(self):
+        return self.category.title
+
+    class Meta:
+        db_table = 'print_category_image'
+        ordering = ('category',)
+        verbose_name = _('Изображение категории печати')
+        verbose_name_plural = _('Изображения категории печати')
 
 
 class LinkTagCategory(models.Model):
