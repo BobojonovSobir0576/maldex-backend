@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
+from django.utils.safestring import mark_safe
 
 from apps.blog.models import Article, Project, FAQ, PrintCategory, Tag, ProjectImage, LinkTag, Gallery, \
     PrintCategoryImage
@@ -51,11 +52,26 @@ class GalleryAdmin(admin.ModelAdmin):
     readonly_fields = ('data',)
 
 
-# Registering models with their respective customized admin interfaces
+class PrintCategoryImageInline(admin.TabularInline):
+    model = PrintCategoryImage
+    fields = ('_image', 'image',)
+    readonly_fields = ('_image',)
+
+    def _image(self, obj):
+        image_url = obj.image.url
+        html = mark_safe(f'<img src="{image_url}" width=70 height=70 style="object-fit: cover">')
+        return html if image_url else ''
+
+    _image.short_description = ''
+
+
+@admin.register(PrintCategory)
+class PrintCategoryAdmin(admin.ModelAdmin):
+    inlines = [PrintCategoryImageInline]
+
+
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(Project)
 admin.site.register(FAQ, FAQAdmin)
-admin.site.register(PrintCategory)
-admin.site.register(PrintCategoryImage)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(ProjectImage)
